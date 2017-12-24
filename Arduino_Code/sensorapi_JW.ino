@@ -1,4 +1,4 @@
-// Joseph Wellhouse
+// JW
 // Version 0.0.3
 // 17-12-24
 // Read data from Light sensor TSL2561
