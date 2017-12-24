@@ -1,11 +1,23 @@
 // Joseph Wellhouse
-// Version 0.2
-// 17-12-20
+// Version 0.4
+// 17-12-22
 // Read data from Light sensor TSL2561
 
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_TSL2561_U.h>
+
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+
+#define ONE_WIRE_BUS 2
+
+// Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
+OneWire oneWire(ONE_WIRE_BUS);
+
+// Pass our oneWire reference to Dallas Temperature.
+DallasTemperature sensors(&oneWire);
 
 /* This driver uses the Adafruit unified sensor library (Adafruit_Sensor),
    which provides a common 'type' for sensor data and some helper functions.
@@ -121,6 +133,8 @@ void setup(void)
   
   /* We're ready to go! */
   Serial.println("# ");
+
+  sensors.begin(); // IC Default 9 bit. If you have troubles consider upping it 12. Ups the delay giving the IC more time to process the temperature measurement
 }
 
 /**************************************************************************/
@@ -151,6 +165,12 @@ void loop(void)
   Serial.print("#"); Serial.println(counter);
   if(counter >= 1024)
     counter = 0;
+
+
+  sensors.requestTemperatures();
+  Serial.print("Temperature for Device 1 is: ");
+  Serial.print(sensors.getTempCByIndex(0));
+  Serial.println(";");
   
   delay(250);
 }
