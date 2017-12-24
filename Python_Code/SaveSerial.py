@@ -1,7 +1,7 @@
 # Save Serial
-# Version 0.4
-#Joseph Wellhouse
-# 17-12-20
+# Version 0.0.3
+#JWW
+# 17-12-24
 
 # This opens a serial connection to an Arduino, reads data from it, and writes to a record file.
 # Input format from Arduino
