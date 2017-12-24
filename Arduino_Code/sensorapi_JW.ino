@@ -1,6 +1,6 @@
 // Joseph Wellhouse
-// Version 0.4
-// 17-12-22
+// Version 0.0.3
+// 17-12-24
 // Read data from Light sensor TSL2561
 
 #include <Wire.h>
