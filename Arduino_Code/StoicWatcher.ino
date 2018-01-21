@@ -1,6 +1,6 @@
 /*
 	Stoic Watcher
-	v0.0.1
+	v0.0.2
 	2018-01-21
  */
 
@@ -22,7 +22,7 @@ I2C I2CBus;
 
 SW_BME280_Sensor TPH1_FARS_Sensor = SW_BME280_Sensor((byte)BME280_TPH1_ADDRESS,I2CBus);
 
-SW_MCP9808_Sensor T2_CircuitBox_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T1_ADDRESS,I2CBus);
+SW_MCP9808_Sensor T2_CircuitBox_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T2_ADDRESS,I2CBus);
 
 
 
@@ -63,6 +63,23 @@ void loop()
 		SW_CK_ClockIntruptProcessing();
 		Serial.println("#Clock Interrupt;");
 		Serial.println(SW_CK_GetCKLongCount());
+
+		T2_CircuitBox_Sensor.AcquireData();
+		Serial.println(T2_CircuitBox_Sensor.GetRawTempreature_HighBits(),BIN);
+		Serial.println(T2_CircuitBox_Sensor.GetRawTempreature_LowBits(),BIN);
+		Serial.println(T2_CircuitBox_Sensor.ProcessTemp());
+
+		if(SW_CK_GetCKShortCount() == BME280_TPH1_TAKEMEASURE_LCS)
+		{
+			TPH1_FARS_Sensor.AcquireData();
+		}
+
+		if(SW_CK_GetCKShortCount() == BME280_TPH1_READMEASURE_LCS)
+		{
+			TPH1_FARS_Sensor.RetrieveData();
+		}
+
+
 
 	}
 

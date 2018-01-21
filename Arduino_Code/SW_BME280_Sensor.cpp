@@ -25,6 +25,53 @@ bool SW_BME280_Sensor::InitializeSensor()
 	}
 #endif /*VERIFY_CHIPS*/
 
+	// Send reset
+	I2CBuss.write(SensorAddress,(byte)BME280_RESET_REG, (byte)BME280_RESET_CMD);
+
+
+#ifdef SEND_CALIBRATION_DATA
+	SendCalibrationData();
+#endif /*SEND_CALIBRATION_DATA*/
+
+	// Verify sleep mode
+	I2CBuss.read(SensorAddress, (byte)BME280_CTLMESR_CMD, (byte)1);
+	byte RegIn = I2CBuss.receive();
+	if((RegIn & (byte)BME280_MODE_MASK) >0)
+	{
+		Serial.println("#BME280 Mode Error");
+		return false;
+	}
+
+	// Configure the sensor
+	I2CBuss.write(SensorAddress,(byte)BME280_CONFIG_REG, (byte)BME280_CONFIG_CMD);
+	I2CBuss.write(SensorAddress,(byte)BME280_CTLHUM_REG, (byte)BME280_CTLHUM_CMD);
+	I2CBuss.write(SensorAddress,(byte)BME280_CTLMESR_REG, (byte)BME280_CTLMESR_CMD);
+
+	I2CBuss.read(SensorAddress, (byte)BME280_CTLMESR_REG, (byte)1);
+	RegIn = I2CBuss.receive();
+	Serial.println(RegIn,HEX);
+
+	return true;
+}
+
+// To get data we need to write the forced mode command to ctrl-meas
+bool SW_BME280_Sensor::AcquireData()
+{
+	I2CBuss.write(SensorAddress,(byte)BME280_CTLMESR_REG, (byte)BME280_CTLMESR_CMD);
+
+	return true;
+}
+
+// First call AcquireData then wate minim per data sheet
+bool SW_BME280_Sensor::RetrieveData()
+{
+	I2CBuss.read(SensorAddress, (byte)BME280_DATASTART_REG, (byte)BME280_DATA_LEN, DataRaw);
+
+	for(int i = 0; i < BME280_DATA_LEN; i++)
+	{
+		Serial.println(DataRaw[i],HEX);
+	}
+
 
 
 	return true;
@@ -39,8 +86,6 @@ bool SW_BME280_Sensor::InitializeSensor()
 
 		int DataIn = (int)I2CBuss.receive();
 
-		//Serial.println(status);
-		//Serial.println(DataIn,HEX);
 
 		if(DataIn == (int)BME280_CHIPID_VALUE)
 		{
@@ -57,4 +102,44 @@ bool SW_BME280_Sensor::InitializeSensor()
 		return true;
 	}
 #endif /*VERIFY_CHIPS*/
+
+#ifdef SEND_CALIBRATION_DATA
+	bool SW_BME280_Sensor::SendCalibrationData()
+	{
+		byte CalData[25];
+
+		I2CBuss.read(SensorAddress, (byte)BME280_CAL2_BLK_REG, (byte)BME280_CAL2_BLK_LEN, CalData);
+
+		Serial.println("#BME280 Calibration Data Block 2");
+		for(int i = 0; i < BME280_CAL2_BLK_LEN; i++)
+		{
+			Serial.print("*");
+			Serial.print(CALIBRATION_DATA_KEYWORD_BLK2);
+			Serial.print(i);
+			Serial.print(",");
+			Serial.print(CalData[i],HEX);
+			Serial.println(";");
+
+		}
+
+		I2CBuss.read(SensorAddress, (byte)BME280_CAL1_BLK_REG, (byte)BME280_CAL1_BLK_LEN, CalData);
+
+		Serial.println("#BME280 Calibration Data Block 1");
+		for(int i = 0; i < BME280_CAL1_BLK_LEN; i++)
+		{
+			Serial.print("*");
+			Serial.print(CALIBRATION_DATA_KEYWORD_BLK1);
+			Serial.print(i);
+			Serial.print(",");
+			Serial.print(CalData[i],HEX);
+			Serial.println(";");
+
+		}
+
+
+		return true;
+	}
+#endif /*SEND_CALIBRATION_DATA*/
+
+
 

@@ -27,8 +27,13 @@
 
 // Addresses
 #define BME280_TPH1_ADDRESS 0x77
-#define MCP9808_T1_ADDRESS 0x18
+#define MCP9808_T2_ADDRESS 0x18
 
+// Life Cycle Controls
+#define BME280_TPH1_TAKEMEASURE_LCS 1
+#define BME280_TPH1_READMEASURE_LCS 2
+
+#define MCP9808_T2_READMEASURE_LCS  1
 
 
 

@@ -16,6 +16,17 @@
 // Runs the verify function in each sensor in initialize.
 #define VERIFY_CHIPS
 
+//Set to perform conversion from raw bits to measurement values.
+// Unset to leave that to higher level processor. This may be preferred as there is no double.
+#define PERFORM_DATA_PROCESSING
+
+#ifdef PERFORM_DATA_PROCESSING
+	#include "math.h"
+#endif /*PERFORM_DATA_PROCESSING*/
+
+// Set to send calibration data via serial at startup
+#define SEND_CALIBRATION_DATA
+
 /*
  *
  */
@@ -24,14 +35,14 @@ class SW_Sensor
 	protected:
 
 
-
-
 	public:
 	byte SensorAddress;
 	I2C I2CBuss;
 
 	SW_Sensor(byte AddressIn, I2C I2CBussIn);
 	byte SW_SensorGetAddress();
+
+	virtual bool AcquireData();
 
 #ifdef VERIFY_CHIPS
 	virtual bool VerifyChip();
