@@ -1,7 +1,7 @@
 /*
  * SW_Conditional_Includes.h
  *
- *  Created on: 2018-01-18
+ *  Created on: 2018-01-21
  *      Author: StoicWeather
  */
 
@@ -34,6 +34,10 @@
 #define BME280_TPH1_READMEASURE_LCS 2
 
 #define MCP9808_T2_READMEASURE_LCS  1
+
+// Sensor Numbers
+#define BME280_TPH1_TEMPFARS_SNUM 1
+#define MCP9808_T2_TEMPINBOX_SNUM 2
 
 
 

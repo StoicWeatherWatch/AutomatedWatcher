@@ -7,8 +7,8 @@
 
 #include "SW_MCP9808_Sensor.h"
 
-SW_MCP9808_Sensor::SW_MCP9808_Sensor(byte AddressIn, I2C I2CBussIn)
-:SW_Sensor(AddressIn,I2CBussIn)
+SW_MCP9808_Sensor::SW_MCP9808_Sensor(byte AddressIn, I2C I2CBussIn, byte SensorNumberIN)
+:SW_Sensor(AddressIn,I2CBussIn, SensorNumberIN)
 {
 
 
@@ -48,6 +48,18 @@ bool SW_MCP9808_Sensor::AcquireData()
 	//Serial.println(TemperatureRaw[0],HEX);
 	//Serial.println(TemperatureRaw[1],HEX);
 
+
+	return true;
+}
+
+bool SW_MCP9808_Sensor::SendRawDataSerial()
+{
+	Serial.print("*");
+	Serial.print(SensorNumber,DEC);
+	Serial.print("T,");
+	Serial.print(TemperatureRaw[0],HEX);
+	Serial.print(TemperatureRaw[1],HEX);
+	Serial.println(";");
 
 	return true;
 }

@@ -1,6 +1,6 @@
 /*
 	Stoic Watcher
-	v0.0.2
+	v0.0.3
 	2018-01-21
  */
 
@@ -20,9 +20,9 @@
 
 I2C I2CBus;
 
-SW_BME280_Sensor TPH1_FARS_Sensor = SW_BME280_Sensor((byte)BME280_TPH1_ADDRESS,I2CBus);
+SW_BME280_Sensor TPH1_FARS_Sensor = SW_BME280_Sensor((byte)BME280_TPH1_ADDRESS,I2CBus,(byte)BME280_TPH1_TEMPFARS_SNUM);
 
-SW_MCP9808_Sensor T2_CircuitBox_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T2_ADDRESS,I2CBus);
+SW_MCP9808_Sensor T2_CircuitBox_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T2_ADDRESS,I2CBus,(byte)MCP9808_T2_TEMPINBOX_SNUM);
 
 
 
@@ -35,7 +35,7 @@ void setup()
      // wait for serial port to connect.
   }
 
-  Serial.println("#Stoic Starting v0.0.1;");
+  Serial.println("#Stoic Starting v0.0.3;");
   Serial.println("!startup;");
 
 
@@ -62,12 +62,15 @@ void loop()
 	{
 		SW_CK_ClockIntruptProcessing();
 		Serial.println("#Clock Interrupt;");
-		Serial.println(SW_CK_GetCKLongCount());
+		SW_CK_SendLongCountSerial();
 
 		T2_CircuitBox_Sensor.AcquireData();
-		Serial.println(T2_CircuitBox_Sensor.GetRawTempreature_HighBits(),BIN);
-		Serial.println(T2_CircuitBox_Sensor.GetRawTempreature_LowBits(),BIN);
+		//Serial.println(T2_CircuitBox_Sensor.GetRawTempreature_HighBits(),BIN);
+		//Serial.println(T2_CircuitBox_Sensor.GetRawTempreature_LowBits(),BIN);
+		//Serial.print("");
 		Serial.println(T2_CircuitBox_Sensor.ProcessTemp());
+
+		T2_CircuitBox_Sensor.SendRawDataSerial();
 
 		if(SW_CK_GetCKShortCount() == BME280_TPH1_TAKEMEASURE_LCS)
 		{
@@ -81,11 +84,11 @@ void loop()
 
 
 
-	}
+	} // End if SW_CK_InterruptOccurred
 
 
 
 
-}
+} // main loop
 
 

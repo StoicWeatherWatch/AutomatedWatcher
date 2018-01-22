@@ -51,11 +51,12 @@ class SW_BME280_Sensor: public SW_Sensor
 
 
 public:
-	SW_BME280_Sensor(byte AddressIn, I2C I2CBussIn);
+	SW_BME280_Sensor(byte AddressIn, I2C I2CBussIn, byte SensorNumberIN);
 	bool InitializeSensor();
 	bool AcquireData();
 	// First call AcquireData then wait minimum per data sheet
 	bool RetrieveData();
+	bool SendRawDataSerial();
 
 #ifdef VERIFY_CHIPS
 	bool VerifyChip();

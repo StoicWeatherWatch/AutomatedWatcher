@@ -1,7 +1,7 @@
 /*
  * SW_Clock.cpp
  *
- *  Created on: 2018-01-18
+ *  Created on: 2018-01-21
  *      Author: StoicWeather
  */
 
@@ -82,6 +82,15 @@ void SW_CK_ClockIntruptProcessing()
 			SW_CK_CK90sCount++;
 		}
 	}
+}
+
+bool SW_CK_SendLongCountSerial()
+{
+	Serial.print("*CL,");
+	Serial.print(SW_CK_CKLongCount);
+	Serial.println(";");
+	return true;
+
 }
 
 

@@ -7,8 +7,8 @@
 
 #include "SW_BME280_Sensor.h"
 
-SW_BME280_Sensor::SW_BME280_Sensor(byte AddressIn,I2C I2CBussIn)
-:SW_Sensor(AddressIn,I2CBussIn)
+SW_BME280_Sensor::SW_BME280_Sensor(byte AddressIn,I2C I2CBussIn, byte SensorNumberIN)
+:SW_Sensor(AddressIn,I2CBussIn, SensorNumberIN)
 {
 
 
@@ -47,9 +47,9 @@ bool SW_BME280_Sensor::InitializeSensor()
 	I2CBuss.write(SensorAddress,(byte)BME280_CTLHUM_REG, (byte)BME280_CTLHUM_CMD);
 	I2CBuss.write(SensorAddress,(byte)BME280_CTLMESR_REG, (byte)BME280_CTLMESR_CMD);
 
-	I2CBuss.read(SensorAddress, (byte)BME280_CTLMESR_REG, (byte)1);
-	RegIn = I2CBuss.receive();
-	Serial.println(RegIn,HEX);
+	//I2CBuss.read(SensorAddress, (byte)BME280_CTLMESR_REG, (byte)1);
+	//RegIn = I2CBuss.receive();
+	//Serial.println(RegIn,HEX);
 
 	return true;
 }
@@ -74,6 +74,11 @@ bool SW_BME280_Sensor::RetrieveData()
 
 
 
+	return true;
+}
+
+bool SW_BME280_Sensor::SendRawDataSerial()
+{
 	return true;
 }
 

@@ -7,9 +7,10 @@
 
 #include "SWSensor.h"
 
-SW_Sensor::SW_Sensor(byte AddressIn,I2C I2CBussIn)
+SW_Sensor::SW_Sensor(byte AddressIn, I2C I2CBussIn, byte SensorNumberIN)
 :SensorAddress(AddressIn),
- I2CBuss(I2CBussIn)
+ I2CBuss(I2CBussIn),
+ SensorNumber(SensorNumberIN)
 {
 
 

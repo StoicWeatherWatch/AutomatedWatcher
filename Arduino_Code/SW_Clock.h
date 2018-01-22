@@ -1,9 +1,11 @@
 /*
  * SW_Clock.h
  *
- *  Created on: 2018-01-18
+ *  Created on: 2018-01-21
  *      Author: StoicWeather
  */
+
+// This code attaches an interrupt to a pin and expects a 4 Hz square wave. (A clean 4 Hz square wave)
 
 
 
@@ -39,6 +41,8 @@ int SW_CK_GetCKShortCount();
 int SW_CK_GetCKMedCount();
 int SW_CK_GetCKLongCount();
 int SW_CK_GetCK90sCount();
+
+bool SW_CK_SendLongCountSerial();
 
 
 #endif /* SW_CLOCK_H_ */

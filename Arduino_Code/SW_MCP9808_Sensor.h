@@ -26,6 +26,8 @@
 #define MCP9808_CONFIG_MSB_CMD    0x00
 #define MCP9808_CONFIG_LSB_CMD    0x00
 
+
+
 /*
  *
  */
@@ -37,11 +39,14 @@ class SW_MCP9808_Sensor: public SW_Sensor
 	public:
 
 
-	SW_MCP9808_Sensor(byte AddressIn, I2C I2CBussIn);
+	SW_MCP9808_Sensor(byte AddressIn, I2C I2CBussIn, byte SensorNumberIN);
 	bool InitializeSensor();
 	bool AcquireData();
+	bool SendRawDataSerial();
+
 	byte GetRawTempreature_HighBits();
 	byte GetRawTempreature_LowBits();
+
 #ifdef VERIFY_CHIPS
 	bool VerifyChip();
 #endif /*VERIFY_CHIPS*/

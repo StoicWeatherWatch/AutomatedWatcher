@@ -38,11 +38,14 @@ class SW_Sensor
 	public:
 	byte SensorAddress;
 	I2C I2CBuss;
+	//This holds an internal numbering system for each sensor.
+	byte SensorNumber;
 
-	SW_Sensor(byte AddressIn, I2C I2CBussIn);
+	SW_Sensor(byte AddressIn, I2C I2CBussIn, byte SensorNumberIN);
 	byte SW_SensorGetAddress();
 
 	virtual bool AcquireData();
+	virtual bool SendRawDataSerial();
 
 #ifdef VERIFY_CHIPS
 	virtual bool VerifyChip();
