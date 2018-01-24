@@ -29,7 +29,7 @@ SW_MCP9808_Sensor T2_CircuitBox_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T2_ADDR
 void setup()
 {
 
-  Serial.begin(9600);
+  Serial.begin(SERIAL_BAUDRATE);
   while (!Serial)
   {
      // wait for serial port to connect.
