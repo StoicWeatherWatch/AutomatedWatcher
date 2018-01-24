@@ -94,7 +94,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         # TODO Figure out the port
         self.port = stn_dict.get('port', StoicWatcher.DEFAULT_PORT)
         self.baudrate = stn_dict.get('baudrate', StoicWatcher.DEFAULT_BAUDRATE)
-        self.max_tries = int(stn_dict.get('max_tries', 5))
+        self.max_tries = int(stn_dict.get('max_tries', 25))
         self.retry_wait = int(stn_dict.get('retry_wait', 3))
         debug_serial = int(stn_dict.get('debug_serial', 0))
         self.last_rain = None
@@ -217,17 +217,20 @@ class StoicWatcher(object):
         # Call the correct parser based on the key
         #Temperature in the circuit box
         if LineIn[1:pos] == "2T":
-            return parse_2T_BoxTemp(LineIn)
+            return self.parse_2T_BoxTemp(LineIn)
 
         else:
-            return None
+            # TODO fix this
+            data = dict()
+            data["inTemp"] = 36
+            return data
     
     @staticmethod
     def validate_string(LineIn):
         # TODO add aditional validation
         if (len(LineIn)<1):
             raise weewx.WeeWxIOError("Unexpected line length %d" % len(LineIn))
-        if(LineIn[len(LineIn)-1] != ";"):
+        if(LineIn.find(";") == -1):
             raise weewx.WeeWxIOError("Line lacks terminator ; %s" % LineIn)
         #TODO uncomment this for proper validation
         #if(LineIn.find(",") == -1):
@@ -248,9 +251,11 @@ class StoicWatcher(object):
         else:
             msg = "Max retries (%d) exceeded for readings" % max_tries
             logerr(msg)
+            self.send_reset_signal_to_Arduino()
+            #TODO impliment the above better
             raise weewx.RetriesExceeded(msg)
         
-    def get_processed_data_with_retry(self, max_tries=5, retry_wait=3):
+    def get_processed_data_with_retry(self, max_tries=25, retry_wait=3):
         DataLine = False
         while not DataLine:
             LineIn = self.get_raw_data_with_retry(max_tries, retry_wait)
@@ -269,12 +274,22 @@ class StoicWatcher(object):
             #else:
                 # Not a valid line, Ignored
         
-        ParsedData = parse_raw_data(LineIn)
+        ParsedData = self.parse_raw_data(LineIn)
         
         if ParsedData == None:
             loginf('StoicWS: Unable to parse %s' % LineIn)
         
         return ParsedData
+    
+    def send_reset_signal_to_Arduino(self):
+        # send serial reset to Arduino
+        # TODO impliment send_reset_signal_to_Arduino
+        loginf("Attempting serial reset of Arduino")
+        
+        # Send Reset signal
+        
+        # Varify data received
+        # raise exception if unable to reset
             
             
             
@@ -329,7 +344,7 @@ if __name__ == '__main__':
                       help='provide additional debug output in log')
     parser.add_option('--port', dest='port', metavar='PORT',
                       help='serial port to which the station is connected',
-                      default=Station.DEFAULT_PORT)
+                      default=StoicWatcher.DEFAULT_PORT)
     (options, args) = parser.parse_args()
 
     if options.version:
