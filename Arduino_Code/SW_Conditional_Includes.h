@@ -24,6 +24,8 @@
 #include "SW_BME280_Sensor.h"
 #include "SW_MCP9808_Sensor.h"
 
+#define SERIAL_BAUDRATE 9600
+
 
 // Addresses
 #define BME280_TPH1_ADDRESS 0x77
