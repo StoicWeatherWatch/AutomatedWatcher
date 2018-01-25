@@ -20,7 +20,7 @@
 
 I2C I2CBus;
 
-SW_BME280_Sensor TPH1_FARS_Sensor = SW_BME280_Sensor((byte)BME280_TPH1_ADDRESS,I2CBus,(byte)BME280_TPH1_TEMPFARS_SNUM);
+SW_BME280_Sensor TPH3_FARS_Sensor = SW_BME280_Sensor((byte)BME280_TPH3_ADDRESS,I2CBus,(byte)BME280_TPH3_TEMPFARS_SNUM);
 
 SW_MCP9808_Sensor T2_CircuitBox_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T2_ADDRESS,I2CBus,(byte)MCP9808_T2_TEMPINBOX_SNUM);
 
@@ -47,7 +47,7 @@ void setup()
 
   //I2CBus.scan();
 
-  TPH1_FARS_Sensor.InitializeSensor();
+  TPH3_FARS_Sensor.InitializeSensor();
 
   T2_CircuitBox_Sensor.InitializeSensor();
 
@@ -68,18 +68,20 @@ void loop()
 		//Serial.println(T2_CircuitBox_Sensor.GetRawTempreature_HighBits(),BIN);
 		//Serial.println(T2_CircuitBox_Sensor.GetRawTempreature_LowBits(),BIN);
 		//Serial.print("");
-		Serial.println(T2_CircuitBox_Sensor.ProcessTemp());
+		Serial.print("#");
+		Serial.print(T2_CircuitBox_Sensor.ProcessTemp());
+		Serial.println(";");
 
 		T2_CircuitBox_Sensor.SendRawDataSerial();
 
-		if(SW_CK_GetCKShortCount() == BME280_TPH1_TAKEMEASURE_LCS)
+		if(SW_CK_GetCKShortCount() == BME280_TPH3_TAKEMEASURE_LCS)
 		{
-			TPH1_FARS_Sensor.AcquireData();
+			TPH3_FARS_Sensor.AcquireData();
 		}
 
-		if(SW_CK_GetCKShortCount() == BME280_TPH1_READMEASURE_LCS)
+		if(SW_CK_GetCKShortCount() == BME280_TPH3_READMEASURE_LCS)
 		{
-			TPH1_FARS_Sensor.RetrieveData();
+			TPH3_FARS_Sensor.RetrieveData();
 		}
 
 

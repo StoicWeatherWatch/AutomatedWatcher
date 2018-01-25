@@ -138,11 +138,11 @@ byte SW_MCP9808_Sensor::GetRawTempreature_LowBits()
 
 		if(DataIn == (int)MCP9808_MANID_VALUE)
 		{
-			Serial.println("#MCP9808 Correct Man ID");
+			Serial.println("#MCP9808 Correct Man ID;");
 		}
 		else
 		{
-			Serial.println("#NOT MCP9808 Correct Man ID");
+			Serial.println("#NOT MCP9808 Correct Man ID;");
 			return false;
 		}
 
@@ -158,11 +158,11 @@ byte SW_MCP9808_Sensor::GetRawTempreature_LowBits()
 
 		if(DataIn == (int)MCP9808_CHIPID_VALUE)
 		{
-			Serial.println("#Correct Chip");
+			Serial.println("#Correct Chip;");
 		}
 		else
 		{
-			Serial.println("#NOT Correct Chip");
+			Serial.println("#NOT Correct Chip;");
 			return false;
 		}
 

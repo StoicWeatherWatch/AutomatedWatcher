@@ -86,7 +86,7 @@ void SW_CK_ClockIntruptProcessing()
 
 bool SW_CK_SendLongCountSerial()
 {
-	Serial.print("*CL,");
+	Serial.print("#CL,");
 	Serial.print(SW_CK_CKLongCount);
 	Serial.println(";");
 	return true;
