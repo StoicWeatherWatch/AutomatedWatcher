@@ -19,6 +19,8 @@ Data format
 
 Supported Keys:          Mapped DB name
 2T Temperature in Box  - extraTemp1
+3TPH Temperature, pressure, humidity in FARS - 
+   This is BME280ID "BME280-1"
 
 Alert format
 !Key,Value;
@@ -52,7 +54,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.0.1'
+DRIVER_VERSION = '0.0.2'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -170,19 +172,12 @@ class StoicWatcher(object):
             
         return LineIn
     
-    def parse_2T_BoxTemp(self,LineIn):
+    def sensor_parse_MCP9808_Temp(self, DataHex):
         """
-        Parse key 2T the temperature in the circuit box
-        Should provide one value in 2 byte HEX eg
-        1A5D
-        
-        entered as extraTemp1
-        Units C
+        Parse the two hex bytes output from an MCP9808 tempriture sensor.
+        Returns tempriture C
         """
-        pos = LineIn.find(",")
-        posEnd = LineIn.find(";")
-        
-        DataBin = int(LineIn[pos+1:posEnd],16)
+        DataBin = int(DataHex,16)
         
         # Top three bits are garbage
         DataBin = DataBin & int("1FFF",16)
@@ -194,6 +189,29 @@ class StoicWatcher(object):
         else: # 1 and thus negative
             Temp = 256.0 - (float(DataBin & int("0FFF",16)) * (2**-4))
             
+        return Temp
+            
+            
+        
+    
+    def key_parse_2T_BoxTemp(self,LineIn):
+        """
+        Parse key 2T the temperature in the circuit box
+        Should provide one value in 2 byte HEX eg
+        1A5D
+        
+        entered as extraTemp1
+        Units C
+        """
+        pos = LineIn.find(",")
+        # Does the line have a checksum indicator
+        if(LineIn.find("^") == -1):
+            posEnd = LineIn.find(";")
+        else:
+            posEnd = LineIn.find(",")
+        
+        Temp = self.sensor_parse_MCP9808_Temp(LineIn[pos+1:posEnd])
+            
         data = dict()
         data["extraTemp1"] = Temp
         
@@ -201,7 +219,68 @@ class StoicWatcher(object):
         data["outTemp"] = Temp
         
         return data
+    
+    def sensor_parse_BME280_Pressure(self, DataHex, BME280ID):
+        """
+        The BME280ID allows for mutiple BME280s on a single system with seporate calibrations.
         
+        Pressure arrives as 3 hex bytes.
+        Byte struction MSB xxxx xxxx LSB xxxx xxxx XLSB xxxx 0000
+        """
+        # TODO build
+        return 1
+        
+            
+    def sensor_parse_BME280_Temperature(self, DataHex, BME280ID):
+        """
+        The BME280ID allows for mutiple BME280s on a single system
+        """
+        # TODO build
+        return 1
+            
+    def sensor_parse_BME280_Humidity(self, DataHex, BME280ID):
+        """
+        The BME280ID allows for mutiple BME280s on a single system
+        """
+        # TODO build
+        return 50
+            
+    
+    def key_parse_3TPH_FARS(self,LineIn):
+        """
+        Data from BME280
+        Line in follows 
+        *3TPH,PPPPPP,TTTTTT,HHHH,^(Check bits may go here some day);
+        *3TPH,5EC2E0,7E40D0,69A1,^;
+        """
+        
+        BME280ID = "BME280-1"
+        
+        
+        # Pressure
+        posStart = LineIn.find(",")
+        posEnd = posStart + LineIn[posStart+1:].find(",")
+        Pressure = sensor_parse_BME280_Pressure(LineIn[posStart+1:posEnd+1],BME280ID)
+            
+        # Temperature
+        posStart = posEnd+1
+        posEnd = posStart + LineIn[posStart+1:].find(",")
+        Pressure = sensor_parse_BME280_Temperature(LineIn[posStart+1:posEnd+1],BME280ID)
+        
+        # Humidity
+        posStart = posEnd+1
+        
+        # Check sums are inserted as ,^cksum; otherwise data ends with ;
+        if(LineIn.find("^") == -1):
+            posEnd = posStart + LineIn[posStart+1:].find(";")
+        else:
+            posEnd = posStart + LineIn[posStart+1:].find(",")
+            
+        Humidity = sensor_parse_BME280_Humidity(LineIn[posStart+1:posEnd+1],BME280ID)
+        
+        data = dict()
+        # TODO Fix this
+        data["extraTemp2"] = Temp
 
         
         
@@ -217,12 +296,14 @@ class StoicWatcher(object):
         # Call the correct parser based on the key
         #Temperature in the circuit box
         if LineIn[1:pos] == "2T":
-            return self.parse_2T_BoxTemp(LineIn)
+            return self.key_parse_2T_BoxTemp(LineIn)
+        elif LineIn[1:pos] == "3TPH":
+            return self.key_parse_3TPH_FARS(LineIn)
 
         else:
             # TODO fix this
             data = dict()
-            data["inTemp"] = 36
+            data["inTemp"] = 15
             return data
     
     @staticmethod
