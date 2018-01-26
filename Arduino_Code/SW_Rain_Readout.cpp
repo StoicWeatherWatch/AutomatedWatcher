@@ -11,6 +11,10 @@ SW_Rain_Readout::SW_Rain_Readout(byte DAQ0PinIN, byte DAQPinCountIN,byte ResetPi
  :SW_Ard_Readout(DAQ0PinIN, DAQPinCountIN, ResetPinIN, SensorNumberIN)
 {
 
+	FirstReadout = true;
+	LastDataReading = (byte)0;
+
+
 
 }
 
@@ -24,13 +28,21 @@ bool SW_Rain_Readout::AcquireDataAndSend()
 		Serial.print("*");
 		Serial.print(SensorNumber,DEC);
 		Serial.print("R,");
-		Serial.print(DataIn,HEX);
+		SerialHexBytePrint(DataIn);
 		Serial.print(",");
-		Serial.print(LastDataReading,HEX);
+		SerialHexBytePrint(LastDataReading);
 		Serial.println(";");
+		Serial.println(DataIn,HEX);
+		Serial.println(LastDataReading,HEX);
+
 	}
 
+	Serial.println(DataIn,HEX);
+	Serial.println(LastDataReading,HEX);
 	LastDataReading = DataIn;
+	Serial.println(DataIn,HEX);
+	Serial.println(LastDataReading,HEX);
+	FirstReadout = false;
 
 	return true;
 

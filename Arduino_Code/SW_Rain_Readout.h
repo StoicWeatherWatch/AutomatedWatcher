@@ -17,6 +17,13 @@ class SW_Rain_Readout: public SW_Ard_Readout
 {
 
 public:
+	bool FirstReadout;
+
+	byte LastDataReading;
+
+
+
+
 	SW_Rain_Readout(byte DAQ0PinIN, byte DAQPinCountIN,byte ResetPinIN,byte SensorNumberIN);
 	bool AcquireDataAndSend();
 

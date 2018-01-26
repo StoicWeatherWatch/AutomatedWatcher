@@ -13,15 +13,14 @@ SW_Ard_Readout::SW_Ard_Readout(byte DAQ0PinIN, byte DAQPinCountIN,byte ResetPinI
   DAQPinCount(DAQPinCountIN),
   ResetPin(ResetPinIN)
 {
-	FirstReadout = true;
-	LastDataReading = (byte)0;
+
+
 }
 
 // Set the pin modes and read the starting values from which we count
 // On the first count, we do not report data since the timing is off.
 bool SW_Ard_Readout::setup()
 {
-	FirstReadout = true;
 
 	for(int i = 0; i < (int)DAQPinCount; i++)
 	{
@@ -40,22 +39,42 @@ byte SW_Ard_Readout::Read_Pins()
 	byte CurrentRead = (byte)0;
 	byte LastRead = (byte)0;
 
+	Serial.print("#Read_Pins ");
 	// We want it run twice in all conditions. It is messy but I did not feel like chaning the counter inside a for loop
 	for(int pin = DAQ0Pin; pin < DAQ0Pin + DAQPinCount; pin++ )
 			{
 				CurrentRead << 1;
 				CurrentRead += (byte)digitalRead(pin);
+
+				//Test lines
+				Serial.print("p ");
+				Serial.print(pin);
+				Serial.print(" st ");
+				Serial.print(digitalRead(pin));
+				Serial.print(" cr ");
+				Serial.print(CurrentRead);
 			}
+	Serial.println(";");
 
 	do
 	{
+		Serial.print("#same_Pins ");
 		LastRead = CurrentRead;
 		CurrentRead = (byte)0;
 		for(int pin = DAQ0Pin; pin < DAQ0Pin + DAQPinCount; pin++ )
 		{
 			CurrentRead << 1;
 			CurrentRead += (byte)digitalRead(pin);
+
+			//Test lines
+			Serial.print("p ");
+			Serial.print(pin);
+			Serial.print(" st ");
+			Serial.print(digitalRead(pin));
+			Serial.print(" cr ");
+			Serial.print(CurrentRead);
 		}
+		Serial.println(";");
 	}
 	while(CurrentRead != LastRead);
 

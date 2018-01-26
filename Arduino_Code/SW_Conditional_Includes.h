@@ -1,7 +1,7 @@
 /*
  * SW_Conditional_Includes.h
  *
- *  Created on: 2018-01-21
+ *  Created on: 2018-01-25
  *      Author: StoicWeather
  */
 
@@ -18,7 +18,7 @@
  */
 #include "I2C.h"
 
-
+#include "SW_Helper_Functions.h"
 #include "SW_Clock.h"
 
 #include "SWSensor.h"

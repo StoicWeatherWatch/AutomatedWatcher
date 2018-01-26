@@ -14,7 +14,7 @@
 
 #include "Arduino.h"
 
-
+#include "SW_Helper_Functions.h"
 
 /*
  *
@@ -27,9 +27,8 @@ public:
 	byte DAQ0Pin;
 	byte DAQPinCount;
 	byte ResetPin;
-	bool FirstReadout;
 
-	byte LastDataReading;
+
 
 
 	SW_Ard_Readout(byte DAQ0PinIN, byte DAQPinCountIN,byte ResetPinIN,byte SensorNumberIN);
