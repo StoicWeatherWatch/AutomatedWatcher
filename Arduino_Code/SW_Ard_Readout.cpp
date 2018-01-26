@@ -46,8 +46,10 @@ byte SW_Ard_Readout::Read_Pins()
 				CurrentRead << 1;
 				CurrentRead += (byte)digitalRead(pin);
 
+
+
 				//Test lines
-				Serial.print("p ");
+				Serial.print(" p ");
 				Serial.print(pin);
 				Serial.print(" st ");
 				Serial.print(digitalRead(pin));
@@ -78,6 +80,10 @@ byte SW_Ard_Readout::Read_Pins()
 	}
 	while(CurrentRead != LastRead);
 
+	//Test Lines
+	Serial.print("TestRead ");
+	byte aRead = (digitalRead(9)*1) + (digitalRead(10)*2) + (digitalRead(11)*4) + (digitalRead(12)*8);
+	Serial.println(aRead,HEX);
 	return CurrentRead;
 
 }

@@ -28,9 +28,11 @@ bool SW_Rain_Readout::AcquireDataAndSend()
 		Serial.print("*");
 		Serial.print(SensorNumber,DEC);
 		Serial.print("R,");
-		SerialHexBytePrint(DataIn);
+		//SerialHexBytePrint(DataIn);
+		Serial.print(DataIn,HEX);
 		Serial.print(",");
-		SerialHexBytePrint(LastDataReading);
+		//SerialHexBytePrint(LastDataReading);
+		Serial.print(LastDataReading,HEX);
 		Serial.println(";");
 		Serial.println(DataIn,HEX);
 		Serial.println(LastDataReading,HEX);
