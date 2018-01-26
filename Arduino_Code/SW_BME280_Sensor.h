@@ -56,7 +56,7 @@ public:
 	bool AcquireData();
 	// First call AcquireData then wait minimum per data sheet
 	// At 4,4,4,4 30 ms will be the max delay. Read after 30 ms.
-	bool RetrieveData();
+	bool RetrieveDataAndSend();
 	bool SendRawDataSerial();
 
 #ifdef VERIFY_CHIPS

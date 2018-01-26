@@ -3,6 +3,8 @@
  *
  *  Created on: 2018-01-18
  *      Author: StoicWeather
+ *
+ *      This is a virtual superclass for I2C sensors for the Stoic Watcher weather station.
  */
 
 #ifndef SWSENSOR_H_

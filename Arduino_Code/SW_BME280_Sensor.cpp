@@ -63,7 +63,7 @@ bool SW_BME280_Sensor::AcquireData()
 }
 
 // First call AcquireData then wait time minimum per data sheet
-bool SW_BME280_Sensor::RetrieveData()
+bool SW_BME280_Sensor::RetrieveDataAndSend()
 {
 	I2CBuss.read(SensorAddress, (byte)BME280_DATASTART_REG, (byte)BME280_DATA_LEN, DataRaw);
 
