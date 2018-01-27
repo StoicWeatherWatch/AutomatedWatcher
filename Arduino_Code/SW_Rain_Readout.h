@@ -1,8 +1,8 @@
 /*
  * SW_Rain_Readout.h
  *
- *  Created on: Jan 25, 2018
- *      Author: jwellhouse
+ *  Created on: 2018-01-27
+ *      Author: StoicWeather
  */
 
 #ifndef SW_RAIN_READOUT_H_
@@ -13,6 +13,11 @@
 /*
  *
  */
+
+// TODO weeWX pauses its readout and then restarts the driver to make the reports.
+// Maybe reset counter after each readout? We know the arduino will be reset when the serial connection is reset
+// Then we could use the count to get rain accumulated
+
 class SW_Rain_Readout: public SW_Ard_Readout
 {
 

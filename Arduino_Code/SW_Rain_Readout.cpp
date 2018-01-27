@@ -1,8 +1,8 @@
 /*
  * SW_Rain_Readout.cpp
  *
- *  Created on: Jan 25, 2018
- *      Author: jwellhouse
+ *  Created on: 2018-01-27
+ *      Author: StoicWeather
  */
 
 #include "SW_Rain_Readout.h"
