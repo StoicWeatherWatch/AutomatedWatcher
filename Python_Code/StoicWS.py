@@ -111,9 +111,10 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         #stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip'))
         
         #TODO Handle a value not present gracefully
-        stoic_Cal_dict["rain_mm_Per_Tip"] = stn_dict.get('rain_mm_Per_Tip')
+        stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip'))
          
-        loginf("StoicWSDriver.readCalibrationDict %s" % stn_dict.get('rain_mm_Per_Tip'))
+        loginf("Sfloat(stn_dict.get('rain_mm_Per_Tip') %f" % float(stn_dict.get('rain_mm_Per_Tip')))
+        loginf("stoic_Cal_dict[rain_mm_Per_Tip] %f" % stoic_Cal_dict["rain_mm_Per_Tip"])
         
         return stoic_Cal_dict
 
@@ -138,11 +139,11 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         
         stoic_Cal_dict = self.readCalibrationDict(stn_dict)
         #TEST LINE
-        loginf("stoic_Cal_dict[rain_mm_Per_Tip] %s" % stoic_Cal_dict["rain_mm_Per_Tip"])
+        loginf("stoic_Cal_dict[rain_mm_Per_Tip] %f" % stoic_Cal_dict["rain_mm_Per_Tip"])
         
 
-        #self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial,stoic_Cal_dict)
-        self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial)
+        self.StoicWatcher = StoicWatcher(self.port, self.baudrate, stoic_Cal_dict, debug_serial=debug_serial)
+        #self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial)
         self.StoicWatcher.open()
         
     def closePort(self):
@@ -174,8 +175,8 @@ class StoicWatcher(object):
     DEFAULT_PORT = "/dev/ttyACM1"
     DEFAULT_BAUDRATE = 9600
     
-    #def __init__(self, port, baudrate, debug_serial=0, stoic_Cal_dict):
-    def __init__(self, port, baudrate, debug_serial=0):
+    def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial=0):
+    #def __init__(self, port, baudrate, debug_serial=0):
         self._debug_serial = debug_serial
         self.port = port
         self.baudrate = baudrate
@@ -183,9 +184,9 @@ class StoicWatcher(object):
         self.serial_port = None
         
         # Test line
-        #loginf("stoic_Cal_dict has made it to StoicWatcher %s" % stoic_Cal_dict["rain_mm_Per_Tip"])
-        #self.stoic_Cal_dict = stoic_Cal_dict
-        #loginf("And in self %s" % self.stoic_Cal_dict["rain_mm_Per_Tip"])
+        loginf("stoic_Cal_dict has made it to StoicWatcher %f" % stoic_Cal_dict["rain_mm_Per_Tip"])
+        self.stoic_Cal_dict = stoic_Cal_dict
+        loginf("And in self %f" % self.stoic_Cal_dict["rain_mm_Per_Tip"])
         
     def __enter__(self):
         self.open()
@@ -336,6 +337,8 @@ class StoicWatcher(object):
         It is assumed that this will read out often enough that a max int of 15 will not be a problem.
         
         Units mm
+        
+        Usess rain_mm_Per_Tip in weewx.conf for converting bucket tips to mm
         """
         
         # TEST line
@@ -355,7 +358,7 @@ class StoicWatcher(object):
         # TODO FIx this
         ConversionFactor = 1.0
                  
-        Rain = ConversionFactor * float(CurrentRainRaw-LastRainRaw)
+        Rain = float(CurrentRainRaw-LastRainRaw) * self.stoic_Cal_dict["rain_mm_Per_Tip"]
         
         #TEST LINE
         loginf("rain %d" % Rain)
