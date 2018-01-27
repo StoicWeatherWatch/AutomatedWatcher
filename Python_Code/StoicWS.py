@@ -37,7 +37,7 @@ DEFAULT_PORT = "/dev/ttyACM1"
 DEFAULT_BAUDRATE = 9600
 
 Looks for the following in the config file
-rain_mm_Per_Tip - Tipping bucket conversion factor 0.2794 
+rain_mm_Per_Tip - Tipping bucket conversion factor 0.2794
 
 """
 
@@ -67,7 +67,6 @@ def loader(config_dict, _):
 def confeditor_loader():
     return StoicWConfEditor()
 
-
 def logmsg(level, msg):
     syslog.syslog(level, 'StoicWS: %s' % msg)
 
@@ -95,17 +94,23 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
     [Optional. Default is 5]
     """
     
-    def readCalibrationDict(self, **stn_dict):
-        stoic_Cal_dict = dict()
-        
-        loginf("StoicWSDriver.readCalibrationDict running")
-        
-        # TODO make this a try so it fails gracefully when not in the dictionary
-        stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip', 0))
-        
-        loginf("StoicWSDriver.readCalibrationDict %s" % stn_dict.get('rain_mm_Per_Tip', 0))
-        
-        return stoic_Cal_dict
+    #===========================================================================
+    # def readCalibrationDict(self, **stn_dict):
+    #     stoic_Cal_dict = dict()
+    #     
+    #     loginf("StoicWSDriver.readCalibrationDict running")
+    #     
+    #     # TODO make this a try so it fails gracefully when not in the dictionary
+    #     #stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip', 0))
+    #     
+    #     #loginf("StoicWSDriver.readCalibrationDict %s" % stn_dict.get('rain_mm_Per_Tip', 0))
+    #     #stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip'))
+    #     stoic_Cal_dict["rain_mm_Per_Tip"] = stn_dict.get('rain_mm_Per_Tip')
+    #     
+    #     loginf("StoicWSDriver.readCalibrationDict %s" % stn_dict.get('rain_mm_Per_Tip'))
+    #     
+    #     return stoic_Cal_dict
+    #===========================================================================
 
     def __init__(self, **stn_dict):
         self.model = stn_dict.get('model', 'StoicWS')
@@ -123,9 +128,10 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         loginf('driver version is %s' % DRIVER_VERSION)
         loginf('using serial port %s' % self.port)
         
-        stoic_Cal_dict = self.readCalibrationDict(stn_dict)
+        #stoic_Cal_dict = self.readCalibrationDict(stn_dict)
 
-        self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial,stoic_Cal_dict)
+        #self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial,stoic_Cal_dict)
+        self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial)
         self.StoicWatcher.open()
         
     def closePort(self):
@@ -157,12 +163,18 @@ class StoicWatcher(object):
     DEFAULT_PORT = "/dev/ttyACM1"
     DEFAULT_BAUDRATE = 9600
     
+    #def __init__(self, port, baudrate, debug_serial=0, stoic_Cal_dict):
     def __init__(self, port, baudrate, debug_serial=0):
         self._debug_serial = debug_serial
         self.port = port
         self.baudrate = baudrate
         self.timeout = 3 # seconds
         self.serial_port = None
+        
+        # Test line
+        #loginf("stoic_Cal_dict has made it to StoicWatcher %s" % stoic_Cal_dict["rain_mm_Per_Tip"])
+        #self.stoic_Cal_dict = stoic_Cal_dict
+        #loginf("And in self %s" % self.stoic_Cal_dict["rain_mm_Per_Tip"])
         
     def __enter__(self):
         self.open()
@@ -282,12 +294,12 @@ class StoicWatcher(object):
         # Pressure
         posStart = LineIn.find(",")
         posEnd = posStart + LineIn[posStart+1:].find(",")
-        Pressure = sensor_parse_BME280_Pressure(LineIn[posStart+1:posEnd+1],BME280ID)
+        Pressure = self.sensor_parse_BME280_Pressure(LineIn[posStart+1:posEnd+1],BME280ID)
             
         # Temperature
         posStart = posEnd+1
         posEnd = posStart + LineIn[posStart+1:].find(",")
-        Pressure = sensor_parse_BME280_Temperature(LineIn[posStart+1:posEnd+1],BME280ID)
+        Pressure = self.sensor_parse_BME280_Temperature(LineIn[posStart+1:posEnd+1],BME280ID)
         
         # Humidity
         posStart = posEnd+1
@@ -298,11 +310,12 @@ class StoicWatcher(object):
         else:
             posEnd = posStart + LineIn[posStart+1:].find(",")
             
-        Humidity = sensor_parse_BME280_Humidity(LineIn[posStart+1:posEnd+1],BME280ID)
+        Humidity = self.sensor_parse_BME280_Humidity(LineIn[posStart+1:posEnd+1],BME280ID)
         
         data = dict()
         # TODO Fix this
-        data["extraTemp2"] = Temp
+        data["extraTemp2"] = 5.0
+        return data
     
     def sensor_parse_TippingBuckedt_Rain(self,DataHexCurrent,DataHexLast):
         """
@@ -313,6 +326,10 @@ class StoicWatcher(object):
         
         Units mm
         """
+        
+        # TEST line
+        #loginf("And in self %s" % self.stoic_Cal_dict["rain_mm_Per_Tip"])
+        
         CurrentRainRaw = int(DataHexCurrent,16)
         LastRainRaw = int(DataHexLast,16)
         
@@ -323,8 +340,14 @@ class StoicWatcher(object):
         if(CurrentRainRaw == LastRainRaw):
             return 0.0
         # TODO does this work (float)0
+        
+        # TODO FIx this
+        ConversionFactor = 1.0
                  
-        Rain = ConversionFactor * (CurrentRainRaw-LastRainRaw)
+        Rain = ConversionFactor * float(CurrentRainRaw-LastRainRaw)
+        
+        #TEST LINE
+        loginf("rain %d" % Rain)
         
         return Rain
 
@@ -347,12 +370,12 @@ class StoicWatcher(object):
         if(LineIn.find("^") == -1):
             posEndLast = LineIn.find(";")
         else:
-            posEndLast = posStartLast + LineIn[posStartLast+1:].find(",")
+            posEndLast = posStartLast + LineIn[posStartLast+1:].find(",") + 1
             
         # TODO add exception if hex lengths are wrong
         # TODO raise exception if first 4 bits are not 0000
         
-        Rain = self.sensor_parse_TippingBuckedt_Rain(LineIn[posStartCurrent+1:posEndCurrent+1],LineIn[posStartLast+1:posEndLast+1])
+        Rain = self.sensor_parse_TippingBuckedt_Rain(LineIn[posStartCurrent+1:posEndCurrent+1],LineIn[posStartLast+1:posEndLast])
             
         data = dict()
         # TODO Fix this
