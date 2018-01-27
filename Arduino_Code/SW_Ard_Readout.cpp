@@ -39,7 +39,7 @@ byte SW_Ard_Readout::Read_Pins()
 	byte CurrentRead = (byte)0;
 	byte LastRead = (byte)0;
 
-	Serial.print("#Read_Pins ");
+	//Serial.print("#Read_Pins ");
 	// We want it run twice in all conditions. It is messy but I did not feel like chaning the counter inside a for loop
 	// Same code block below in While to repeat until they match
 	for(int pin = DAQ0Pin + DAQPinCount -1; pin >= DAQ0Pin; pin--)
@@ -50,18 +50,18 @@ byte SW_Ard_Readout::Read_Pins()
 
 
 				//Test lines
-				Serial.print(" p ");
-				Serial.print(pin);
-				Serial.print(" st ");
-				Serial.print(digitalRead(pin));
-				Serial.print(" cr ");
-				Serial.print(CurrentRead);
+				//Serial.print(" p ");
+				//Serial.print(pin);
+				//Serial.print(" st ");
+				//Serial.print(digitalRead(pin));
+				//Serial.print(" cr ");
+				//Serial.print(CurrentRead);
 			}
-	Serial.println(";");
+	//Serial.println(";");
 
 	do
 	{
-		Serial.print("#same_Pins ");
+		//Serial.print("#same_Pins ");
 		LastRead = CurrentRead;
 		CurrentRead = (byte)0;
 		for(int pin = DAQ0Pin + DAQPinCount -1; pin >= DAQ0Pin; pin--)
@@ -70,21 +70,21 @@ byte SW_Ard_Readout::Read_Pins()
 			CurrentRead += (byte)digitalRead(pin);
 
 			//Test lines
-			Serial.print("p ");
+			/*Serial.print("p ");
 			Serial.print(pin);
 			Serial.print(" st ");
 			Serial.print(digitalRead(pin));
 			Serial.print(" cr ");
-			Serial.print(CurrentRead);
+			Serial.print(CurrentRead);*/
 		}
-		Serial.println(";");
+		//Serial.println(";");
 	}
 	while(CurrentRead != LastRead);
 
 	//Test Lines
-	Serial.print("TestRead ");
-	byte aRead = (digitalRead(9)*1) + (digitalRead(10)*2) + (digitalRead(11)*4) + (digitalRead(12)*8);
-	Serial.println(aRead,HEX);
+	//Serial.print("TestRead ");
+	//byte aRead = (digitalRead(9)*1) + (digitalRead(10)*2) + (digitalRead(11)*4) + (digitalRead(12)*8);
+	//Serial.println(aRead,HEX);
 
 	return CurrentRead;
 

@@ -28,26 +28,26 @@ bool SW_Rain_Readout::AcquireDataAndSend()
 		Serial.print("*");
 		Serial.print(SensorNumber,DEC);
 		Serial.print("R,");
-		//SerialHexBytePrint(DataIn);
-		Serial.print(DataIn,HEX);
+		SerialHexBytePrint(DataIn);
+		//Serial.print(DataIn,HEX);
 		Serial.print(",");
-		//SerialHexBytePrint(LastDataReading);
-		Serial.print(LastDataReading,HEX);
+		SerialHexBytePrint(LastDataReading);
+		//Serial.print(LastDataReading,HEX);
 		Serial.println(";");
 
 		// TODO Add additional previous readings to add robustness against a missed line in serial
 
 		// TEST lines
-		Serial.println(DataIn,HEX);
-		Serial.println(LastDataReading,HEX);
+		//Serial.println(DataIn,HEX);
+		//Serial.println(LastDataReading,HEX);
 
 	}
 
-	Serial.println(DataIn,HEX);
-	Serial.println(LastDataReading,HEX);
+	//Serial.println(DataIn,HEX);
+	//Serial.println(LastDataReading,HEX);
 	LastDataReading = DataIn;
-	Serial.println(DataIn,HEX);
-	Serial.println(LastDataReading,HEX);
+	//Serial.println(DataIn,HEX);
+	//Serial.println(LastDataReading,HEX);
 	FirstReadout = false;
 
 	return true;

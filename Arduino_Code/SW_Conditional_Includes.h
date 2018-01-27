@@ -18,7 +18,7 @@
  */
 #include "I2C.h"
 
-//#include "SW_Helper_Functions.h"
+#include "SW_Helper_Functions.h"
 #include "SW_Clock.h"
 
 #include "SWSensor.h"

@@ -5,13 +5,21 @@
  *      Author: StoicWeather
  */
 
-/*#include "SW_Helper_Functions.h"
+#include "SW_Helper_Functions.h"
 
 
-void SerialHexBytePrint(byte data) // prints 8-bit data in hex with leading zeroes
+bool SerialHexBytePrint(byte data) // prints 8-bit data in hex with leading zeroes
 {
-     char HexString[2];
-     sprintf(HexString, "%.2X",data);
-     Serial.print(HexString);
+     if(data > (byte)15)
+     {
+     Serial.print(data,HEX);
+     }
+     else
+     {
+    	 Serial.print("0");
+    	 Serial.print(data,HEX);
+     }
+
+     return true;
 }
-*/
+
