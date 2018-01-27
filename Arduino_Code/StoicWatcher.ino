@@ -40,8 +40,6 @@ void setup()
   Serial.println("#Stoic Starting v0.0.5;");
   Serial.println("!startup;");
 
-  //SerialHexBytePrint((byte)65);
-  Serial.println("");
 
 
   I2CBus.begin();

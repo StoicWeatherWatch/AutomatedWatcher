@@ -57,8 +57,10 @@ bool SW_MCP9808_Sensor::SendRawDataSerial()
 	Serial.print("*");
 	Serial.print(SensorNumber,DEC);
 	Serial.print("T,");
-	Serial.print(TemperatureRaw[0],HEX);
-	Serial.print(TemperatureRaw[1],HEX);
+	SerialHexBytePrint(TemperatureRaw[0]);
+	SerialHexBytePrint(TemperatureRaw[1]);
+	//Serial.print(TemperatureRaw[0],HEX);
+	//Serial.print(TemperatureRaw[1],HEX);
 	Serial.println(";");
 
 	return true;

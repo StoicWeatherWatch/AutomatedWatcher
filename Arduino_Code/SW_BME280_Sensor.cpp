@@ -73,7 +73,8 @@ bool SW_BME280_Sensor::RetrieveDataAndSend()
 
 	for(int i = 0; i < BME280_DATA_LEN; i++)
 	{
-		Serial.print(DataRaw[i],HEX);
+		SerialHexBytePrint(DataRaw[i]);
+		//Serial.print(DataRaw[i],HEX);
 		if((i == 2) || (i == 5))
 		{
 			Serial.print(",");
@@ -139,7 +140,8 @@ bool SW_BME280_Sensor::SendRawDataSerial()
 			Serial.print(CALIBRATION_DATA_KEYWORD_BLK2);
 			Serial.print(i);
 			Serial.print(",");
-			Serial.print(CalData[i],HEX);
+			SerialHexBytePrint(CalData[i]);
+			//Serial.print(CalData[i],HEX);
 			Serial.println(";");
 
 		}
@@ -153,7 +155,8 @@ bool SW_BME280_Sensor::SendRawDataSerial()
 			Serial.print(CALIBRATION_DATA_KEYWORD_BLK1);
 			Serial.print(i);
 			Serial.print(",");
-			Serial.print(CalData[i],HEX);
+			SerialHexBytePrint(CalData[i]);
+			//Serial.print(CalData[i],HEX);
 			Serial.println(";");
 
 		}
