@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.0.2
+# Version 0.0.3
 # 2018-01-24
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
@@ -43,6 +43,11 @@ rain_mm_Per_Tip - Tipping bucket conversion factor 0.2794
 
 # TODO First readout after !Startup; is not reported. Used as baseline for wind etc.
 
+# TODO If your lose the  connection, you should raise an exception of type 
+# weewx.WeeWxIOError, or a subclass of weewx.WeeWxIOError. The engine will catch this exception 
+# and, by default, after 60 seconds do a restart. This will cause your driver to reload, giving it an 
+# opportunity to reconnect with the broker.
+
 #
 #Device drivers should be written to emit None if a data value is bad 
 #(perhaps because of a failed checksum). If the hardware simply doesn't 
@@ -59,7 +64,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.0.2'
+DRIVER_VERSION = '0.0.3'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -94,23 +99,23 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
     [Optional. Default is 5]
     """
     
-    #===========================================================================
-    # def readCalibrationDict(self, **stn_dict):
-    #     stoic_Cal_dict = dict()
-    #     
-    #     loginf("StoicWSDriver.readCalibrationDict running")
-    #     
-    #     # TODO make this a try so it fails gracefully when not in the dictionary
-    #     #stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip', 0))
-    #     
-    #     #loginf("StoicWSDriver.readCalibrationDict %s" % stn_dict.get('rain_mm_Per_Tip', 0))
-    #     #stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip'))
-    #     stoic_Cal_dict["rain_mm_Per_Tip"] = stn_dict.get('rain_mm_Per_Tip')
-    #     
-    #     loginf("StoicWSDriver.readCalibrationDict %s" % stn_dict.get('rain_mm_Per_Tip'))
-    #     
-    #     return stoic_Cal_dict
-    #===========================================================================
+    def readCalibrationDict(self, stn_dict):
+        stoic_Cal_dict = dict()
+         
+        loginf("StoicWSDriver.readCalibrationDict running")
+         
+        # TODO make this a try so it fails gracefully when not in the dictionary
+        #stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip', 0))
+         
+        #loginf("StoicWSDriver.readCalibrationDict %s" % stn_dict.get('rain_mm_Per_Tip', 0))
+        #stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip'))
+        
+        #TODO Handle a value not present gracefully
+        stoic_Cal_dict["rain_mm_Per_Tip"] = stn_dict.get('rain_mm_Per_Tip')
+         
+        loginf("StoicWSDriver.readCalibrationDict %s" % stn_dict.get('rain_mm_Per_Tip'))
+        
+        return stoic_Cal_dict
 
     def __init__(self, **stn_dict):
         self.model = stn_dict.get('model', 'StoicWS')
@@ -128,7 +133,13 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         loginf('driver version is %s' % DRIVER_VERSION)
         loginf('using serial port %s' % self.port)
         
-        #stoic_Cal_dict = self.readCalibrationDict(stn_dict)
+        #TEST LINE
+        loginf("stn_dict.get('rain_mm_Per_Tip') %s" % stn_dict.get('rain_mm_Per_Tip'))
+        
+        stoic_Cal_dict = self.readCalibrationDict(stn_dict)
+        #TEST LINE
+        loginf("stoic_Cal_dict[rain_mm_Per_Tip] %s" % stoic_Cal_dict["rain_mm_Per_Tip"])
+        
 
         #self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial,stoic_Cal_dict)
         self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial)
@@ -378,7 +389,6 @@ class StoicWatcher(object):
         Rain = self.sensor_parse_TippingBuckedt_Rain(LineIn[posStartCurrent+1:posEndCurrent+1],LineIn[posStartLast+1:posEndLast])
             
         data = dict()
-        # TODO Fix this
         data["rain"] = Rain
         
         return data
