@@ -34,6 +34,10 @@ bool SW_Rain_Readout::AcquireDataAndSend()
 		//SerialHexBytePrint(LastDataReading);
 		Serial.print(LastDataReading,HEX);
 		Serial.println(";");
+
+		// TODO Add additional previous readings to add robustness against a missed line in serial
+
+		// TEST lines
 		Serial.println(DataIn,HEX);
 		Serial.println(LastDataReading,HEX);
 
