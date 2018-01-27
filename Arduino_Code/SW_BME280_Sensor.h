@@ -9,6 +9,7 @@
 #define SW_BME280_SENSOR_H_
 
 #include "SWSensor.h"
+#include "SW_Helper_Functions.h"
 
 #define BME280_CHIPID_REG     0xD0
 #define BME280_RESET_REG      0xE0
@@ -56,7 +57,7 @@ public:
 	bool AcquireData();
 	// First call AcquireData then wait minimum per data sheet
 	// At 4,4,4,4 30 ms will be the max delay. Read after 30 ms.
-	bool RetrieveData();
+	bool RetrieveDataAndSend();
 	bool SendRawDataSerial();
 
 #ifdef VERIFY_CHIPS

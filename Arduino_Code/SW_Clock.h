@@ -15,8 +15,12 @@
 #include <WProgram.h>
 #endif
 
+
+
 #ifndef SW_CLOCK_H_
 #define SW_CLOCK_H_
+
+#include "SW_Helper_Functions.h"
 
 #define SW_CK_CLOCKPIN 2
 

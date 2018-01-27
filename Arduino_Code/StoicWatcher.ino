@@ -1,7 +1,7 @@
 /*
 	Stoic Watcher
-	v0.0.3
-	2018-01-21
+	v0.0.5
+	2018-01-25
  */
 
 
@@ -20,9 +20,11 @@
 
 I2C I2CBus;
 
-SW_BME280_Sensor TPH1_FARS_Sensor = SW_BME280_Sensor((byte)BME280_TPH1_ADDRESS,I2CBus,(byte)BME280_TPH1_TEMPFARS_SNUM);
+SW_BME280_Sensor TPH3_FARS_Sensor = SW_BME280_Sensor((byte)BME280_TPH3_ADDRESS,I2CBus,(byte)BME280_TPH3_TEMPFARS_SNUM);
 
 SW_MCP9808_Sensor T2_CircuitBox_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T2_ADDRESS,I2CBus,(byte)MCP9808_T2_TEMPINBOX_SNUM);
+
+SW_Rain_Readout R4_Rain_Readout = SW_Rain_Readout((byte)RAIN_DAQ0_D_PIN, (byte)RAIN_PIN_RANGE, (byte)MASTER_RESET_D_PIN, (byte)TippingBucket_R4_Rain_SUNM);
 
 
 
@@ -35,7 +37,7 @@ void setup()
      // wait for serial port to connect.
   }
 
-  Serial.println("#Stoic Starting v0.0.3;");
+  Serial.println("#Stoic Starting v0.0.5;");
   Serial.println("!startup;");
 
 
@@ -47,11 +49,20 @@ void setup()
 
   //I2CBus.scan();
 
-  TPH1_FARS_Sensor.InitializeSensor();
+  TPH3_FARS_Sensor.InitializeSensor();
 
   T2_CircuitBox_Sensor.InitializeSensor();
 
   SW_CK_ClockSetup();
+
+  // Set the master reset high to reset everything
+  pinMode(MASTER_RESET_D_PIN, OUTPUT);
+  digitalWrite(MASTER_RESET_D_PIN, HIGH);
+  delay(10);
+  digitalWrite(MASTER_RESET_D_PIN, LOW);
+
+
+  R4_Rain_Readout.setup();
 
 
 }
@@ -68,19 +79,23 @@ void loop()
 		//Serial.println(T2_CircuitBox_Sensor.GetRawTempreature_HighBits(),BIN);
 		//Serial.println(T2_CircuitBox_Sensor.GetRawTempreature_LowBits(),BIN);
 		//Serial.print("");
-		Serial.println(T2_CircuitBox_Sensor.ProcessTemp());
+		Serial.print("#");
+		Serial.print(T2_CircuitBox_Sensor.ProcessTemp());
+		Serial.println(";");
 
 		T2_CircuitBox_Sensor.SendRawDataSerial();
 
-		if(SW_CK_GetCKShortCount() == BME280_TPH1_TAKEMEASURE_LCS)
+		if(SW_CK_GetCKShortCount() == BME280_TPH3_TAKEMEASURE_LCS)
 		{
-			TPH1_FARS_Sensor.AcquireData();
+			TPH3_FARS_Sensor.AcquireData();
 		}
 
-		if(SW_CK_GetCKShortCount() == BME280_TPH1_READMEASURE_LCS)
+		if(SW_CK_GetCKShortCount() == BME280_TPH3_READMEASURE_LCS)
 		{
-			TPH1_FARS_Sensor.RetrieveData();
+			TPH3_FARS_Sensor.RetrieveDataAndSend();
 		}
+
+		R4_Rain_Readout.AcquireDataAndSend();
 
 
 

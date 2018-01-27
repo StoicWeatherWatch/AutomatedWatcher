@@ -19,11 +19,11 @@ bool SW_CK_CKInterrupted = false;
 // An interrupt is received at a pin every 0.25 s or 4 Hz
 
 // Short is every 9 or 2.25 s
-int SW_CK_CKShortCount = 0;
+byte SW_CK_CKShortCount = 0;
 
 // Counts every 9th short to count in increments of 2.25 s
 // Reset every 4 or every 9 seconds
-int SW_CK_CKMedCount = 0;
+byte SW_CK_CKMedCount = 0;
 
 // Counts every 9th short to count in increments of 2.25 s
 // Reset every 40 or every 90 seconds or 360 interrupts
@@ -86,7 +86,7 @@ void SW_CK_ClockIntruptProcessing()
 
 bool SW_CK_SendLongCountSerial()
 {
-	Serial.print("*CL,");
+	Serial.print("#CL,");
 	Serial.print(SW_CK_CKLongCount);
 	Serial.println(";");
 	return true;

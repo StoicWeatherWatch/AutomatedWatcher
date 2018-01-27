@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.0.1
+# Version 0.0.2
 # 2018-01-24
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
@@ -19,6 +19,10 @@ Data format
 
 Supported Keys:          Mapped DB name
 2T Temperature in Box  - extraTemp1
+3TPH Temperature, pressure, humidity in FARS - 
+   This is BME280ID "BME280-1"
+4R Rain tipping bucket - rain
+   Reported since last report - a difference
 
 Alert format
 !Key,Value;
@@ -31,6 +35,9 @@ CHIP from NEXTTHING sticks an arduino on a USB hub at ttyACM1
 DEFAULT_PORT = "/dev/ttyACM1"
 
 DEFAULT_BAUDRATE = 9600
+
+Looks for the following in the config file
+rain_mm_Per_Tip - Tipping bucket conversion factor 0.2794 
 
 """
 
@@ -52,7 +59,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.0.1'
+DRIVER_VERSION = '0.0.2'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -87,7 +94,18 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
     max_tries - how often to retry serial communication before giving up
     [Optional. Default is 5]
     """
-
+    
+    def readCalibrationDict(self, **stn_dict):
+        stoic_Cal_dict = dict()
+        
+        loginf("StoicWSDriver.readCalibrationDict running")
+        
+        # TODO make this a try so it fails gracefully when not in the dictionary
+        stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip', 0))
+        
+        loginf("StoicWSDriver.readCalibrationDict %s" % stn_dict.get('rain_mm_Per_Tip', 0))
+        
+        return stoic_Cal_dict
 
     def __init__(self, **stn_dict):
         self.model = stn_dict.get('model', 'StoicWS')
@@ -97,12 +115,17 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         self.max_tries = int(stn_dict.get('max_tries', 25))
         self.retry_wait = int(stn_dict.get('retry_wait', 3))
         debug_serial = int(stn_dict.get('debug_serial', 0))
+        
+        #No need for this. The hardware resets the rain count when the serial port is reset.
+        # Also the hardware reports its own last rain
         self.last_rain = None
 
         loginf('driver version is %s' % DRIVER_VERSION)
         loginf('using serial port %s' % self.port)
+        
+        stoic_Cal_dict = self.readCalibrationDict(stn_dict)
 
-        self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial)
+        self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial,stoic_Cal_dict)
         self.StoicWatcher.open()
         
     def closePort(self):
@@ -150,6 +173,7 @@ class StoicWatcher(object):
         
     def open(self):
         logdbg("open serial port %s" % self.port)
+        
         self.serial_port = serial.Serial(self.port, self.baudrate,
                                          timeout=self.timeout)
         
@@ -170,19 +194,12 @@ class StoicWatcher(object):
             
         return LineIn
     
-    def parse_2T_BoxTemp(self,LineIn):
+    def sensor_parse_MCP9808_Temp(self, DataHex):
         """
-        Parse key 2T the temperature in the circuit box
-        Should provide one value in 2 byte HEX eg
-        1A5D
-        
-        entered as extraTemp1
-        Units C
+        Parse the two hex bytes output from an MCP9808 tempriture sensor.
+        Returns tempriture C
         """
-        pos = LineIn.find(",")
-        posEnd = LineIn.find(";")
-        
-        DataBin = int(LineIn[pos+1:posEnd],16)
+        DataBin = int(DataHex,16)
         
         # Top three bits are garbage
         DataBin = DataBin & int("1FFF",16)
@@ -194,6 +211,29 @@ class StoicWatcher(object):
         else: # 1 and thus negative
             Temp = 256.0 - (float(DataBin & int("0FFF",16)) * (2**-4))
             
+        return Temp
+            
+            
+        
+    
+    def key_parse_2T_BoxTemp(self,LineIn):
+        """
+        Parse key 2T the temperature in the circuit box
+        Should provide one value in 2 byte HEX eg
+        1A5D
+        
+        entered as extraTemp1
+        Units C
+        """
+        pos = LineIn.find(",")
+        # Does the line have a checksum indicator
+        if(LineIn.find("^") == -1):
+            posEnd = LineIn.find(";")
+        else:
+            posEnd = LineIn.find(",")
+        
+        Temp = self.sensor_parse_MCP9808_Temp(LineIn[pos+1:posEnd])
+            
         data = dict()
         data["extraTemp1"] = Temp
         
@@ -201,9 +241,124 @@ class StoicWatcher(object):
         data["outTemp"] = Temp
         
         return data
+    
+    def sensor_parse_BME280_Pressure(self, DataHex, BME280ID):
+        """
+        The BME280ID allows for mutiple BME280s on a single system with seporate calibrations.
         
+        Pressure arrives as 3 hex bytes.
+        Byte struction MSB xxxx xxxx LSB xxxx xxxx XLSB xxxx 0000
+        """
+        # TODO build
+        return 1
+        
+            
+    def sensor_parse_BME280_Temperature(self, DataHex, BME280ID):
+        """
+        The BME280ID allows for mutiple BME280s on a single system
+        """
+        # TODO build
+        return 1
+            
+    def sensor_parse_BME280_Humidity(self, DataHex, BME280ID):
+        """
+        The BME280ID allows for mutiple BME280s on a single system
+        """
+        # TODO build
+        return 50
+            
+    
+    def key_parse_3TPH_FARS(self,LineIn):
+        """
+        Data from BME280
+        Line in follows 
+        *3TPH,PPPPPP,TTTTTT,HHHH,^(Check bits may go here some day);
+        *3TPH,5EC2E0,7E40D0,69A1,^;
+        """
+        
+        BME280ID = "BME280-1"
+        
+        
+        # Pressure
+        posStart = LineIn.find(",")
+        posEnd = posStart + LineIn[posStart+1:].find(",")
+        Pressure = sensor_parse_BME280_Pressure(LineIn[posStart+1:posEnd+1],BME280ID)
+            
+        # Temperature
+        posStart = posEnd+1
+        posEnd = posStart + LineIn[posStart+1:].find(",")
+        Pressure = sensor_parse_BME280_Temperature(LineIn[posStart+1:posEnd+1],BME280ID)
+        
+        # Humidity
+        posStart = posEnd+1
+        
+        # Check sums are inserted as ,^cksum; otherwise data ends with ;
+        if(LineIn.find("^") == -1):
+            posEnd = posStart + LineIn[posStart+1:].find(";")
+        else:
+            posEnd = posStart + LineIn[posStart+1:].find(",")
+            
+        Humidity = sensor_parse_BME280_Humidity(LineIn[posStart+1:posEnd+1],BME280ID)
+        
+        data = dict()
+        # TODO Fix this
+        data["extraTemp2"] = Temp
+    
+    def sensor_parse_TippingBuckedt_Rain(self,DataHexCurrent,DataHexLast):
+        """
+        Handles output from a tipping bucket rain gauge. Output is the difference between 
+        current reat and last read.
+        
+        It is assumed that this will read out often enough that a max int of 15 will not be a problem.
+        
+        Units mm
+        """
+        CurrentRainRaw = int(DataHexCurrent,16)
+        LastRainRaw = int(DataHexLast,16)
+        
+        # The counter max int is 15
+        if(CurrentRainRaw < LastRainRaw):
+            CurrentRainRaw += 16
+        
+        if(CurrentRainRaw == LastRainRaw):
+            return 0.0
+        # TODO does this work (float)0
+                 
+        Rain = ConversionFactor * (CurrentRainRaw-LastRainRaw)
+        
+        return Rain
 
         
+    def key_parse_4R_Rain(self,LineIn):
+        """
+        Parse key 4R the rainfall since last readout
+        Should provide one value in 1 byte HEX with the first 4 bits zeroed eg
+        0D
+        
+        entered as rain
+        Units mm
+        """
+        
+        posStartCurrent = LineIn.find(",")
+        posEndCurrent = posStartCurrent + LineIn[posStartCurrent+1:].find(",")
+        posStartLast = posEndCurrent + 1
+        
+        # Does the line have a checksum indicator
+        if(LineIn.find("^") == -1):
+            posEndLast = LineIn.find(";")
+        else:
+            posEndLast = posStartLast + LineIn[posStartLast+1:].find(",")
+            
+        # TODO add exception if hex lengths are wrong
+        # TODO raise exception if first 4 bits are not 0000
+        
+        Rain = self.sensor_parse_TippingBuckedt_Rain(LineIn[posStartCurrent+1:posEndCurrent+1],LineIn[posStartLast+1:posEndLast+1])
+            
+        data = dict()
+        # TODO Fix this
+        data["rain"] = Rain
+        
+        return data
         
     
     def parse_raw_data(self, LineIn):
@@ -217,12 +372,16 @@ class StoicWatcher(object):
         # Call the correct parser based on the key
         #Temperature in the circuit box
         if LineIn[1:pos] == "2T":
-            return self.parse_2T_BoxTemp(LineIn)
+            return self.key_parse_2T_BoxTemp(LineIn)
+        elif LineIn[1:pos] == "3TPH":
+            return self.key_parse_3TPH_FARS(LineIn)
+        elif LineIn[1:pos] == "4R":
+            return self.key_parse_4R_Rain(LineIn)
 
         else:
             # TODO fix this
             data = dict()
-            data["inTemp"] = 36
+            data["inTemp"] = 15
             return data
     
     @staticmethod

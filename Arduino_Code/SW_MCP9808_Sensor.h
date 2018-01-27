@@ -11,6 +11,7 @@
 #define SW_MCP9808_SENSOR_H_
 
 #include "SWSensor.h"
+#include "SW_Helper_Functions.h"
 
 #define MCP9808_CHIPID_REG    0x07
 #define MCP9808_MANID_REG     0x06
