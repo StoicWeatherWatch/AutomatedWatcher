@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.0.3
-# 2018-01-24
+# Version 0.0.4
+# 2018-01-27
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -53,6 +53,9 @@ rain_mm_Per_Tip - Tipping bucket conversion factor 0.2794
 #(perhaps because of a failed checksum). If the hardware simply doesn't 
 #support it, then the driver should not emit a value at all.
 
+# TODO crashes when Aruino dissconnected. Handle gracefully
+
+
 # TODO DO I need this? Python 2.7 should have with_statement
 from __future__ import with_statement
 
@@ -64,7 +67,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.0.3'
+DRIVER_VERSION = '0.0.4'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -99,22 +102,42 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
     [Optional. Default is 5]
     """
     
+    def HEXHEX2UnsignedLong(self,msb,lsb):
+        
+    def HEXHEX2UnsignedLong(self,msb,lsb):
+        
+    
     def readCalibrationDict(self, stn_dict):
         stoic_Cal_dict = dict()
          
+         # TEST line
         loginf("StoicWSDriver.readCalibrationDict running")
          
         # TODO make this a try so it fails gracefully when not in the dictionary
-        #stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip', 0))
-         
-        #loginf("StoicWSDriver.readCalibrationDict %s" % stn_dict.get('rain_mm_Per_Tip', 0))
-        #stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip'))
         
         #TODO Handle a value not present gracefully
+        
+        # Rain
         stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip'))
-         
-        loginf("Sfloat(stn_dict.get('rain_mm_Per_Tip') %f" % float(stn_dict.get('rain_mm_Per_Tip')))
-        loginf("stoic_Cal_dict[rain_mm_Per_Tip] %f" % stoic_Cal_dict["rain_mm_Per_Tip"])
+        
+        # BME280 A 3TPH "BME280-1"
+        # The BME280 has lots of calibration data which is hard coded in the factory. 
+        # The calculations require at least 64 bit integer math
+        # Not easily automated at read in either...
+        #  Data sheet T1 Unsigned 
+        stoic_Cal_dict["BME280_1_CAL_T1"] = (long(stn_dict.get("cal-BME280-1.2.1"),16) << 8) + long(stn_dict.get("cal-BME280-1.2.0"),16)
+        loginf("stoic_Cal_dict['BME280_1_CAL_T1'] %d" % stoic_Cal_dict["BME280_1_CAL_T1"])
+        #  Data sheet T2 signed 
+        stoic_Cal_dict["BME280_1_CAL_T2"] = ((long(stn_dict.get("cal-BME280-1.2.3"),16) >> 7) * long(-1) ) * (((long(stn_dict.get("cal-BME280-1.2.3"),16) & 0b01111111) << 8) + long(stn_dict.get("cal-BME280-1.2.2"),16))
+        loginf("stoic_Cal_dict['BME280_1_CAL_T2'] %d" % stoic_Cal_dict["BME280_1_CAL_T2"])
+        
+        #  Data sheet P8 signed 
+        stoic_Cal_dict["BME280_1_CAL_P8"] = ((long(stn_dict.get("cal-BME280-1.2.21"),16) >> 7) * long(-1) ) * (((long(stn_dict.get("cal-BME280-1.2.21"),16) & 0b01111111) << 8) + long(stn_dict.get("cal-BME280-1.2.20"),16))
+        loginf("stoic_Cal_dict['BME280_1_CAL_P8'] %d" % stoic_Cal_dict["BME280_1_CAL_P8"])
+        
+
+
+
         
         return stoic_Cal_dict
 
@@ -361,7 +384,7 @@ class StoicWatcher(object):
         Rain = float(CurrentRainRaw-LastRainRaw) * self.stoic_Cal_dict["rain_mm_Per_Tip"]
         
         #TEST LINE
-        loginf("rain %d" % Rain)
+        loginf("rain %f" % Rain)
         
         return Rain
 
