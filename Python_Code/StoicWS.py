@@ -17,9 +17,9 @@ Stoic sends data constantly via a USB serial port.
 Data format
 *Key,Value;
 
-Supported Keys:          Mapped DB name
-2T Temperature in Box  - extraTemp1
-3TPH Temperature, pressure, humidity in FARS - 
+Supported Keys:                                    Mapped DB name
+2T Temperature in Box  -                           extraTemp1
+3TPH Temperature, pressure, humidity in FARS -     outTemp, pressure, outHumidity
    This is BME280ID "BME280-1"
 4R Rain tipping bucket - rain
    Reported since last report - a difference
@@ -102,12 +102,23 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
     [Optional. Default is 5]
     """
     
-    def HEXHEX2UnsignedLong(self,msb,lsb):
-        
-    def HEXHEX2UnsignedLong(self,msb,lsb):
+    
+    
         
     
     def readCalibrationDict(self, stn_dict):
+        
+        def BoschHEXHEX2UnsignedLong(msb,lsb):
+            
+            loginf("BoschHEXHEX2UnsignedLong msb %s " % msb)
+            loginf("BoschHEXHEX2UnsignedLong lsb %s " % lsb)
+           
+            return  ((long(msb,16) << 8) + long(lsb,16))
+            
+        def BoschHEXHEX2SignedLong(msb,lsb):
+            
+            return (((long(msb,16) >> 7) * long(-1) ) * (((long(msb,16) & 0b01111111) << 8) + long(lsb,16)))
+        
         stoic_Cal_dict = dict()
          
          # TEST line
@@ -125,21 +136,60 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         # The calculations require at least 64 bit integer math
         # Not easily automated at read in either...
         #  Data sheet T1 Unsigned 
-        stoic_Cal_dict["BME280_1_CAL_T1"] = (long(stn_dict.get("cal-BME280-1.2.1"),16) << 8) + long(stn_dict.get("cal-BME280-1.2.0"),16)
+        #stoic_Cal_dict["BME280_1_CAL_T1"] = (long(stn_dict.get("cal-BME280-1.2.1"),16) << 8) + long(stn_dict.get("cal-BME280-1.2.0"),16)
+        
+        # TEST Lines
+        loginf("stn_dict.get('cal-BME280-1.2.1') %s" % stn_dict.get("cal-BME280-1.2.1"))
+        loginf("stn_dict.get('cal-BME280-1.2.0') %s" % stn_dict.get("cal-BME280-1.2.0"))
+        
+        stoic_Cal_dict["BME280_1_CAL_T1"] = BoschHEXHEX2UnsignedLong(stn_dict.get("cal-BME280-1.2.1"),stn_dict.get("cal-BME280-1.2.0"))
+        # TEST LINE
         loginf("stoic_Cal_dict['BME280_1_CAL_T1'] %d" % stoic_Cal_dict["BME280_1_CAL_T1"])
         #  Data sheet T2 signed 
-        stoic_Cal_dict["BME280_1_CAL_T2"] = ((long(stn_dict.get("cal-BME280-1.2.3"),16) >> 7) * long(-1) ) * (((long(stn_dict.get("cal-BME280-1.2.3"),16) & 0b01111111) << 8) + long(stn_dict.get("cal-BME280-1.2.2"),16))
+        #stoic_Cal_dict["BME280_1_CAL_T2"] = ((long(stn_dict.get("cal-BME280-1.2.3"),16) >> 7) * long(-1) ) * (((long(stn_dict.get("cal-BME280-1.2.3"),16) & 0b01111111) << 8) + long(stn_dict.get("cal-BME280-1.2.2"),16))
+        stoic_Cal_dict["BME280_1_CAL_T2"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.3"),stn_dict.get("cal-BME280-1.2.2"))
+         # TEST LINE
         loginf("stoic_Cal_dict['BME280_1_CAL_T2'] %d" % stoic_Cal_dict["BME280_1_CAL_T2"])
-        
+        #  Data sheet T3 Signed
+        stoic_Cal_dict["BME280_1_CAL_T3"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.5"),stn_dict.get("cal-BME280-1.2.4"))
+        #  Data sheet P1 Unsigned
+        stoic_Cal_dict["BME280_1_CAL_P1"] = BoschHEXHEX2UnsignedLong(stn_dict.get("cal-BME280-1.2.7"),stn_dict.get("cal-BME280-1.2.6"))
+        #  Data sheet P2 signed
+        stoic_Cal_dict["BME280_1_CAL_P2"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.9"),stn_dict.get("cal-BME280-1.2.8"))
+        #  Data sheet P3 signed
+        stoic_Cal_dict["BME280_1_CAL_P3"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.11"),stn_dict.get("cal-BME280-1.2.10"))
+        #  Data sheet P4 signed
+        stoic_Cal_dict["BME280_1_CAL_P4"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.13"),stn_dict.get("cal-BME280-1.2.12"))
+        #  Data sheet P5 signed
+        stoic_Cal_dict["BME280_1_CAL_P5"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.15"),stn_dict.get("cal-BME280-1.2.14"))
+        #  Data sheet P6 signed
+        stoic_Cal_dict["BME280_1_CAL_P6"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.17"),stn_dict.get("cal-BME280-1.2.16"))
+        #  Data sheet P7 signed
+        stoic_Cal_dict["BME280_1_CAL_P7"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.19"),stn_dict.get("cal-BME280-1.2.18"))
         #  Data sheet P8 signed 
-        stoic_Cal_dict["BME280_1_CAL_P8"] = ((long(stn_dict.get("cal-BME280-1.2.21"),16) >> 7) * long(-1) ) * (((long(stn_dict.get("cal-BME280-1.2.21"),16) & 0b01111111) << 8) + long(stn_dict.get("cal-BME280-1.2.20"),16))
+        #stoic_Cal_dict["BME280_1_CAL_P8"] = ((long(stn_dict.get("cal-BME280-1.2.21"),16) >> 7) * long(-1) ) * (((long(stn_dict.get("cal-BME280-1.2.21"),16) & 0b01111111) << 8) + long(stn_dict.get("cal-BME280-1.2.20"),16))
+        stoic_Cal_dict["BME280_1_CAL_P8"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.21"),stn_dict.get("cal-BME280-1.2.20"))
+        # TEST LINE
         loginf("stoic_Cal_dict['BME280_1_CAL_P8'] %d" % stoic_Cal_dict["BME280_1_CAL_P8"])
-        
-
-
+        #  Data sheet P9 signed
+        stoic_Cal_dict["BME280_1_CAL_P9"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.23"),stn_dict.get("cal-BME280-1.2.22"))
+        #  Data sheet H1 unsigned single byte memory A1
+        #   A0 is skipped
+        stoic_Cal_dict["BME280_1_CAL_H1"] = BoschHEXHEX2UnsignedLong("00",stn_dict.get("cal-BME280-1.2.25"))
+        #  Data sheet H2 signed memory E1 and E2
+        stoic_Cal_dict["BME280_1_CAL_H2"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.1.1"),stn_dict.get("cal-BME280-1.1.0"))
+        #  Data sheet H3 unsigned single byte memory E3
+        stoic_Cal_dict["BME280_1_CAL_H3"] = BoschHEXHEX2UnsignedLong("00",stn_dict.get("cal-BME280-1.1.2"))
+        #  Data sheet H4 signed 12 bits. E4 holds the most significant 8 and the least significant 4 are the low 4 of E5
+        stoic_Cal_dict["BME280_1_CAL_H4"] = (((long(stn_dict.get("cal-BME280-1.1.3"),16) >> 7) * long(-1) ) * (((long(stn_dict.get("cal-BME280-1.1.3"),16) & 0b01111111) << 4) + (long(stn_dict.get("cal-BME280-1.1.4"),16) & 0b00001111) ))
+        #  Data sheet H5 signed 12 bits. E5 holds the least significant 4 bits in its high 4 and E6 holds the most significant bits
+        stoic_Cal_dict["BME280_1_CAL_H5"] = (((long(stn_dict.get("cal-BME280-1.1.5"),16) >> 7) * long(-1) ) * (((long(stn_dict.get("cal-BME280-1.2.5"),16) & 0b01111111) << 4) + (long(stn_dict.get("cal-BME280-1.2.4"),16) >> 4) ))
+        # TEST LINE
+        loginf("stoic_Cal_dict['BME280_1_CAL_H5'] %d" % stoic_Cal_dict["BME280_1_CAL_H5"])
 
         
         return stoic_Cal_dict
+    
 
     def __init__(self, **stn_dict):
         self.model = stn_dict.get('model', 'StoicWS')
@@ -159,6 +209,9 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         
         #TEST LINE
         loginf("stn_dict.get('rain_mm_Per_Tip') %s" % stn_dict.get('rain_mm_Per_Tip'))
+        # TEST Lines
+        loginf("stn_dict.get('cal-BME280-1.2.1') %s" % stn_dict.get("cal-BME280-1.2.1"))
+        loginf("stn_dict.get('cal-BME280-1.2.0') %s" % stn_dict.get("cal-BME280-1.2.0"))
         
         stoic_Cal_dict = self.readCalibrationDict(stn_dict)
         #TEST LINE
@@ -206,10 +259,8 @@ class StoicWatcher(object):
         self.timeout = 3 # seconds
         self.serial_port = None
         
-        # Test line
-        loginf("stoic_Cal_dict has made it to StoicWatcher %f" % stoic_Cal_dict["rain_mm_Per_Tip"])
         self.stoic_Cal_dict = stoic_Cal_dict
-        loginf("And in self %f" % self.stoic_Cal_dict["rain_mm_Per_Tip"])
+
         
     def __enter__(self):
         self.open()
@@ -297,15 +348,55 @@ class StoicWatcher(object):
         Byte struction MSB xxxx xxxx LSB xxxx xxxx XLSB xxxx 0000
         """
         # TODO build
-        return 1
+        return None
         
             
-    def sensor_parse_BME280_Temperature(self, DataHex, BME280ID):
+    def sensor_parse_BME280_TFine(self, DataHex, BME280ID):
         """
         The BME280ID allows for mutiple BME280s on a single system
+        
+        The BME280 calibration produces a value called TFine which is used in later calibrations. 
+        TFine is returned by this function.
+        
+        Input is 3 byte of HEX. Only 20 bits have meaning
         """
-        # TODO build
-        return 1
+        
+        RawTemp = long(DataHex,16) >> 4
+        
+        loginf("Stoic sensor_parse_BME280_TFine  RawTemp %d" % RawTemp)
+        
+        loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T1'] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_T1"])
+        loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T2'] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_T2"])
+        loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T3'] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_T3"])
+        
+        # This mess comes from the data sheet. Someone must like LISP
+        var1  = ( ((RawTemp>>3) - (self.stoic_Cal_dict[BME280ID+"_CAL_T1"]<<1)) * (self.stoic_Cal_dict[BME280ID+"_CAL_T2"]) ) >> 11
+        loginf("Stoic sensor_parse_BME280_TFine var1 %d" % var1)
+        var2  = (( ( ((RawTemp>>4) - (self.stoic_Cal_dict[BME280ID+"_CAL_T1"])) * ((RawTemp>>4) - (self.stoic_Cal_dict[BME280ID+"_CAL_T1"])) ) >> 12) * (self.stoic_Cal_dict[BME280ID+"_CAL_T3"]) ) >> 14
+        loginf("Stoic sensor_parse_BME280_TFine var2 %d" % var2)
+        TFine = var1 + var2
+        
+        #TEST Line
+        loginf("Stoic sensor_parse_BME280_TFine %d" % TFine)
+         
+
+        # The limits for the sensor are -40 to 85 C. Equivalent to an output of -4000 or 8500
+        if (TFine < -204826):
+            loginf("Stoic sensor_parse_BME280_TFine T less than min. Reporting None")
+            return None
+        elif (TFine > 435174):
+            loginf("Stoic sensor_parse_BME280_TFine T greater than max. Reporting None")
+            return None
+
+        return TFine
+    
+    def sensor_parse_BME280_Temperature(self, TFine):
+        Temperature = (TFine * 5 ) >> 8
+        
+        #TEST Line
+        loginf("Stoic sensor_parse_BME280_Temperature %d" % Temperature)
+        
+        return Temperature
             
     def sensor_parse_BME280_Humidity(self, DataHex, BME280ID):
         """
@@ -323,33 +414,45 @@ class StoicWatcher(object):
         *3TPH,5EC2E0,7E40D0,69A1,^;
         """
         
-        BME280ID = "BME280-1"
+        BME280ID = "BME280_1"
         
         
         # Pressure
-        posStart = LineIn.find(",")
-        posEnd = posStart + LineIn[posStart+1:].find(",")
-        Pressure = self.sensor_parse_BME280_Pressure(LineIn[posStart+1:posEnd+1],BME280ID)
+        PposStart = LineIn.find(",")
+        PposEnd = PposStart + LineIn[PposStart+1:].find(",")
             
         # Temperature
-        posStart = posEnd+1
-        posEnd = posStart + LineIn[posStart+1:].find(",")
-        Pressure = self.sensor_parse_BME280_Temperature(LineIn[posStart+1:posEnd+1],BME280ID)
+        TposStart = PposEnd+1
+        TposEnd = TposStart + LineIn[TposStart+1:].find(",")
         
         # Humidity
-        posStart = posEnd+1
+        HposStart = TposEnd+1
         
         # Check sums are inserted as ,^cksum; otherwise data ends with ;
         if(LineIn.find("^") == -1):
-            posEnd = posStart + LineIn[posStart+1:].find(";")
+            HposEnd = HposStart + LineIn[HposStart+1:].find(";")
         else:
-            posEnd = posStart + LineIn[posStart+1:].find(",")
+            HposEnd = HposStart + LineIn[HposStart+1:].find(",")
             
-        Humidity = self.sensor_parse_BME280_Humidity(LineIn[posStart+1:posEnd+1],BME280ID)
+        TFine = self.sensor_parse_BME280_TFine(LineIn[TposStart+1:TposEnd+1],BME280ID)
+        
+        if(TFine == None):
+            data = dict()
+            data["outTemp"] = None
+            data["pressure"] = None
+            data["outHumidity"] = None
+            return data
+        
+        Temperature = self.sensor_parse_BME280_Temperature(TFine)
+        
+        Pressure = self.sensor_parse_BME280_Pressure(LineIn[PposStart+1:PposEnd+1],BME280ID)
+            
+        Humidity = self.sensor_parse_BME280_Humidity(LineIn[HposStart+1:HposEnd+1],BME280ID)
         
         data = dict()
-        # TODO Fix this
-        data["extraTemp2"] = 5.0
+        data["outTemp"] = Temperature
+        data["pressure"] = Pressure
+        data["outHumidity"] = Humidity
         return data
     
     def sensor_parse_TippingBuckedt_Rain(self,DataHexCurrent,DataHexLast):
