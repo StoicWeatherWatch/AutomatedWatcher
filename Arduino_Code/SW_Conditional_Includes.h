@@ -45,10 +45,10 @@
 // Sensor Numbers
 #define BME280_TPH3_TEMPFARS_SNUM 3
 #define MCP9808_T2_TEMPINBOX_SNUM 2
-#define TippingBucket_R4_Rain_SUNM 4
+#define TIPPINGBUCKET_R4_RAIN_SUNM 4
 
 // Pins
-#define MASTER_RESET_D_PIN 13
+#define RAINCOUNT_RESET_D_PIN 13
 #define RAIN_DAQ0_D_PIN    9
 
 // Pin Ranges - number of pins starting with DAQ0

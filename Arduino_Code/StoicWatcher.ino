@@ -15,6 +15,9 @@
  * Input: From sensors and RTC square wave
  */
 
+// TODO Housekeeping, report uptime and chip temperature
+
+
 
 #include "SW_Conditional_Includes.h"
 
@@ -24,13 +27,14 @@ SW_BME280_Sensor TPH3_FARS_Sensor = SW_BME280_Sensor((byte)BME280_TPH3_ADDRESS,I
 
 SW_MCP9808_Sensor T2_CircuitBox_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T2_ADDRESS,I2CBus,(byte)MCP9808_T2_TEMPINBOX_SNUM);
 
-SW_Rain_Readout R4_Rain_Readout = SW_Rain_Readout((byte)RAIN_DAQ0_D_PIN, (byte)RAIN_PIN_RANGE, (byte)MASTER_RESET_D_PIN, (byte)TippingBucket_R4_Rain_SUNM);
+SW_Rain_Readout R4_Rain_Readout = SW_Rain_Readout((byte)RAIN_DAQ0_D_PIN, (byte)RAIN_PIN_RANGE, (byte)RAINCOUNT_RESET_D_PIN, (byte)TIPPINGBUCKET_R4_RAIN_SUNM);
 
 
 
 void setup()
 {
 
+// TODO consider 7 data bits (all you need for ASSCI...) https://www.arduino.cc/reference/en/language/functions/communication/serial/begin/
   Serial.begin(SERIAL_BAUDRATE);
   while (!Serial)
   {
@@ -56,10 +60,10 @@ void setup()
   SW_CK_ClockSetup();
 
   // Set the master reset high to reset everything
-  pinMode(MASTER_RESET_D_PIN, OUTPUT);
-  digitalWrite(MASTER_RESET_D_PIN, HIGH);
+  pinMode(RAINCOUNT_RESET_D_PIN, OUTPUT);
+  digitalWrite(RAINCOUNT_RESET_D_PIN, HIGH);
   delay(10);
-  digitalWrite(MASTER_RESET_D_PIN, LOW);
+  digitalWrite(RAINCOUNT_RESET_D_PIN, LOW);
 
 
   R4_Rain_Readout.setup();

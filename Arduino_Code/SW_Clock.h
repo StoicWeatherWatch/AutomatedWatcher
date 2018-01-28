@@ -22,7 +22,7 @@
 
 #include "SW_Helper_Functions.h"
 
-#define SW_CK_CLOCKPIN 2
+#define SW_CK_CLOCK_PIN 2
 
 //A 4 Hz clock is assumed
 #define SW_CK_SHORT_COUNT_PERIOD 9

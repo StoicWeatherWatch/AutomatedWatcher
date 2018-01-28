@@ -134,7 +134,7 @@ bool SW_BME280_Sensor::SendRawDataSerial()
 		I2CBuss.read(SensorAddress, (byte)BME280_CAL2_BLK_REG, (byte)BME280_CAL2_BLK_LEN, CalData);
 
 		Serial.println("#BME280 Calibration Data Block 2;");
-		for(int i = 0; i < BME280_CAL2_BLK_LEN; i++)
+		for(int i = 0; i <= BME280_CAL2_BLK_LEN; i++)
 		{
 			Serial.print("*");
 			Serial.print(CALIBRATION_DATA_KEYWORD_BLK2);
@@ -149,7 +149,7 @@ bool SW_BME280_Sensor::SendRawDataSerial()
 		I2CBuss.read(SensorAddress, (byte)BME280_CAL1_BLK_REG, (byte)BME280_CAL1_BLK_LEN, CalData);
 
 		Serial.println("#BME280 Calibration Data Block 1;");
-		for(int i = 0; i < BME280_CAL1_BLK_LEN; i++)
+		for(int i = 0; i <= BME280_CAL1_BLK_LEN; i++)
 		{
 			Serial.print("*");
 			Serial.print(CALIBRATION_DATA_KEYWORD_BLK1);
