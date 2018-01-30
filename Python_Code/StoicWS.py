@@ -335,9 +335,6 @@ class StoicWatcher(object):
         data = dict()
         data["extraTemp1"] = Temp
         
-        # TODO Remove line below. Testing only
-        data["outTemp"] = Temp
-        
         return data
     
     def sensor_parse_BME280_Pressure(self, DataHex, BME280ID):
