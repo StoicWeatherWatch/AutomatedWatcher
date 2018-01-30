@@ -117,7 +117,13 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
             
         def BoschHEXHEX2SignedLong(msb,lsb):
             
-            return (((long(msb,16) >> 7) * long(-1) ) * (((long(msb,16) & 0b01111111) << 8) + long(lsb,16)))
+            if((long(msb,16) >> 7) == 1):
+                sign = long(-1)
+            else:
+                sign = long(1)
+                
+            
+            return (sign * (((long(msb,16) & 0b01111111) << 8) + long(lsb,16)))
         
         stoic_Cal_dict = dict()
          
@@ -181,11 +187,40 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         #  Data sheet H3 unsigned single byte memory E3
         stoic_Cal_dict["BME280_1_CAL_H3"] = BoschHEXHEX2UnsignedLong("00",stn_dict.get("cal-BME280-1.1.2"))
         #  Data sheet H4 signed 12 bits. E4 holds the most significant 8 and the least significant 4 are the low 4 of E5
-        stoic_Cal_dict["BME280_1_CAL_H4"] = (((long(stn_dict.get("cal-BME280-1.1.3"),16) >> 7) * long(-1) ) * (((long(stn_dict.get("cal-BME280-1.1.3"),16) & 0b01111111) << 4) + (long(stn_dict.get("cal-BME280-1.1.4"),16) & 0b00001111) ))
+        sign = -1 if (long(stn_dict.get("cal-BME280-1.1.3"),16) >> 7 == 1) else 1
+        stoic_Cal_dict["BME280_1_CAL_H4"] = (long(sign) * (((long(stn_dict.get("cal-BME280-1.1.3"),16) & 0b01111111) << 4) + (long(stn_dict.get("cal-BME280-1.1.4"),16) & 0b00001111) ))
         #  Data sheet H5 signed 12 bits. E5 holds the least significant 4 bits in its high 4 and E6 holds the most significant bits
-        stoic_Cal_dict["BME280_1_CAL_H5"] = (((long(stn_dict.get("cal-BME280-1.1.5"),16) >> 7) * long(-1) ) * (((long(stn_dict.get("cal-BME280-1.2.5"),16) & 0b01111111) << 4) + (long(stn_dict.get("cal-BME280-1.2.4"),16) >> 4) ))
+        sign = -1 if (long(stn_dict.get("cal-BME280-1.1.5"),16) >> 7 == 1) else 1
+        stoic_Cal_dict["BME280_1_CAL_H5"] = (long(sign) * (((long(stn_dict.get("cal-BME280-1.2.5"),16) & 0b01111111) << 4) + (long(stn_dict.get("cal-BME280-1.2.4"),16) >> 4) ))
         # TEST LINE
+        loginf('stn_dict.get("cal-BME280-1.2.5") %s' % stn_dict.get("cal-BME280-1.2.5") )
+        loginf('stn_dict.get("cal-BME280-1.2.4") %s' % stn_dict.get("cal-BME280-1.2.4") )
+        loginf('long(stn_dict.get("cal-BME280-1.2.5"),16) %d' % long(stn_dict.get("cal-BME280-1.2.5"),16) )
+        loginf('long(stn_dict.get("cal-BME280-1.2.4"),16) %d' % long(stn_dict.get("cal-BME280-1.2.4"),16) )
+        loginf('long(stn_dict.get("cal-BME280-1.2.5"),16) %X' % long(stn_dict.get("cal-BME280-1.2.5"),16) )
+        loginf('long(stn_dict.get("cal-BME280-1.2.4"),16) %X' % long(stn_dict.get("cal-BME280-1.2.4"),16) )
+        loginf('long(stn_dict.get("cal-BME280-1.2.5"),16) << 4 %d' % (long(stn_dict.get("cal-BME280-1.2.5"),16) << 4))
+        loginf('((long(stn_dict.get("cal-BME280-1.2.5"),16) & 0b01111111) << 4) %X' % ((long(stn_dict.get("cal-BME280-1.2.5"),16) & 0b01111111) << 4))
+        loginf('(long(stn_dict.get("cal-BME280-1.2.4"),16) >> 4) %X' % (long(stn_dict.get("cal-BME280-1.2.4"),16) >> 4))
         loginf("stoic_Cal_dict['BME280_1_CAL_H5'] %d" % stoic_Cal_dict["BME280_1_CAL_H5"])
+        
+        # TODO H5 still not correct
+        
+        #  Data sheet H6 signed byte E7
+        sign = -1 if (long(stn_dict.get("cal-BME280-1.1.6"),16) >> 7 == 1) else 1
+        stoic_Cal_dict["BME280_1_CAL_H6"] = long(sign) * (long(stn_dict.get("cal-BME280-1.1.6"),16) & 0b01111111)
+        # TEST LINE
+        loginf("stoic_Cal_dict['BME280_1_CAL_H6'] %d" % stoic_Cal_dict["BME280_1_CAL_H6"])
+        loginf("stoic_Cal_dict['BME280_1_CAL_H6'] %X" % stoic_Cal_dict["BME280_1_CAL_H6"])
+
+        
+        # Test stuff
+        for i in range(1,3+1):
+             loginf("stoic_Cal_dict['BME280_1_CAL_T" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_T"+str(i)])
+        for i in range(1,9+1):
+             loginf("stoic_Cal_dict['BME280_1_CAL_P" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_P"+str(i)])
+        for i in range(1,6+1):
+             loginf("stoic_Cal_dict['BME280_1_CAL_H" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_H"+str(i)])
 
         
         return stoic_Cal_dict
@@ -358,13 +393,20 @@ class StoicWatcher(object):
         Input is 3 byte of HEX. Only 20 bits have meaning
         """
         
+        loginf("Stoic sensor_parse_BME280_TFine  HEX in %s" % DataHex)
+        
         RawTemp = long(DataHex,16) >> 4
         
         loginf("Stoic sensor_parse_BME280_TFine  RawTemp %d" % RawTemp)
+        loginf("Stoic sensor_parse_BME280_TFine  RawTemp %X" % RawTemp)
         
         loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T1'] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_T1"])
         loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T2'] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_T2"])
         loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T3'] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_T3"])
+        
+        loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T1'] %X" % self.stoic_Cal_dict[BME280ID+"_CAL_T1"])
+        loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T2'] %X" % self.stoic_Cal_dict[BME280ID+"_CAL_T2"])
+        loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T3'] %X" % self.stoic_Cal_dict[BME280ID+"_CAL_T3"])
         
         # This mess comes from the data sheet. Someone must like LISP
         var1  = ( ((RawTemp>>3) - (self.stoic_Cal_dict[BME280ID+"_CAL_T1"]<<1)) * (self.stoic_Cal_dict[BME280ID+"_CAL_T2"]) ) >> 11
@@ -388,10 +430,21 @@ class StoicWatcher(object):
         return TFine
     
     def sensor_parse_BME280_Temperature(self, TFine):
-        Temperature = (TFine * 5 ) >> 8
+        if TFine == None:
+            return None
+        
+        loginf("Stoic sensor_parse_BME280_Temperature TFine %s" % type(TFine))
+        
+        loginf("Stoic sensor_parse_BME280_Temperature TFine %d" % TFine)
+        
+        loginf("(TFine * 5 ) >> 8 %d" % ((TFine * 5 ) >> 8))
+        loginf("float((TFine * 5 ) >> 8) %f" % float((TFine * 5 ) >> 8))
+        loginf("float((TFine * 5 ) >> 8)/float(100.0) %f" % (float((TFine * 5 ) >> 8)/float(100.0)))
+        
+        Temperature = float((TFine * 5 ) >> 8)/float(100.0)
         
         #TEST Line
-        loginf("Stoic sensor_parse_BME280_Temperature %d" % Temperature)
+        loginf("Stoic sensor_parse_BME280_Temperature %f" % Temperature)
         
         return Temperature
             
