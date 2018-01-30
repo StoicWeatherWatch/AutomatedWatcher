@@ -119,7 +119,8 @@ bool SW_BME280_Sensor::SendRawDataSerial()
 	bool SW_BME280_Sensor::VerifyChip()
 	{
 		// Get Sensor ID and check it
-		byte status = I2CBuss.read(SensorAddress, (byte)BME280_CHIPID_REG, (byte)1);
+		//byte status = I2CBuss.read(SensorAddress, (byte)BME280_CHIPID_REG, (byte)1);
+		I2CBuss.read(SensorAddress, (byte)BME280_CHIPID_REG, (byte)1);
 
 		int DataIn = (int)I2CBuss.receive();
 
@@ -143,34 +144,82 @@ bool SW_BME280_Sensor::SendRawDataSerial()
 #ifdef SEND_CALIBRATION_DATA
 	bool SW_BME280_Sensor::SendCalibrationData()
 	{
-		byte CalData[27];
+		byte CalData[26];
 
-		I2CBuss.read(SensorAddress, (byte)BME280_CAL2_BLK_REG, (byte)BME280_CAL2_BLK_LEN, CalData);
+		// It appears there is a limit on the amount of data that can be read out.
+		// This may be with I2C or the BME280 or both. Using the line below results in
+		// zeros for the first 9 bytes. Oddly there are issues with other reads too.
+		// 17 byte limit?
+		//I2CBuss.read(SensorAddress, (byte)BME280_CAL2_BLK_REG, (byte)BME280_CAL2_BLK_LEN, CalData);
+		//I2CBuss.read(SensorAddress, (byte)BME280_CAL2_BLK_REG, (byte)BME280_CAL2_BLK_LEN, CalData);
 
 		Serial.println(F("#BME280 Calibration Data Block 2;"));
-		for(int i = 0; i <= BME280_CAL2_BLK_LEN; i++)
+
+
+		for(int i = 0; i < BME280_CAL2_BLK_LEN; i++)
 		{
-			Serial.print("*");
+			I2CBuss.read(SensorAddress, (byte)BME280_CAL2_BLK_REG+i, (byte)1, CalData+i);
+			Serial.print(F("*"));
 			Serial.print(CALIBRATION_DATA_KEYWORD_BLK2);
 			Serial.print(i);
-			Serial.print(",");
+			Serial.print(F(","));
 			SerialHexBytePrint(CalData[i]);
-			//Serial.print(CalData[i],HEX);
-			Serial.println(";");
+			Serial.print(F("#"));
+			SerialHexBytePrint((byte)BME280_CAL2_BLK_REG +i);
+			Serial.println(F(";"));
+
 
 		}
+
+		//TEST LINES
+		/*Serial.print("# A ");
+		Serial.print(BME280_CAL2_BLK_REG,HEX);
+		Serial.print("  ");
+
+		I2CBuss.read((byte)SensorAddress,(byte)BME280_CAL2_BLK_REG, (byte)2);
+
+		Serial.print((byte)I2c.receive(),HEX);
+		Serial.print((byte)I2c.receive(),HEX);
+
+		Serial.println(F(";"));
+
+		Serial.print("# B ");
+		Serial.print(BME280_CAL2_BLK_REG,HEX);
+		Serial.print("  ");
+
+		I2CBuss.read(SensorAddress, ((byte)BME280_CAL2_BLK_REG), (byte)2, CalData);
+
+		Serial.print(CalData[0],HEX);
+		Serial.print(CalData[1],HEX);
+
+		Serial.println(F(";"));
+
+		for(int i = 0; i < 26; i++)
+		{
+			I2CBuss.read(SensorAddress, ((byte)BME280_CAL2_BLK_REG + i), (byte)2, CalData);
+			Serial.print(F("Error code "));
+
+			Serial.println(((byte)BME280_CAL2_BLK_REG + i),HEX);
+			Serial.print(CalData[0],HEX);
+			Serial.println(CalData[1],HEX);
+
+		}
+
+*/
+		// END TEST LINES
 
 		I2CBuss.read(SensorAddress, (byte)BME280_CAL1_BLK_REG, (byte)BME280_CAL1_BLK_LEN, CalData);
 
 		Serial.println(F("#BME280 Calibration Data Block 1;"));
-		for(int i = 0; i <= BME280_CAL1_BLK_LEN; i++)
+		for(int i = 0; i < BME280_CAL1_BLK_LEN; i++)
 		{
 			Serial.print(F("*"));
 			Serial.print(CALIBRATION_DATA_KEYWORD_BLK1);
 			Serial.print(i);
 			Serial.print(F(","));
 			SerialHexBytePrint(CalData[i]);
-			//Serial.print(CalData[i],HEX);
+			Serial.print(F("#"));
+			SerialHexBytePrint((byte)BME280_CAL1_BLK_REG +i);
 			Serial.println(F(";"));
 
 		}
