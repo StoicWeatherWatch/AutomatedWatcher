@@ -16,7 +16,7 @@ SW_BME280_Sensor::SW_BME280_Sensor(byte AddressIn,I2C I2CBussIn, byte SensorNumb
 
 bool SW_BME280_Sensor::InitializeSensor()
 {
-	Serial.println("#Initialize BME280;");
+	Serial.println(F("#Initialize BME280;"));
 
 #ifdef VERIFY_CHIPS
 	if(!VerifyChip())
@@ -38,7 +38,7 @@ bool SW_BME280_Sensor::InitializeSensor()
 	byte RegIn = I2CBuss.receive();
 	if((RegIn & (byte)BME280_MODE_MASK) >0)
 	{
-		Serial.println("#BME280 Mode Error;");
+		Serial.println(F("#BME280 Mode Error;"));
 		return false;
 	}
 
@@ -67,9 +67,9 @@ bool SW_BME280_Sensor::RetrieveDataAndSend()
 {
 	I2CBuss.read(SensorAddress, (byte)BME280_DATASTART_REG, (byte)BME280_DATA_LEN, DataRaw);
 
-	Serial.print("*");
+	Serial.print(F("*"));
 	Serial.print(SensorNumber,DEC);
-	Serial.print("TPH,");
+	Serial.print(F("TPH,"));
 
 	for(int i = 0; i < BME280_DATA_LEN; i++)
 	{
@@ -77,17 +77,31 @@ bool SW_BME280_Sensor::RetrieveDataAndSend()
 		//Serial.print(DataRaw[i],HEX);
 		if((i == 2) || (i == 5))
 		{
-			Serial.print(",");
+			Serial.print(F(","));
 		}
 	}
 
-	Serial.print(",^");
+	Serial.print(F(",^"));
 
 	// TODO Put SEC-DED code here
 
-	Serial.println(";");
+	Serial.println(F(";"));
 
-
+	// TEST Lines
+	Serial.print("#");
+	Serial.print(SensorNumber,DEC);
+	Serial.print("TPH,");
+	for(int i = 0; i < BME280_DATA_LEN; i++)
+		{
+			SerialHexBytePrint(DataRaw[i]);
+			//Serial.print(DataRaw[i],HEX);
+			if((i == 2) || (i == 5))
+			{
+				Serial.print(F(","));
+			}
+		}
+	Serial.println(F(";"));
+// END TEST
 
 	return true;
 }
@@ -112,11 +126,11 @@ bool SW_BME280_Sensor::SendRawDataSerial()
 
 		if(DataIn == (int)BME280_CHIPID_VALUE)
 		{
-			Serial.println("#BME280 Correct Chip ID;");
+			Serial.println(F("#BME280 Correct Chip ID;"));
 		}
 		else
 		{
-			Serial.println("#NOT BME280 Correct Chip ID;");
+			Serial.println(F("#NOT BME280 Correct Chip ID;"));
 			return false;
 		}
 
@@ -129,11 +143,11 @@ bool SW_BME280_Sensor::SendRawDataSerial()
 #ifdef SEND_CALIBRATION_DATA
 	bool SW_BME280_Sensor::SendCalibrationData()
 	{
-		byte CalData[25];
+		byte CalData[27];
 
 		I2CBuss.read(SensorAddress, (byte)BME280_CAL2_BLK_REG, (byte)BME280_CAL2_BLK_LEN, CalData);
 
-		Serial.println("#BME280 Calibration Data Block 2;");
+		Serial.println(F("#BME280 Calibration Data Block 2;"));
 		for(int i = 0; i <= BME280_CAL2_BLK_LEN; i++)
 		{
 			Serial.print("*");
@@ -148,16 +162,16 @@ bool SW_BME280_Sensor::SendRawDataSerial()
 
 		I2CBuss.read(SensorAddress, (byte)BME280_CAL1_BLK_REG, (byte)BME280_CAL1_BLK_LEN, CalData);
 
-		Serial.println("#BME280 Calibration Data Block 1;");
+		Serial.println(F("#BME280 Calibration Data Block 1;"));
 		for(int i = 0; i <= BME280_CAL1_BLK_LEN; i++)
 		{
-			Serial.print("*");
+			Serial.print(F("*"));
 			Serial.print(CALIBRATION_DATA_KEYWORD_BLK1);
 			Serial.print(i);
-			Serial.print(",");
+			Serial.print(F(","));
 			SerialHexBytePrint(CalData[i]);
 			//Serial.print(CalData[i],HEX);
-			Serial.println(";");
+			Serial.println(F(";"));
 
 		}
 

@@ -36,8 +36,9 @@
 #define MCP9808_T2_ADDRESS 0x18
 
 // Life Cycle Controls
-#define BME280_TPH3_TAKEMEASURE_LCS 1
-#define BME280_TPH3_READMEASURE_LCS 2
+// No longer used
+//#define BME280_TPH3_TAKEMEASURE_LCS 1
+//#define BME280_TPH3_READMEASURE_LCS 2
 // TODO should it be LCS or MCS?
 
 #define MCP9808_T2_READMEASURE_LCS  1

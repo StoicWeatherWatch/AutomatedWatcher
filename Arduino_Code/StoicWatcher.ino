@@ -1,18 +1,20 @@
 /*
 	Stoic Watcher
-	v0.0.5
-	2018-01-25
+	v0.0.6
+	2018-01-29
  */
 
 
 /*
- * This sketch is the core of an Arduino based weather station. An external RTC provides timing interrupts.
+ * This sketch is the core of an Arduino based weather station. An external clock signal at 4 Hz provides timing interrupts.
  * The Arduino reads data from sensors at intervals and transmits it via serial to an attached Linux
  * mini computer running WeeWx.
  *
  * Target Hardware: Arduino Uno R3
  * Output: Serial over USB
- * Input: From sensors and RTC square wave
+ * Input: From sensors and clock square wave
+ *
+ * Dependencies: I2C library
  */
 
 // TODO Housekeeping, report uptime and chip temperature
@@ -41,8 +43,8 @@ void setup()
      // wait for serial port to connect.
   }
 
-  Serial.println("#Stoic Starting v0.0.5;");
-  Serial.println("!startup;");
+  Serial.println(F("#Stoic Starting v0.0.6;"));
+  Serial.println(F("!startup;"));
 
 
 
@@ -59,14 +61,17 @@ void setup()
 
   SW_CK_ClockSetup();
 
-  // Set the master reset high to reset everything
+  // Rain Sensor
+  // Set the rain reset high to reset the rain count
+  // TODO reevaluate the use of rain reset
   pinMode(RAINCOUNT_RESET_D_PIN, OUTPUT);
   digitalWrite(RAINCOUNT_RESET_D_PIN, HIGH);
   delay(10);
   digitalWrite(RAINCOUNT_RESET_D_PIN, LOW);
 
-
   R4_Rain_Readout.setup();
+
+
 
 
 }
@@ -75,17 +80,20 @@ void loop()
 {
 	if(SW_CK_InterruptOccurred())
 	{
+
+		// Old below
+/*
 		SW_CK_ClockIntruptProcessing();
-		Serial.println("#Clock Interrupt;");
+		//Serial.println("#Clock Interrupt;");
 		SW_CK_SendLongCountSerial();
 
 		T2_CircuitBox_Sensor.AcquireData();
 		//Serial.println(T2_CircuitBox_Sensor.GetRawTempreature_HighBits(),BIN);
 		//Serial.println(T2_CircuitBox_Sensor.GetRawTempreature_LowBits(),BIN);
 		//Serial.print("");
-		Serial.print("#");
+		Serial.print(F("#"));
 		Serial.print(T2_CircuitBox_Sensor.ProcessTemp());
-		Serial.println(";");
+		Serial.println(F(";"));
 
 		T2_CircuitBox_Sensor.SendRawDataSerial();
 
@@ -100,6 +108,111 @@ void loop()
 		}
 
 		R4_Rain_Readout.AcquireDataAndSend();
+
+		*/// Old above
+
+
+
+		// First clock housekeeping
+		SW_CK_ClockIntruptProcessing();
+
+		// Every second for wind directions
+		if(SW_CK_GetSubSecondCount() == 0)
+		{
+
+		}
+
+
+
+		// Every 30 seconds for wind
+		if(SW_CK_GetSecondCount() == 0)
+		{
+
+		}
+
+
+
+		// Regular life cycle
+		switch(SW_CK_GetCKShortCount())
+		{
+		case 0 :
+			// 0 Early
+
+			// 0
+
+			break;
+		case 1 :
+			// 1 Early
+			TPH3_FARS_Sensor.AcquireData();
+
+			// 1
+
+			break;
+		case 2 :
+			// 2 Early
+
+			// 2
+			TPH3_FARS_Sensor.RetrieveDataAndSend();
+
+			break;
+		case 3 :
+			// 3 Early
+
+			// 3
+
+			break;
+		case 4 :
+			// 4 Early
+
+			// 4
+
+			break;
+		case 5 :
+			// 5 Early
+
+			// 5
+
+			break;
+		case 6 :
+			// 6 Early
+
+			// 6
+			switch(SW_CK_GetCKMedCount())
+			{
+			case 0 :
+				break;
+			case 1 :
+				break;
+			case 2 :
+				break;
+			case 3 :
+				break;
+			}
+
+			if(SW_CK_GetCKLongCount() == 0)
+			{
+				T2_CircuitBox_Sensor.AcquireData();
+				T2_CircuitBox_Sensor.SendRawDataSerial();
+			}
+
+			break;
+			case 7 :
+			// 7 Early
+				R4_Rain_Readout.AcquireDataAndSend();
+
+			// 7
+
+			break;
+		case 8 :
+			// 8 Early
+
+			// 8
+
+			break;
+
+		}
+
+
 
 
 
