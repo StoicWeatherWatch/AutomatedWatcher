@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.0.4
-# 2018-01-27
+# Version 0.0.5
+# 2018-01-30
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -55,6 +55,11 @@ rain_mm_Per_Tip - Tipping bucket conversion factor 0.2794
 
 # TODO crashes when Aruino dissconnected. Handle gracefully
 
+# TODO cat /sys/class/thermal/thermal_zone0/temp  / 1000 gives temp C of CPU CHIP
+# TODO add chip temp for Arduino
+
+# TODO truncate T, P, and H at two decimal places. Anything more is past precision limits
+
 
 # TODO DO I need this? Python 2.7 should have with_statement
 from __future__ import with_statement
@@ -67,7 +72,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.0.4'
+DRIVER_VERSION = '0.0.5'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -372,15 +377,81 @@ class StoicWatcher(object):
         
         return data
     
-    def sensor_parse_BME280_Pressure(self, DataHex, BME280ID):
+    def sensor_parse_BME280_Pressure(self, DataHex, BME280ID, TFine):
         """
         The BME280ID allows for mutiple BME280s on a single system with seporate calibrations.
         
         Pressure arrives as 3 hex bytes.
         Byte struction MSB xxxx xxxx LSB xxxx xxxx XLSB xxxx 0000
+        
+        Output in units of hPa (Same as mbar)
+        Near as I can tell from the data sheet, the output is pressure. Not compensented for altitude. (How could it be? 
+        The sensor does not know its altitude)
         """
-        # TODO build
-        return None
+        
+        loginf("Stoic sensor_parse_BME280_Pressure  HEX in %s" % DataHex)
+        
+        RawPressure = long(DataHex,16) >> 4
+        
+        loginf("Stoic sensor_parse_BME280_Pressure  RawPressure %d" % RawPressure)
+        loginf("Stoic sensor_parse_BME280_Pressure  RawPressure %X" % RawPressure)
+        
+        
+        # TEST Line
+        loginf("self.stoic_Cal_dict[BME280ID+'_CAL_P6''] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_P6"])
+        loginf("self.stoic_Cal_dict[BME280ID+'_CAL_P6''] type  %s" % type(self.stoic_Cal_dict[BME280ID+"_CAL_P6"]))
+
+        #var1 = ((BME280_S64_t)t_fine) - 128000;
+        var1 = TFine - long(128000)
+        
+        #var2 = var1 * var1 * (BME280_S64_t)dig_P6;
+        var2 = var1 * var1 * self.stoic_Cal_dict[BME280ID+"_CAL_P6"]
+        
+        #var2 = var2 + ((var1*(BME280_S64_t)dig_P5)<<17);
+        var2 = var2 + ( (var1*self.stoic_Cal_dict[BME280ID+"_CAL_P5"]) << 17)
+        
+        #var2 = var2 + (((BME280_S64_t)dig_P4)<<35);
+        var2 = var2 + ((self.stoic_Cal_dict[BME280ID+"_CAL_P4"]) << 35)
+        
+        #var1 = ((var1 * var1 * (BME280_S64_t)dig_P3)>>8) + ((var1 * (BME280_S64_t)dig_P2)<<12);
+        var1 = ((var1 * var1 * self.stoic_Cal_dict[BME280ID+"_CAL_P3"]) >> 8) + ((var1 * self.stoic_Cal_dict[BME280ID+"_CAL_P2"]) << 12)
+        
+        #var1 = (((((BME280_S64_t)1)<<47)+var1))*((BME280_S64_t)dig_P1)>>33;
+        var1 = ( ( (long(1)<<47) + var1 ) * (self.stoic_Cal_dict[BME280ID+"_CAL_P1"]) ) >> 33
+        
+        #if (var1 == 0) {return 0; // avoid exception caused by division by zero}
+        # This avoides a division by zero
+        if(var1 == 0):
+            return 0
+        # TODO When will this actually be zero. Should it return none?
+        
+        #p = 1048576-adc_P;
+        p = long(1048576) - RawPressure
+        
+        
+        #p = (((p<<31)-var2)*3125)/var1;
+        p = ( ((p<<31)-var2 ) * long(3125) ) / var1
+        
+        
+        #var1 = (((BME280_S64_t)dig_P9) * (p>>13) * (p>>13)) >> 25;
+        var1 = ((self.stoic_Cal_dict[BME280ID+"_CAL_P9"]) * (p>>13) * (p>>13)) >> 25
+        
+        #var2 = (((BME280_S64_t)dig_P8) * p) >> 19;
+        var2 = ((self.stoic_Cal_dict[BME280ID+"_CAL_P9"]) * p) >> 19
+        
+        #p = ((p + var1 + var2) >> 8) + (((BME280_S64_t)dig_P7)<<4);
+        p = ((p + var1 + var2) >> 8) + (self.stoic_Cal_dict[BME280ID+"_CAL_P7"] << 4)
+        
+    # p is integer pressure. p / 256  gives Pa.  (p / 256) / 100 gives hPa
+        loginf("Stoic sensor_parse_BME280_Pressure  Integer Pressure %d" % p)
+        loginf("Stoic sensor_parse_BME280_Pressure  Integer Pressure %X" % p)
+        
+        # Units of hPa or mbar (same thing)
+        Pressure = float(p) / float(25600.0)
+
+        loginf("Stoic sensor_parse_BME280_Pressure Pressure %f" % Pressure)
+
+        return Pressure
         
             
     def sensor_parse_BME280_TFine(self, DataHex, BME280ID):
@@ -417,6 +488,7 @@ class StoicWatcher(object):
         
         #TEST Line
         loginf("Stoic sensor_parse_BME280_TFine %d" % TFine)
+        loginf("Stoic sensor_parse_BME280_TFine type %s" % type(TFine))
          
 
         # The limits for the sensor are -40 to 85 C. Equivalent to an output of -4000 or 8500
@@ -430,6 +502,9 @@ class StoicWatcher(object):
         return TFine
     
     def sensor_parse_BME280_Temperature(self, TFine):
+        """
+        Takes in TFine and output tempreature in C
+        """
         if TFine == None:
             return None
         
@@ -444,7 +519,7 @@ class StoicWatcher(object):
         Temperature = float((TFine * 5 ) >> 8)/float(100.0)
         
         #TEST Line
-        loginf("Stoic sensor_parse_BME280_Temperature %f" % Temperature)
+        loginf("Stoic sensor_parse_BME280_Temperature %f " % Temperature)
         
         return Temperature
             
@@ -495,7 +570,7 @@ class StoicWatcher(object):
         
         Temperature = self.sensor_parse_BME280_Temperature(TFine)
         
-        Pressure = self.sensor_parse_BME280_Pressure(LineIn[PposStart+1:PposEnd+1],BME280ID)
+        Pressure = self.sensor_parse_BME280_Pressure(LineIn[PposStart+1:PposEnd+1],BME280ID, TFine)
             
         Humidity = self.sensor_parse_BME280_Humidity(LineIn[HposStart+1:HposEnd+1],BME280ID)
         
