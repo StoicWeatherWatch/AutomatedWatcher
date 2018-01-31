@@ -196,20 +196,19 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         stoic_Cal_dict["BME280_1_CAL_H4"] = (long(sign) * (((long(stn_dict.get("cal-BME280-1.1.3"),16) & 0b01111111) << 4) + (long(stn_dict.get("cal-BME280-1.1.4"),16) & 0b00001111) ))
         #  Data sheet H5 signed 12 bits. E5 holds the least significant 4 bits in its high 4 and E6 holds the most significant bits
         sign = -1 if (long(stn_dict.get("cal-BME280-1.1.5"),16) >> 7 == 1) else 1
-        stoic_Cal_dict["BME280_1_CAL_H5"] = (long(sign) * (((long(stn_dict.get("cal-BME280-1.2.5"),16) & 0b01111111) << 4) + (long(stn_dict.get("cal-BME280-1.2.4"),16) >> 4) ))
+        stoic_Cal_dict["BME280_1_CAL_H5"] = (long(sign) * (((long(stn_dict.get("cal-BME280-1.1.5"),16) & 0b01111111) << 4) + (long(stn_dict.get("cal-BME280-1.1.4"),16) >> 4) ))
         # TEST LINE
-        loginf('stn_dict.get("cal-BME280-1.2.5") %s' % stn_dict.get("cal-BME280-1.2.5") )
-        loginf('stn_dict.get("cal-BME280-1.2.4") %s' % stn_dict.get("cal-BME280-1.2.4") )
-        loginf('long(stn_dict.get("cal-BME280-1.2.5"),16) %d' % long(stn_dict.get("cal-BME280-1.2.5"),16) )
-        loginf('long(stn_dict.get("cal-BME280-1.2.4"),16) %d' % long(stn_dict.get("cal-BME280-1.2.4"),16) )
-        loginf('long(stn_dict.get("cal-BME280-1.2.5"),16) %X' % long(stn_dict.get("cal-BME280-1.2.5"),16) )
-        loginf('long(stn_dict.get("cal-BME280-1.2.4"),16) %X' % long(stn_dict.get("cal-BME280-1.2.4"),16) )
-        loginf('long(stn_dict.get("cal-BME280-1.2.5"),16) << 4 %d' % (long(stn_dict.get("cal-BME280-1.2.5"),16) << 4))
-        loginf('((long(stn_dict.get("cal-BME280-1.2.5"),16) & 0b01111111) << 4) %X' % ((long(stn_dict.get("cal-BME280-1.2.5"),16) & 0b01111111) << 4))
-        loginf('(long(stn_dict.get("cal-BME280-1.2.4"),16) >> 4) %X' % (long(stn_dict.get("cal-BME280-1.2.4"),16) >> 4))
+        loginf('stn_dict.get("cal-BME280-1.1.5") %s' % stn_dict.get("cal-BME280-1.1.5") )
+        loginf('stn_dict.get("cal-BME280-1.1.4") %s' % stn_dict.get("cal-BME280-1.1.4") )
+        loginf('long(stn_dict.get("cal-BME280-1.2.5"),16) %d' % long(stn_dict.get("cal-BME280-1.1.5"),16) )
+        loginf('long(stn_dict.get("cal-BME280-1.2.4"),16) %d' % long(stn_dict.get("cal-BME280-1.1.4"),16) )
+        loginf('long(stn_dict.get("cal-BME280-1.2.5"),16) %X' % long(stn_dict.get("cal-BME280-1.1.5"),16) )
+        loginf('long(stn_dict.get("cal-BME280-1.2.4"),16) %X' % long(stn_dict.get("cal-BME280-1.1.4"),16) )
+        loginf('long(stn_dict.get("cal-BME280-1.1.5"),16) << 4 %d' % (long(stn_dict.get("cal-BME280-1.1.5"),16) << 4))
+        loginf('((long(stn_dict.get("cal-BME280-1.1.5"),16) & 0b01111111) << 4) %X' % ((long(stn_dict.get("cal-BME280-1.1.5"),16) & 0b01111111) << 4))
+        loginf('(long(stn_dict.get("cal-BME280-1.1.4"),16) >> 4) %X' % (long(stn_dict.get("cal-BME280-1.1.4"),16) >> 4))
         loginf("stoic_Cal_dict['BME280_1_CAL_H5'] %d" % stoic_Cal_dict["BME280_1_CAL_H5"])
         
-        # TODO H5 still not correct
         
         #  Data sheet H6 signed byte E7
         sign = -1 if (long(stn_dict.get("cal-BME280-1.1.6"),16) >> 7 == 1) else 1
@@ -523,12 +522,63 @@ class StoicWatcher(object):
         
         return Temperature
             
-    def sensor_parse_BME280_Humidity(self, DataHex, BME280ID):
+    def sensor_parse_BME280_Humidity(self, DataHex, BME280ID, TFine):
         """
         The BME280ID allows for mutiple BME280s on a single system
+        
+        Formulae are based on BME280 Data sheet. 
+        Output is realtive humidity as a percentage
         """
-        # TODO build
-        return 50
+        
+        RawHum = long(DataHex,16)
+   
+        
+        # // Returns humidity in %RH as unsigned 32 bit integer in Q22.10 format (22 integer and 10 fractional bits). 
+        #// Output value of 47445 represents 47445/1024 = 46.333 %RH 
+   
+        #    var1 = (TFine - ((BME280_S32_t)76800));
+        var1 = TFine - long(76800)
+        
+       # var1 = (((((adc_H << 14) - (((BME280_S32_t)dig_H4) << 20) - (((BME280_S32_t)dig_H5) * var1)) + ((BME280_S32_t)16384)) >> 15)
+        #* ((( ((((var1 * ((BME280_S32_t)dig_H6)) >> 10) * (((var1 * ((BME280_S32_t)dig_H3)) >> 11) + ((BME280_S32_t)32768))) >> 10) 
+       #        + ((BME280_S32_t)2097152)) * ((BME280_S32_t)dig_H2) + 8192) >> 14));  
+        var1 = ( ((((RawHum << 14) 
+                   - (self.stoic_Cal_dict[BME280ID+"_CAL_H4"] << 20) 
+                   - (self.stoic_Cal_dict[BME280ID+"_CAL_H5"] * var1)) 
+                   + long(16384)) >> 15) 
+                   * ((( ( (( (var1 * self.stoic_Cal_dict[BME280ID+"_CAL_H6"]) >> 10) 
+                            * (((var1 * (self.stoic_Cal_dict[BME280ID+"_CAL_H3"])) >> 11) + long(32768))) >> 10) 
+                            + long(2097152)) * self.stoic_Cal_dict[BME280ID+"_CAL_H2"]
+                            + long(8192)) >> 14) )
+        
+        
+        #var1 = (var1 - (((((var1 >> 15) * (var1 >> 15)) >> 7) * ((BME280_S32_t)dig_H1)) >> 4));
+        var1 = (var1 - ( ( (((var1 >> 15) * (var1 >> 15)) >> 7) * self.stoic_Cal_dict[BME280ID+"_CAL_H1"] ) >> 4 ))
+        
+        #var1 = (var1 < 0 ? 0 : var1);   
+        # If ? Then : else
+        if var1 < 0:
+            var1 = 0
+        # Else no change
+        
+        #var1 = (var1 > 419430400 ? 419430400 : var1);   
+        if var1 > long(419430400):
+            var1 = long(419430400)
+        # Else no change
+        
+        H = var1 >> 12
+        
+        # TEST LINE 
+        loginf("Stoic sensor_parse_BME280_Humidity in Q22.10 %d " % H)
+        
+        # Hum = float(H) / float(1024)
+        # Because we like complexity.       12345678901234567890121234567890
+        Hum = float(H >> 10) + (float(H & 0b00000000000000000000001111111111) / float(1024))
+        
+        #TEST Line
+        loginf("Stoic sensor_parse_BME280_Humidity %f " % Hum)
+
+        return Hum
             
     
     def key_parse_3TPH_FARS(self,LineIn):
@@ -572,7 +622,7 @@ class StoicWatcher(object):
         
         Pressure = self.sensor_parse_BME280_Pressure(LineIn[PposStart+1:PposEnd+1],BME280ID, TFine)
             
-        Humidity = self.sensor_parse_BME280_Humidity(LineIn[HposStart+1:HposEnd+1],BME280ID)
+        Humidity = self.sensor_parse_BME280_Humidity(LineIn[HposStart+1:HposEnd+1],BME280ID, TFine)
         
         data = dict()
         data["outTemp"] = Temperature
