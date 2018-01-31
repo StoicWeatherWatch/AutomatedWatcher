@@ -213,6 +213,7 @@ bool SW_BME280_Sensor::SendRawDataSerial()
 		Serial.println(F("#BME280 Calibration Data Block 1;"));
 		for(int i = 0; i < BME280_CAL1_BLK_LEN; i++)
 		{
+
 			Serial.print(F("*"));
 			Serial.print(CALIBRATION_DATA_KEYWORD_BLK1);
 			Serial.print(i);
@@ -221,7 +222,6 @@ bool SW_BME280_Sensor::SendRawDataSerial()
 			Serial.print(F("#"));
 			SerialHexBytePrint((byte)BME280_CAL1_BLK_REG +i);
 			Serial.println(F(";"));
-
 		}
 
 
