@@ -39,7 +39,6 @@ class SW_MCP9808_Sensor: public SW_Sensor
 
 	public:
 
-
 	SW_MCP9808_Sensor(byte AddressIn, I2C I2CBussIn, byte SensorNumberIN);
 	bool InitializeSensor();
 	bool AcquireData();

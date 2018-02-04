@@ -35,11 +35,17 @@ int SW_CK_CKLongCount = 0;
 // Counts every 90s interval. 2 for 3 min, 40 for 1 hour. 960 for 1 day
 int SW_CK_CK90sCount = 0;
 
-// Counts every second to 30?
+// Counts every second to 30
 byte SW_CK_SecondCount = 0;
+
+// Counts every second to 5
+byte SW_CK_FiveSecondCount = 0;
 
 // Counts every clock pulse to 4. Needed for second count
 byte SW_CK_CKShortCountTo4 = 0;
+
+bool SW_CK_EveryFifthSecondNotCalled = false;
+bool SW_CK_EverySecondNotCalled = false;
 
 
 
@@ -111,12 +117,27 @@ void SW_CK_ClockIntruptProcessing()
 	// Handle Seconds count
 	if(SW_CK_CKShortCountTo4 >= 4)
 	{
+		//Serial.println(F("#SW_CK_CKShortCountTo4 >= 4;"));
 		SW_CK_SecondCount++;
+		SW_CK_FiveSecondCount++;
 		SW_CK_CKShortCountTo4 = 0;
+
+		// Makes certain Every second returns true only once
+		SW_CK_EverySecondNotCalled = true;
+
+		if(SW_CK_FiveSecondCount >= 5)
+				{
+			SW_CK_FiveSecondCount = 0;
+			SW_CK_EverySecondNotCalled = true;
+
+				}
+
+
 
 		if(SW_CK_SecondCount >= SW_CK_SECOND_COUNT_PERIOD)
 		{
 			SW_CK_SecondCount = 0;
+
 		}
 
 
@@ -165,6 +186,38 @@ int SW_CK_GetSecondCount()
 
 int SW_CK_GetSubSecondCount()
 {
-	return SW_CK_SecondCount;
+	return SW_CK_CKShortCountTo4;
+}
+
+// This will be true once every 5th second
+bool SW_CK_EveryFifthSecond()
+{
+	if(SW_CK_EveryFifthSecondNotCalled)
+	{
+
+	SW_CK_EveryFifthSecondNotCalled = false;
+	return true;
+	}
+	else
+	{
+		return false;
+	}
+
+}
+
+// This will be true once every second
+bool SW_CK_EverySecond()
+{
+	if(SW_CK_EverySecondNotCalled)
+		{
+	SW_CK_EveryFifthSecondNotCalled = false;
+		return true;
+		}
+		else
+		{
+		return false;
+		}
+
+
 }
 

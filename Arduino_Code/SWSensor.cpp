@@ -15,8 +15,3 @@ SW_Sensor::SW_Sensor(byte AddressIn, I2C I2CBussIn, byte SensorNumberIN)
 
 
 }
-
-byte SW_Sensor::SW_SensorGetAddress()
-{
-	return SW_Sensor::SensorAddress;
-}

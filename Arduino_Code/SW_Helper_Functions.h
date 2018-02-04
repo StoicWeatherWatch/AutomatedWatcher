@@ -11,7 +11,9 @@
 #include "Arduino.h"
 
 // prints 8-bit data in hex with leading zeroes
+// Uses print not println
 bool SerialHexBytePrint(byte data);
+bool SerialHexByteAndAHalfPrint(int data);
 
 
 #endif /* SW_HELPER_FUNCTIONS_H_ */

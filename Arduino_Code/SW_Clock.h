@@ -56,6 +56,9 @@ int SW_CK_GetCK90sCount();
 int SW_CK_GetSecondCount();
 int SW_CK_GetSubSecondCount();
 
+bool SW_CK_EveryFifthSecond();
+bool SW_CK_EverySecond();
+
 bool SW_CK_SendLongCountSerial();
 
 

@@ -17,6 +17,7 @@
 #define BME280_CTLHUM_REG     0xF2
 #define BME280_CTLMESR_REG    0xF4
 #define BME280_DATASTART_REG  0xF7
+
 #define BME280_DATA_LEN         8
 
 
@@ -36,10 +37,9 @@
 #define BME280_CAL2_BLK_REG    0x88
 #define BME280_CAL2_BLK_LEN     26
 
-
 #define CALIBRATION_DATA_KEYWORD_BLK1 "cal-BME280-1.1."
 #define CALIBRATION_DATA_KEYWORD_BLK2 "cal-BME280-1.2."
-// bytes
+
 #endif /*SEND_CALIBRATION_DATA*/
 
 
