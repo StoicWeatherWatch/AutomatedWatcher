@@ -46,6 +46,7 @@ byte SW_Ard_Readout::Read_Pins()
 			{
 				CurrentRead = CurrentRead << 1;
 				CurrentRead = CurrentRead + (byte)digitalRead(pin);
+				// TODO Replace the digital read with direct port access.
 
 
 

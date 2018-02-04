@@ -17,7 +17,7 @@ SW_MCP9808_Sensor::SW_MCP9808_Sensor(byte AddressIn, I2C I2CBussIn, byte SensorN
 bool SW_MCP9808_Sensor::InitializeSensor()
 {
 
-	Serial.println("#Initializing MCP9808;");
+	Serial.println(F("#Initializing MCP9808;"));
 
 #ifdef VERIFY_CHIPS
 	if(!VerifyChip())
@@ -54,14 +54,14 @@ bool SW_MCP9808_Sensor::AcquireData()
 
 bool SW_MCP9808_Sensor::SendRawDataSerial()
 {
-	Serial.print("*");
+	Serial.print(F("*"));
 	Serial.print(SensorNumber,DEC);
-	Serial.print("T,");
+	Serial.print(F("T,"));
 	SerialHexBytePrint(TemperatureRaw[0]);
 	SerialHexBytePrint(TemperatureRaw[1]);
 	//Serial.print(TemperatureRaw[0],HEX);
 	//Serial.print(TemperatureRaw[1],HEX);
-	Serial.println(";");
+	Serial.println(F(";"));
 
 	return true;
 }
@@ -140,11 +140,11 @@ byte SW_MCP9808_Sensor::GetRawTempreature_LowBits()
 
 		if(DataIn == (int)MCP9808_MANID_VALUE)
 		{
-			Serial.println("#MCP9808 Correct Man ID;");
+			Serial.println(F("#MCP9808 Correct Man ID;"));
 		}
 		else
 		{
-			Serial.println("#NOT MCP9808 Correct Man ID;");
+			Serial.println(F("#NOT MCP9808 Correct Man ID;"));
 			return false;
 		}
 
@@ -160,11 +160,11 @@ byte SW_MCP9808_Sensor::GetRawTempreature_LowBits()
 
 		if(DataIn == (int)MCP9808_CHIPID_VALUE)
 		{
-			Serial.println("#Correct Chip;");
+			Serial.println(F("#Correct Chip;"));
 		}
 		else
 		{
-			Serial.println("#NOT Correct Chip;");
+			Serial.println(F("#NOT Correct Chip;"));
 			return false;
 		}
 

@@ -7,8 +7,8 @@
 
 #include "SW_Helper_Functions.h"
 
-
-bool SerialHexBytePrint(byte data) // prints 8-bit data in hex with leading zeroes
+// prints 8-bit data in hex with leading zeroes
+bool SerialHexBytePrint(byte data)
 {
      if(data > (byte)15)
      {
@@ -22,4 +22,25 @@ bool SerialHexBytePrint(byte data) // prints 8-bit data in hex with leading zero
 
      return true;
 }
+
+// prints 12-bit data in hex with leading zeroes
+bool SerialHexByteAndAHalfPrint(int data)
+{
+	if(data > (byte)255)
+	     {
+	     Serial.print(data,HEX);
+	     }
+	else if(data > (byte)15)
+	     {
+	    	 Serial.print("0");
+	    	 Serial.print(data,HEX);
+	     }
+	else
+		 {
+		 Serial.print("00");
+		 Serial.print(data,HEX);
+		 }
+
+	     return true;
+	}
 

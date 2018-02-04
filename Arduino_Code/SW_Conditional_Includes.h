@@ -1,7 +1,7 @@
 /*
  * SW_Conditional_Includes.h
  *
- *  Created on: 2018-01-25
+ *  Created on: 2018-00-01
  *      Author: StoicWeather
  */
 
@@ -24,35 +24,44 @@
 #include "SWSensor.h"
 #include "SW_BME280_Sensor.h"
 #include "SW_MCP9808_Sensor.h"
+#include "SW_MCP2318_GPIO_Sensor.h"
 
 #include "SW_Ard_Readout.h"
 #include "SW_Rain_Readout.h"
+
+#include "SW_Ard_Analog.h"
+#include "SW_Wind_Dir_Analog.h"
+
 
 #define SERIAL_BAUDRATE 9600
 
 
 // Addresses
 #define BME280_TPH3_ADDRESS 0x77
-#define MCP9808_T2_ADDRESS 0x18
+#define MCP9808_T2_ADDRESS  0x18
+// Address 32 or 0x20 in HEX
+#define MCP23018_W6_ADDRESS 0x20
 
-// Life Cycle Controls
-#define BME280_TPH3_TAKEMEASURE_LCS 1
-#define BME280_TPH3_READMEASURE_LCS 2
-// TODO should it be LCS or MCS?
-
-#define MCP9808_T2_READMEASURE_LCS  1
 
 // Sensor Numbers
-#define BME280_TPH3_TEMPFARS_SNUM 3
-#define MCP9808_T2_TEMPINBOX_SNUM 2
-#define TippingBucket_R4_Rain_SUNM 4
+#define MCP9808_T2_TEMPINBOX_SNUM 		2
+#define BME280_TPH3_TEMPFARS_SNUM 		3
+#define TIPPINGBUCKET_R4_RAIN_SUNM 		4
+#define DAVISANNA_WD5_WIND_DIR_SUNM 		5
+#define DAVISANNA_WS6_WIND_SPEED_SUNM 	6
+
 
 // Pins
-#define MASTER_RESET_D_PIN 13
+#define RAINCOUNT_RESET_D_PIN 13
 #define RAIN_DAQ0_D_PIN    9
+#define WIND_DIR_ADC_A_PIN 1
 
 // Pin Ranges - number of pins starting with DAQ0
 #define RAIN_PIN_RANGE     4
+
+// Presets
+#define NUMBER_OF_WIND_DIR_RECORDS 120 // Must be even!
+#define NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP   30
 
 
 

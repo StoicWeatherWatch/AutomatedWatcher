@@ -40,11 +40,11 @@ class SW_Sensor
 	public:
 	byte SensorAddress;
 	I2C I2CBuss;
-	//This holds an internal numbering system for each sensor.
+	//This number prefixes each data line sent by serial.
 	byte SensorNumber;
 
 	SW_Sensor(byte AddressIn, I2C I2CBussIn, byte SensorNumberIN);
-	byte SW_SensorGetAddress();
+
 
 	virtual bool AcquireData();
 	virtual bool SendRawDataSerial();
