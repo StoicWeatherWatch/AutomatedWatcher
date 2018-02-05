@@ -36,7 +36,7 @@ SW_Wind_Dir_Analog::SW_Wind_Dir_Analog(byte AAQ0PinIn, byte NumberOfRecordsIn, b
 
 bool SW_Wind_Dir_Analog::AcquireAnalogDataAndSend()
 {
-	int AAQread = analogRead(AAQ0Pin);
+	int AAQread = Read_Pin();
 
 	Serial.print(F("*"));
 	Serial.print(SensorNumberAnalog,DEC);
@@ -50,7 +50,7 @@ bool SW_Wind_Dir_Analog::AcquireAnalogDataAndSend()
 
 bool SW_Wind_Dir_Analog::AcquireDirectionDataOnly()
 {
-	int AAQread = analogRead(AAQ0Pin);
+	int AAQread = Read_Pin();
 	//Serial.println(F("#Wind AcquireDataOnly;"));
 
 	return RecordDirectionReading(AAQread);

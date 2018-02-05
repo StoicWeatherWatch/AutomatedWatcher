@@ -44,3 +44,34 @@ bool SerialHexByteAndAHalfPrint(int data)
 	     return true;
 	}
 
+void SerialHexFourAndAHalfBytefPrint(long data)
+{
+	if(data > (byte)0xFFFF)
+	{
+		Serial.print(data,HEX);
+	}
+	else if(data > (byte)0xFFF)
+	{
+		Serial.print("0");
+		Serial.print(data,HEX);
+	}
+	else if(data > (byte)0xFF)
+		     {
+		Serial.print("00");
+		     Serial.print(data,HEX);
+		     }
+		else if(data > (byte)0xF)
+		     {
+		    	 Serial.print("000");
+		    	 Serial.print(data,HEX);
+		     }
+		else
+			 {
+			 Serial.print("0000");
+			 Serial.print(data,HEX);
+			 }
+
+		}
+
+}
+
