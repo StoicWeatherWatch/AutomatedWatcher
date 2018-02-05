@@ -9,8 +9,8 @@
 
 
 SW_Ard_Analog::SW_Ard_Analog(byte AAQ0PinIn, byte SensorNumberIn)
-:SensorNumber(SensorNumberIn),
- AAQ0Pin(AAQ0Pin)
+:SensorNumberAnalog(SensorNumberIn),
+ AAQ0Pin(AAQ0PinIn)
 {
 
 

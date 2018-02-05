@@ -13,28 +13,14 @@
 
 #include "SW_MCP2318_GPIO_Sensor.h"
 
-SW_MCP2318_GPIO_Sensor::SW_MCP2318_GPIO_Sensor(byte AddressIn, I2C I2CBussIn, byte NumberOfRecordsIn, byte SensorNumberIN)
+SW_MCP2318_GPIO_Sensor::SW_MCP2318_GPIO_Sensor(byte AddressIn, I2C I2CBussIn, byte SensorNumberIN)
 :SW_Sensor(AddressIn,I2CBussIn, SensorNumberIN)
 {
 
-	// Mean Wind Measurements
-	HaveFullQueue = false;
-	CurrentQueueLoc = -1;
-	// Counts by data points. With 13 bits it takes 2 bytes for each data point unless you want to get tricky.
-	WindSpeedQueue = (byte*)calloc(NumberOfRecordsIn*2, sizeof(byte));
-	QueueLength = NumberOfRecordsIn;
-
-	// Gust measurements
-	LastGustReadout = 0;
-	HaveFullGustQueue = false;
-	CurrentGustQueueLoc = -1;
-
-	GustQueue = (byte*)calloc((int)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, sizeof(byte));
 
 
 
-
-	Serial.print(F("#Wind Speed Initialized;"));
+	Serial.print(F("#SW_MCP2318_GPIO_Sensor constructed;"));
 
 
 
@@ -55,12 +41,12 @@ int SW_MCP2318_GPIO_Sensor::AcquireDataAndReturn()
 					Serial.print(I2CBuss.available(),HEX);
 					Serial.println(F(";"));*/
 	//TEST line
-	Serial.print(F("# MCP2318 readin "));
+	//Serial.print(F("# MCP2318 readin "));
 
 	int DataIn = (int)I2CBuss.receive();
 
 	//TEST line
-	Serial.print(DataIn, HEX);
+	//Serial.print(DataIn, HEX);
 
 	I2CBuss.read(SensorAddress, (byte)MCP2318_GPIOA_REG, (byte)1);
 
@@ -69,88 +55,46 @@ int SW_MCP2318_GPIO_Sensor::AcquireDataAndReturn()
 	DataIn <<= 8;
 	DataIn |= (int)I2CBuss.receive();
 	//TEST line
-	Serial.print(DataIn, HEX);
-	Serial.println(F(";"));
+	//Serial.print(DataIn, HEX);
+	//Serial.println(F(";"));
 
 	//TEST LINE
-	Serial.print(F("# MCP2318 readin "));
+	Serial.print(F("# MCP23018 readin "));
 	Serial.print(DataIn, HEX);
 	Serial.println(F(";"));
 
 	return DataIn;
 }
 
-bool SW_MCP2318_GPIO_Sensor::AcquireData()
-{
-	// Prep queue
-	CurrentQueueLoc++;
-
-	// TODO CurrentQueueLoc >QueueLength >=?
-	if(CurrentQueueLoc >= QueueLength)
-	{
-		CurrentQueueLoc = 0;
-		HaveFullQueue = true;
-	}
-
-	/*//SEQOP = 0 So the second byte should be GPIOA :)
-	byte status = I2CBuss.read(SensorAddress, (byte)MCP2318_GPIOB_REG, (byte)2);
-
-	//TEST line
-	Serial.print(F("# MCP2318 read status "));
-	Serial.print(status);
-	Serial.println(F(";"));
-
-	int DataIn = (int)I2CBuss.receive();
-	// Most sig bits came in first. They get shifted up. Only 13 bits of data.
-	DataIn = DataIn &0b00011111;
-	DataIn <<= 8;
-	DataIn |= (int)I2CBuss.receive();
-
-	//TEST LINE
-	Serial.print(F("# MCP2318 readin "));
-		Serial.print(DataIn, HEX);
-		Serial.println(F(";"));
-	 */
-	int DataIn = AcquireDataAndReturn();
-
-	WindSpeedQueue[CurrentQueueLoc*2] = (byte)(DataIn >> 8);
-
-	// (byte) should truncate
-	WindSpeedQueue[(CurrentQueueLoc*2)+1] = (byte)(DataIn);
 
 
-
-	return true;
-
-
-
-}
-
-bool SW_MCP2318_GPIO_Sensor::SendAllRawDataSerial()
+/*bool SW_MCP2318_GPIO_Sensor::SendAllRawDataSerial()
 {
 
-	if(!HaveFullQueue)
+	if(!HaveFullSpeedQueue)
 	{
 
 		return false;
 	}
 
-	Serial.print(F("*"));
+	Serial.print(F("#"));
 	Serial.print(SensorNumber,DEC);
-	Serial.print(F("WA,"));
+	Serial.print(F("WSA"));
 	byte QueueLoc = 0;
-	for(int i = 0; i< QueueLength; i++)
+	for(int i = 0; i< SpeedQueueLength; i++)
 	{
-		QueueLoc = CurrentQueueLoc + i;
+		QueueLoc = CurrentSpeedQueueLoc + i;
 
 		// TODO CurrentQueueLoc >QueueLength >=?
-		if(QueueLoc >= QueueLength)
+		if(QueueLoc >= SpeedQueueLength)
 		{
-			QueueLoc = 0;
+			QueueLoc -= SpeedQueueLength;
 		}
 
+		Serial.print(F(","));
 		SerialHexBytePrint(WindSpeedQueue[QueueLoc*2]);
 		SerialHexBytePrint(WindSpeedQueue[(QueueLoc*2)+1]);
+
 	}
 
 	Serial.print(F(";"));
@@ -165,58 +109,10 @@ bool SW_MCP2318_GPIO_Sensor::SendAllRawDataSerial()
 bool SW_MCP2318_GPIO_Sensor::SendRawDataSerial()
 {
 	return SendAllRawDataSerial();
-}
-
-// Returns counts. Divide byt
-int SW_MCP2318_GPIO_Sensor::GetMostRecentRawMean()
-{
-	if(!HaveFullQueue)
-	{
-		return 0;
-	}
-
-	byte OldestQueueLoc = 0;
-	if(CurrentQueueLoc != QueueLength - 1)
-	{
-		OldestQueueLoc = CurrentQueueLoc + 1;
-	}
-	else
-	{
-		OldestQueueLoc = 0;
-	}
-
-	int Difference = ((WindSpeedQueue[CurrentQueueLoc*2] << 8) + WindSpeedQueue[(CurrentQueueLoc*2)+1])
-					- ((WindSpeedQueue[OldestQueueLoc*2] << 8) + WindSpeedQueue[(OldestQueueLoc*2)+1]);
-
-	if(Difference < 0)
-	{
-		Difference += MAX_WIND_CTS;
-	}
-
-	return Difference;
-
-}
-
-bool SW_MCP2318_GPIO_Sensor::SendMostRecentRawMean()
-{
-	if(!HaveFullQueue)
-	{
-		return false;
-	}
-
-	int Difference = GetMostRecentRawMean();
-
-	Serial.print(F("*"));
-	Serial.print(SensorNumber,DEC);
-	Serial.print(F("WM,"));
-	SerialHexBytePrint((byte)(Difference >> 8));
-	SerialHexBytePrint((byte)Difference);
-	Serial.print(F(";"));
+}*/
 
 
-	return true;
 
-}
 
 // A gust is 10 knts between peak and lull in a time period that is rapid.
 //Readout is every 2.25 seconds for instantaneous speed.
@@ -226,90 +122,11 @@ bool SW_MCP2318_GPIO_Sensor::SendMostRecentRawMean()
 // Time period recorded.
 //bool SW_MCP2318_GPIO_Sensor::SendGustData();
 
-bool SW_MCP2318_GPIO_Sensor::AcquireGustDataAndSend()
-{
 
-
-	int CurrentGustReadout = AcquireDataAndReturn();
-
-	//Very first run just record it and be done
-	if(CurrentGustQueueLoc == -1)
-	{
-		CurrentGustQueueLoc++;
-		GustQueue[CurrentGustQueueLoc] = byte(CurrentGustReadout);
-		return false;
-	}
-
-	//  Using differences to keep memory to a minimum. Largest readout in 2.25 seconds is 100
-	// The readout may wrap around.
-	byte CurrentGustRaw;
-	if(LastGustReadout > CurrentGustReadout)
-	{
-		CurrentGustRaw = (byte)(CurrentGustReadout + (int)MAX_WIND_CTS - LastGustReadout);
-	}
-	else
-	{
-		CurrentGustRaw = (byte)(CurrentGustReadout - LastGustReadout);
-	}
-
-	// Used next time
-	LastGustReadout = CurrentGustReadout;
-
-	// Reporting only done with a full queue
-	if(HaveFullGustQueue)
-	{
-		// Search for min and max. Most we should ever get is 100 or less
-		byte min = 150;
-		byte max = 0;
-		for(int i = 0; i < (int)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP; i++)
-		{
-			if(GustQueue[i] < min)
-			{
-				min = GustQueue[i];
-			}
-			if(GustQueue[i] > max)
-			{
-				max = GustQueue[i];
-			}
-		}
-
-		// Report current, min and max
-		Serial.print(F("*"));
-		Serial.print(SensorNumber,DEC);
-		Serial.print(F("WG,"));
-		SerialHexBytePrint(CurrentGustRaw);
-		Serial.print(F(","));
-		SerialHexBytePrint(min);
-		Serial.print(F(","));
-		SerialHexBytePrint(max);
-		Serial.println(F(";"));
-
-	} // end if HaveFullGustQueue
-
-	// Add current to queue
-	CurrentGustQueueLoc++;
-
-	// TODO CurrentQueueLoc >QueueLength >=?
-	if(CurrentGustQueueLoc >= (int)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP)
-	{
-		CurrentGustQueueLoc = 0;
-		HaveFullGustQueue = true;
-	}
-
-	GustQueue[CurrentGustQueueLoc] = CurrentGustRaw;
-
-	Serial.print(F("# Current wind gust raw "));
-	Serial.print(CurrentGustRaw,HEX);
-	Serial.println(F(";"));
-
-
-	return true;
-
-}
 
 bool SW_MCP2318_GPIO_Sensor::InitializeSensor()
 {
-	Serial.println(F("#Initializing MCP2318;"));
+	Serial.println(F("#Initializing MCP23018;"));
 
 #ifdef VERIFY_CHIPS
 	if(!VerifyChip())
@@ -341,9 +158,9 @@ bool SW_MCP2318_GPIO_Sensor::VerifyChip()
 	byte status = I2CBuss.read(SensorAddress, (byte)MCP2318_IOCON_REG, (byte)2);
 
 	//TEST line
-				Serial.print(F("# MCP2318 I2c.available()  "));
-				Serial.print(I2CBuss.available(),HEX);
-				Serial.println(F(";"));
+				//Serial.print(F("# MCP2318 I2c.available()  "));
+				//Serial.print(I2CBuss.available(),HEX);
+				//Serial.println(F(";"));
 
 	int DataIn = (int)I2CBuss.receive();
 	// Most sig bits came in first. They get shifted up.
@@ -371,9 +188,9 @@ bool SW_MCP2318_GPIO_Sensor::VerifyChip()
 
 
 		//TEST line
-			Serial.print(F("# MCP23018 I2c.available()  "));
-			Serial.print(I2CBuss.available(),HEX);
-			Serial.println(F(";"));
+			//Serial.print(F("# MCP23018 I2c.available()  "));
+			//Serial.print(I2CBuss.available(),HEX);
+			//Serial.println(F(";"));
 
 	DataIn = (int)I2CBuss.receive();
 	// Most sig bits came in first. They get shifted up.
@@ -381,18 +198,18 @@ bool SW_MCP2318_GPIO_Sensor::VerifyChip()
 	DataIn |= (int)I2CBuss.receive();
 
 	//TEST line
-	Serial.print(F("# MCP2318 VerifyChip read status "));
-	Serial.print(status,HEX);
-	Serial.println(F(";"));
+	//Serial.print(F("# MCP2318 VerifyChip read status "));
+	//Serial.print(status,HEX);
+	//Serial.println(F(";"));
 
 
 	if(DataIn == (int)MCP2318_IODIRA_DEFAULT_VALUE)
 	{
-		Serial.println(F("#MCP2318 Correct IODIR Values;"));
+		Serial.println(F("#MCP23018 Correct IODIR Values;"));
 	}
 	else
 	{
-		Serial.println(F("#NOT MCP2318 Correct IODIR Values;"));
+		Serial.println(F("#NOT MCP23018 Correct IODIR Values;"));
 		Serial.println(DataIn);
 		return false;
 	}

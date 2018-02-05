@@ -18,7 +18,7 @@
  */
 
 // TODO Housekeeping, report uptime and chip temperature
-// TODO eleminate *3TPH,000000,000000,0000,^; and report an error instead
+
 
 
 
@@ -32,9 +32,11 @@ SW_MCP9808_Sensor T2_CircuitBox_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T2_ADDR
 
 SW_Rain_Readout R4_Rain_Readout = SW_Rain_Readout((byte)RAIN_DAQ0_D_PIN, (byte)RAIN_PIN_RANGE, (byte)RAINCOUNT_RESET_D_PIN, (byte)TIPPINGBUCKET_R4_RAIN_SUNM);
 
-SW_Wind_Dir_Analog W5_WindDir_Readout =  SW_Wind_Dir_Analog((byte)WIND_DIR_ADC_A_PIN, (byte)NUMBER_OF_WIND_DIR_RECORDS, (byte)DAVISANNA_WD5_WIND_DIR_SUNM);
+SW_Wind_Dir_Mean W5_WindDir_Mean_Readout =  SW_Wind_Dir_Mean((byte)WIND_DIR_ADC_A_PIN, (byte)NUMBER_OF_WIND_DIR_RECORDS, (byte)DAVISANNA_WD5_WIND_DIR_SUNM);
 
-SW_MCP2318_GPIO_Sensor W6_WindSpeed_Sensor = SW_MCP2318_GPIO_Sensor((byte)MCP23018_W6_ADDRESS, I2CBus, (byte)NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP, (byte)DAVISANNA_WS6_WIND_SPEED_SUNM);
+SW_Wind_Speed_Mean W6_WindSpeed_Mean_Sensor = SW_Wind_Speed_Mean((byte)MCP23018_W6_ADDRESS, I2CBus, (byte)NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP, (byte)DAVISANNA_WS6_WIND_SPEED_SUNM);
+
+SW_Wind_Gust WG6_WindGust_Multiple = SW_Wind_Gust((byte)MCP23018_W6_ADDRESS, I2CBus, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, (byte)DAVISANNA_WS6_WIND_SPEED_SUNM, (byte)WIND_DIR_ADC_A_PIN, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, (byte)DAVISANNA_WD5_WIND_DIR_SUNM);
 
 void setup()
 {
@@ -59,7 +61,11 @@ void setup()
 
 	T2_CircuitBox_Sensor.InitializeSensor();
 
-	W6_WindSpeed_Sensor.InitializeSensor();
+	// TODO Need to reset the wind speed counter on startup
+	W6_WindSpeed_Mean_Sensor.InitializeSensor();
+
+	// Done above
+	//WG6_WindGust_Multiple.InitializeSensor();
 
 	// Rain Sensor
 	// Set the rain reset high to reset the rain count
@@ -97,7 +103,7 @@ void loop()
 		if(SW_CK_EverySecond())
 		{
 			//Serial.println(F("#1 second;"));
-			W5_WindDir_Readout.AcquireDataOnly();
+			W5_WindDir_Mean_Readout.AcquireDirectionDataOnly();
 			// Every 30 seconds for wind
 			if(SW_CK_GetSecondCount() == 0)
 			{
@@ -132,6 +138,7 @@ void loop()
 			// 2
 			TPH3_FARS_Sensor.RetrieveDataAndSend();
 
+
 			break;
 		case 3 :
 			// 3 Early
@@ -143,6 +150,8 @@ void loop()
 			// 4 Early
 
 			// 4
+
+			WG6_WindGust_Multiple.AcquireWindGustDirection();
 
 			break;
 		case 5 :
@@ -174,6 +183,8 @@ void loop()
 				T2_CircuitBox_Sensor.SendRawDataSerial();
 			}
 
+
+
 			break;
 
 		case 7 :
@@ -185,7 +196,8 @@ void loop()
 				break;
 		case 8 :
 				// 8 Early
-				W6_WindSpeed_Sensor.AcquireGustDataAndSend();
+				WG6_WindGust_Multiple.AcquireWindGustSpeed();
+				WG6_WindGust_Multiple.SendWindGustData();
 
 				// 8
 
@@ -201,7 +213,8 @@ void loop()
 			// Every 30 seconds for wind
 			if(SW_CK_GetSecondCount() == 0)
 			{
-				W5_WindDir_Readout.SendQueue();
+				// TODO fix Wind Dir
+				//W5_WindDir_Mean_Readout.SendDirectionQueue();
 
 			}
 
@@ -210,8 +223,8 @@ void loop()
 		// Wind Speed readout.
 		if(SW_CK_EveryFifthSecond())
 		{
-			W6_WindSpeed_Sensor.AcquireData();
-			W6_WindSpeed_Sensor.SendAllRawDataSerial();
+			W6_WindSpeed_Mean_Sensor.AcquireData();
+			// TODO does this actually get called?
 		}
 
 

@@ -33,56 +33,31 @@
 // SEQOP may cause issues
 #define MCP2318_CONFIG_IOCON_CMD    0x00
 
-// 2.25 seconds.
-#define NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP   54
 
-#define MAX_WIND_CTS     0b1111111111111
+
+
 
 #include "SWSensor.h"
 #include "SW_Helper_Functions.h"
 
+
+
 /*
  *
  */
-class SW_MCP2318_GPIO_Sensor: public SW_Sensor {
+class SW_MCP2318_GPIO_Sensor: public SW_Sensor
+{
 public:
-	// Raw counts
-	byte *WindSpeedQueue;
-	int CurrentQueueLoc;
-	byte QueueLength; // data chunks not bytes
-	bool HaveFullQueue;
 
 
-	// Unlike WindSpeedQueue, GustQueue holds differences between each record. This saves memory
-	// since we only need a byte not 13 bits.
-	byte *GustQueue;
-	int LastGustReadout;
-	bool HaveFullGustQueue;
-	int CurrentGustQueueLoc;
+	SW_MCP2318_GPIO_Sensor(byte AddressIn, I2C I2CBussIn, byte SensorNumberIN);
 
-
-
-	SW_MCP2318_GPIO_Sensor(byte AddressIn, I2C I2CBussIn, byte NumberOfRecordsIn, byte SensorNumberIN);
-	bool AcquireData(); // For mean wind speed
-	bool SendAllRawDataSerial(); // For mean wind speed
-	bool SendRawDataSerial();
 
 	int AcquireDataAndReturn();
 
-	int GetMostRecentRawMean();
-	bool SendMostRecentRawMean();
 
 
-	// A gust is 10 knts between peak and lull in a time period that is rapid.
-	//Readout is every 2.25 seconds for instantaneous speed.
-	// How many 2.25 second intervals is set by gust Record Interval
-	//bool AcquireGustData();
-	// THis sends raw counts from a 2.25 second period. Sends max, min, and current for
-	// Time period recorded.
-	//bool SendGustData();
-	bool AcquireGustDataAndSend();
-
-
+// TODO make this static?
 	bool InitializeSensor();
 
 

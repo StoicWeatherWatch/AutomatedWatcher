@@ -14,56 +14,61 @@
  * 0011223344556677889900
  */
 
-SW_Wind_Dir_Analog::SW_Wind_Dir_Analog(byte AAQ0PinIn, byte NumberOfRecordsIn, byte SensorNumberIn)
-:SW_Ard_Analog(AAQ0PinIn, SensorNumberIn)
+SW_Wind_Dir_Analog::SW_Wind_Dir_Analog(byte AAQ0PinIn, byte NumberOfRecordsIn, byte SensorNumberAnalogIn)
+:SW_Ard_Analog(AAQ0PinIn, SensorNumberAnalogIn)
 {
-	HaveFullQueue = false;
-	CurrentQueueLoc = -1;
+	HaveFullDirectionQueue = false;
+	CurrentDirectionQueueLoc = -1;
 	// Counts by data points. CurrentQueueLoc*3/2 + CurrentQueueLoc*3%2 gives pointer to LSB block.
 	// We can fit a 10 bit ADC output in a 12 bit space. Thus we can fit two data points in three bytes. It just gets tricky to save and recover it...
 	DirectionQueue = (byte*)calloc((NumberOfRecordsIn*3)/2, sizeof(byte));
-	QueueLength = NumberOfRecordsIn;
+	DirectionQueueLength = NumberOfRecordsIn;
+
+
 
 	Serial.print(F("#Wind Direction Initialized;"));
+
+
+
 
 }
 
 
-bool SW_Wind_Dir_Analog::AcquireDataAndSend()
+bool SW_Wind_Dir_Analog::AcquireAnalogDataAndSend()
 {
 	int AAQread = analogRead(AAQ0Pin);
 
 	Serial.print(F("*"));
-	Serial.print(SensorNumber,DEC);
+	Serial.print(SensorNumberAnalog,DEC);
 	Serial.print(F("WDINSTANT,"));
 	SerialHexByteAndAHalfPrint(AAQread);
 	Serial.println(F(";"));
 
-	return RecordReading(AAQread);
+	return RecordDirectionReading(AAQread);
 
 }
 
-bool SW_Wind_Dir_Analog::AcquireDataOnly()
+bool SW_Wind_Dir_Analog::AcquireDirectionDataOnly()
 {
 	int AAQread = analogRead(AAQ0Pin);
 	//Serial.println(F("#Wind AcquireDataOnly;"));
 
-	return RecordReading(AAQread);
+	return RecordDirectionReading(AAQread);
 
 }
 
-int SW_Wind_Dir_Analog::GetMostRecent()
+int SW_Wind_Dir_Analog::GetMostRecentDirection()
 {
-	if(CurrentQueueLoc == -1)
+	if(CurrentDirectionQueueLoc == -1)
 	{
 		// No data yet
 		return 0;
 	}
 
-	byte Pointer = ((CurrentQueueLoc*3)/2) + ((CurrentQueueLoc*3)%2);
+	byte Pointer = ((CurrentDirectionQueueLoc*3)/2) + ((CurrentDirectionQueueLoc*3)%2);
 
 	int MostRecent = (int)DirectionQueue[Pointer];
-	if(((CurrentQueueLoc*3)%2) == 0)
+	if(((CurrentDirectionQueueLoc*3)%2) == 0)
 		{
 			Pointer++;
 			// Will want to change 1792 if using a ADC with more than 10 bits
@@ -80,27 +85,27 @@ int SW_Wind_Dir_Analog::GetMostRecent()
 
 
 }
-bool SW_Wind_Dir_Analog::RecordReading(int AAQread)
+bool SW_Wind_Dir_Analog::RecordDirectionReading(int AAQread)
 {
 
 	//Serial.println(F("#Wind RecordReading;"));
-	CurrentQueueLoc++;
+	CurrentDirectionQueueLoc++;
 
 	// TODO CurrentQueueLoc >QueueLength >= ?
-	if(CurrentQueueLoc >= QueueLength)
+	if(CurrentDirectionQueueLoc >= DirectionQueueLength)
 	{
-		CurrentQueueLoc = 0;
-		HaveFullQueue = true;
+		CurrentDirectionQueueLoc = 0;
+		HaveFullDirectionQueue = true;
 	}
 	/*Serial.print(F("#CurrentQueueLoc "));
 	Serial.print(CurrentQueueLoc);
 	Serial.println(F(";"));*/
 
-	byte Pointer = ((CurrentQueueLoc*3)/2) + ((CurrentQueueLoc*3)%2);
+	byte Pointer = ((CurrentDirectionQueueLoc*3)/2) + ((CurrentDirectionQueueLoc*3)%2);
 
 	DirectionQueue[Pointer] = (byte)(AAQread & 255);
 
-	if(((CurrentQueueLoc*3)%2) == 0)
+	if(((CurrentDirectionQueueLoc*3)%2) == 0)
 	{
 		Pointer++;
 		// Will want to change 1792 if using a ADC with more than 10 bits
@@ -120,9 +125,9 @@ bool SW_Wind_Dir_Analog::RecordReading(int AAQread)
 
 }
 
-bool SW_Wind_Dir_Analog::SendAverage()
+bool SW_Wind_Dir_Analog::SendDirectionAverage()
 {
-	if(!HaveFullQueue)
+	if(!HaveFullDirectionQueue)
 	{
 		return false;
 	}
@@ -131,9 +136,33 @@ bool SW_Wind_Dir_Analog::SendAverage()
 
 	return true;
 }
-bool SW_Wind_Dir_Analog::SendQueue()
+
+int SW_Wind_Dir_Analog::GetDirectionReadingAt(byte TargetQueueLoc)
 {
-	if(!HaveFullQueue)
+
+		byte Pointer = ((TargetQueueLoc*3)/2) + ((TargetQueueLoc*3)%2);
+
+			int Reading = (int)DirectionQueue[Pointer];
+			if(((CurrentDirectionQueueLoc*3)%2) == 0)
+				{
+					Pointer++;
+					// Will want to change 1792 if using a ADC with more than 10 bits
+					Reading += ((int)(DirectionQueue[Pointer] & 240)) << 4;
+
+				}
+				else
+				{
+					Pointer--;
+					Reading += ((int)(DirectionQueue[Pointer] & 15)) << 8;
+				}
+
+			return Reading;
+
+}
+
+bool SW_Wind_Dir_Analog::SendDirectionQueue()
+{
+	if(!HaveFullDirectionQueue)
 	{
 		Serial.println(F("#Wind SendQueue Queue not full;"));
 		return false;
@@ -144,25 +173,25 @@ bool SW_Wind_Dir_Analog::SendQueue()
 #endif
 
 	Serial.print(F("*"));
-	Serial.print(SensorNumber,DEC);
+	Serial.print(SensorNumberAnalog,DEC);
 	Serial.print(F("WDQ,")); // Wind Direction Queue
 
 	int QueueLocation = 0;
 	byte Pointer = 0;
 	int Reading = 0;
 
-	for(int i = 0; i < QueueLength; i++)
+	for(int i = 0; i < DirectionQueueLength; i++)
 	{
-		int QueueLocation = CurrentQueueLoc + i;
-		if(QueueLocation >= QueueLength)
+		QueueLocation = CurrentDirectionQueueLoc + i;
+		if(QueueLocation >= DirectionQueueLength)
 		{
-			QueueLocation -= QueueLength;
+			QueueLocation -= DirectionQueueLength;
 
 		}
 	Pointer = ((QueueLocation*3)/2) + ((QueueLocation*3)%2);
 
 		 Reading = (int)DirectionQueue[Pointer];
-			if(((CurrentQueueLoc*3)%2) == 0)
+			if(((CurrentDirectionQueueLoc*3)%2) == 0)
 				{
 					Pointer++;
 					// Will want to change 1792 if using a ADC with more than 10 bits
@@ -192,5 +221,4 @@ bool SW_Wind_Dir_Analog::SendQueue()
 
 	return true;
 }
-
 

@@ -20,10 +20,9 @@
 class SW_Ard_Analog
 {
 public:
-	byte SensorNumber;
+	byte SensorNumberAnalog;
 	byte AAQ0Pin;
 	SW_Ard_Analog(byte AAQ0PinIn, byte SensorNumberIn);
-	virtual bool AcquireDataAndSend();
 	int Read_Pin();
 };
 

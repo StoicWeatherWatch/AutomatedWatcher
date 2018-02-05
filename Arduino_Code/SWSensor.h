@@ -46,8 +46,6 @@ class SW_Sensor
 	SW_Sensor(byte AddressIn, I2C I2CBussIn, byte SensorNumberIN);
 
 
-	virtual bool AcquireData();
-	virtual bool SendRawDataSerial();
 
 #ifdef VERIFY_CHIPS
 	virtual bool VerifyChip();

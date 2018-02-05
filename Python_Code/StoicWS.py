@@ -23,6 +23,11 @@ Supported Keys:                                    Mapped DB name
    This is BME280ID "BME280-1"
 4R Rain tipping bucket - rain
    Reported since last report - a difference
+5WDx Wind direction
+5WGD Wind gust direction. Reported as 4 readings which can be averaged.
+6WSx Wind speed
+6WGS wind speed gust. Reported as current, min, max. From 54 records. At 2.25 seconds 121.5 seconds
+5WGD and 6WGS are expected on the same line. 
 
 Alert format
 !Key,Value;
@@ -59,6 +64,7 @@ rain_mm_Per_Tip - Tipping bucket conversion factor 0.2794
 # TODO add chip temp for Arduino
 
 # TODO truncate T, P, and H at two decimal places. Anything more is past precision limits
+# TODO eleminate *3TPH,000000,000000,0000,^; and report an error instead
 
 
 # TODO DO I need this? Python 2.7 should have with_statement
@@ -317,7 +323,7 @@ class StoicWatcher(object):
         # python -m serial.tools.list_ports
         # Above will list ports
 
-
+# TODO should we handle rain in some way here
     def close(self):
         if self.serial_port is not None:
             logdbg("close serial port %s" % self.port)
@@ -696,6 +702,25 @@ class StoicWatcher(object):
         data["rain"] = Rain
         
         return data
+    
+    def sensor_parse_wind_direction_gust(self,WDG_arr):
+        
+    def sensor_parse_wind_speed_gust(self,current,min,max):
+        
+    def wind_gust_line_validation(self,LineIn):
+        return True
+    
+    
+    def key_parse_5WDG_5WSG_WindGust(self,LineIn):
+
+        if not wind_gust_line_validation(LineIn):
+            loginf("key_parse_5WDG_5WSG_WindGust received an invalid line")
+            return None
+        posStart = LineIn.find(",")
+        for i in range(4)
+            pos = LineIn.find(",")
+            WDG_arr[i]
+        
         
     
     def parse_raw_data(self, LineIn):
@@ -714,6 +739,8 @@ class StoicWatcher(object):
             return self.key_parse_3TPH_FARS(LineIn)
         elif LineIn[1:pos] == "4R":
             return self.key_parse_4R_Rain(LineIn)
+        elif LineIn[1:pos] == "5WDG":
+            return self.key_parse_5WDG_5WSG_WindGust(LineIn)
 
         else:
             # TODO fix this

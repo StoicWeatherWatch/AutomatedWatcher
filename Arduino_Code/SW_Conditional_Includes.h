@@ -25,12 +25,16 @@
 #include "SW_BME280_Sensor.h"
 #include "SW_MCP9808_Sensor.h"
 #include "SW_MCP2318_GPIO_Sensor.h"
+#include "SW_Wind_Speed_Mean.h"
 
 #include "SW_Ard_Readout.h"
 #include "SW_Rain_Readout.h"
 
 #include "SW_Ard_Analog.h"
 #include "SW_Wind_Dir_Analog.h"
+#include "SW_Wind_Dir_Mean.h"
+
+#include "SW_Wind_Gust.h"
 
 
 #define SERIAL_BAUDRATE 9600
@@ -62,6 +66,8 @@
 // Presets
 #define NUMBER_OF_WIND_DIR_RECORDS 120 // Must be even!
 #define NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP   30
+// 2.25 seconds gives 54 in 121.5 seconds
+#define NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP   54
 
 
 
