@@ -94,6 +94,12 @@ void setup()
 
 void loop()
 {
+	/*
+	 * Each action in the primary lifecycle gets 100 ms. Each further item in the 1 second and 5 second lifecycles gets 100 ms.
+	 * Taking the mean of the wind direction takes about 70 ms
+	 * */
+
+
 	if(SW_CK_InterruptOccurred())
 	{
 		// First clock housekeeping
@@ -102,16 +108,8 @@ void loop()
 		// Every second for wind directions
 		if(SW_CK_EverySecond())
 		{
-			//Serial.println(F("#1 second;"));
 			W5_WindDir_Mean_Readout.AcquireDirectionDataOnly();
-			// Every 30 seconds for wind
-			if(SW_CK_GetSecondCount() == 0)
-			{
-				// TODO this prints 3 or 4 times. should run once.
-				Serial.println(F("#30 second;"));
-				// TODO add sending via serial
-
-			}
+			Serial.println(F("# if SW_CK_EverySecond() is running;"));
 
 		}
 
@@ -221,10 +219,14 @@ void loop()
 		}
 
 		// Wind Speed readout.
+		Serial.println(F("# if SW_CK_EveryFifthSecond() is testing;"));
 		if(SW_CK_EveryFifthSecond())
 		{
 			W6_WindSpeed_Mean_Sensor.AcquireData();
-			// TODO does this actually get called?
+			Serial.println(F("# if SW_CK_EveryFifthSecond() is running;"));
+
+			W6_WindSpeed_Mean_Sensor.SendMostRecentRawMean();
+			W5_WindDir_Mean_Readout.SendMeanAndBinBlock();
 		}
 
 

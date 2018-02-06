@@ -18,6 +18,11 @@ void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 {
 	if(HaveFullDirectionQueue)
 	{
+
+#ifdef RUN_TIME_TEST
+	unsigned long timeB = millis();
+#endif
+
 		// Bin the data
 		byte *Bins;
 		Bins = (byte*) calloc ((int)NUMBER_OF_BINS,sizeof(byte));
@@ -163,6 +168,8 @@ void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 				Serial.print(F(";"));
 
 				// TODO Print Bin Info
+				// Full width at half max. Sum up bins until you reach half the number of measurments. Report all bins in bin list.
+				// If it is a normal dist, this will give FWHM. Not quite. Width at half the area under the curve.
 
 
 #ifdef RUN_RAM_TEST
@@ -176,6 +183,14 @@ void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 		free(Bins);
 		free(BinList);
 		free(DirectionQueueCopy);
+
+#ifdef RUN_TIME_TEST
+	Serial.flush();
+	unsigned long EndtimeB = millis();
+	Serial.print(F("# Time to to take full mean "));
+	Serial.print(EndtimeB-timeB);
+	Serial.println(F(";"));
+#endif
 	}
 }
 

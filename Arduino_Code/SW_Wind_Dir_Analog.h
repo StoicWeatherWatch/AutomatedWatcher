@@ -37,7 +37,7 @@ public:
 	bool AcquireDirectionDataOnly(); // Used in Wind Gust
 	int GetMostRecentDirection();
 	int GetDirectionReadingAt(byte TargetQueueLoc); // Used in Wind Gust
-	bool RecordDirectionReading(int AAQread);
+	bool RecordDirectionReading(int AAQread); // Used in Wind mean
 	bool SendDirectionAverage();
 	bool SendDirectionQueue();
 

@@ -10,39 +10,39 @@
 // prints 8-bit data in hex with leading zeroes
 bool SerialHexBytePrint(byte data)
 {
-     if(data > (byte)15)
-     {
-     Serial.print(data,HEX);
-     }
-     else
-     {
-    	 Serial.print("0");
-    	 Serial.print(data,HEX);
-     }
+	if(data > (byte)15)
+	{
+		Serial.print(data,HEX);
+	}
+	else
+	{
+		Serial.print("0");
+		Serial.print(data,HEX);
+	}
 
-     return true;
+	return true;
 }
 
 // prints 12-bit data in hex with leading zeroes
 bool SerialHexByteAndAHalfPrint(int data)
 {
 	if(data > (byte)255)
-	     {
-	     Serial.print(data,HEX);
-	     }
-	else if(data > (byte)15)
-	     {
-	    	 Serial.print("0");
-	    	 Serial.print(data,HEX);
-	     }
-	else
-		 {
-		 Serial.print("00");
-		 Serial.print(data,HEX);
-		 }
-
-	     return true;
+	{
+		Serial.print(data,HEX);
 	}
+	else if(data > (byte)15)
+	{
+		Serial.print("0");
+		Serial.print(data,HEX);
+	}
+	else
+	{
+		Serial.print("00");
+		Serial.print(data,HEX);
+	}
+
+	return true;
+}
 
 void SerialHexFourAndAHalfBytefPrint(long data)
 {
@@ -56,22 +56,22 @@ void SerialHexFourAndAHalfBytefPrint(long data)
 		Serial.print(data,HEX);
 	}
 	else if(data > (byte)0xFF)
-		     {
+	{
 		Serial.print("00");
-		     Serial.print(data,HEX);
-		     }
-		else if(data > (byte)0xF)
-		     {
-		    	 Serial.print("000");
-		    	 Serial.print(data,HEX);
-		     }
-		else
-			 {
-			 Serial.print("0000");
-			 Serial.print(data,HEX);
-			 }
-
-		}
+		Serial.print(data,HEX);
+	}
+	else if(data > (byte)0xF)
+	{
+		Serial.print("000");
+		Serial.print(data,HEX);
+	}
+	else
+	{
+		Serial.print("0000");
+		Serial.print(data,HEX);
+	}
 
 }
+
+
 

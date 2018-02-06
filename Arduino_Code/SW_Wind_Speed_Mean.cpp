@@ -77,6 +77,7 @@ int SW_Wind_Speed_Mean::GetMostRecentRawMean()
 	byte OldestQueueLoc = 0;
 	if(CurrentSpeedQueueLoc != SpeedQueueLength - 1)
 	{
+		// This is the normal case.
 		OldestQueueLoc = CurrentSpeedQueueLoc + 1;
 	}
 	else
