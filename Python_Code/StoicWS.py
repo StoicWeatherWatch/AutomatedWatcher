@@ -75,6 +75,9 @@ from __future__ import with_statement
 import serial
 import syslog
 import time
+import traceback
+
+# TODO do I use binascii?
 import binascii
 
 import weewx.drivers
@@ -156,6 +159,12 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         stoic_Cal_dict["wind_direction_cal_slope"] = float(stn_dict.get('wind_direction_cal_slope'))
         stoic_Cal_dict["wind_direction_dead_zone_dir"] = float(stn_dict.get('wind_direction_dead_zone_dir'))
         
+        loginf("self.stoic_Cal_dict['wind_direction_cal_offset'] %f" % stoic_Cal_dict["wind_direction_cal_offset"])
+        loginf("stoic_Cal_dict['wind_direction_cal_slope'] %f" % stoic_Cal_dict["wind_direction_cal_slope"])
+        
+        loginf("stoic_Cal_dict['wind_mps_per_click_per_2_25_s'] %f" % stoic_Cal_dict["wind_mps_per_click_per_2_25_s"])
+        loginf("stoic_Cal_dict['wind_direction_dead_zone_dir'] %f" % stoic_Cal_dict["wind_direction_dead_zone_dir"])
+        
         # BME280 A 3TPH "BME280-1"
         # The BME280 has lots of calibration data which is hard coded in the factory. 
         # The calculations require at least 64 bit integer math
@@ -164,17 +173,17 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         #stoic_Cal_dict["BME280_1_CAL_T1"] = (long(stn_dict.get("cal-BME280-1.2.1"),16) << 8) + long(stn_dict.get("cal-BME280-1.2.0"),16)
         
         # TEST Lines
-        loginf("stn_dict.get('cal-BME280-1.2.1') %s" % stn_dict.get("cal-BME280-1.2.1"))
-        loginf("stn_dict.get('cal-BME280-1.2.0') %s" % stn_dict.get("cal-BME280-1.2.0"))
+        #loginf("stn_dict.get('cal-BME280-1.2.1') %s" % stn_dict.get("cal-BME280-1.2.1"))
+        #loginf("stn_dict.get('cal-BME280-1.2.0') %s" % stn_dict.get("cal-BME280-1.2.0"))
         
         stoic_Cal_dict["BME280_1_CAL_T1"] = BoschHEXHEX2UnsignedLong(stn_dict.get("cal-BME280-1.2.1"),stn_dict.get("cal-BME280-1.2.0"))
         # TEST LINE
-        loginf("stoic_Cal_dict['BME280_1_CAL_T1'] %d" % stoic_Cal_dict["BME280_1_CAL_T1"])
+        #loginf("stoic_Cal_dict['BME280_1_CAL_T1'] %d" % stoic_Cal_dict["BME280_1_CAL_T1"])
         #  Data sheet T2 signed 
         #stoic_Cal_dict["BME280_1_CAL_T2"] = ((long(stn_dict.get("cal-BME280-1.2.3"),16) >> 7) * long(-1) ) * (((long(stn_dict.get("cal-BME280-1.2.3"),16) & 0b01111111) << 8) + long(stn_dict.get("cal-BME280-1.2.2"),16))
         stoic_Cal_dict["BME280_1_CAL_T2"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.3"),stn_dict.get("cal-BME280-1.2.2"))
          # TEST LINE
-        loginf("stoic_Cal_dict['BME280_1_CAL_T2'] %d" % stoic_Cal_dict["BME280_1_CAL_T2"])
+        #loginf("stoic_Cal_dict['BME280_1_CAL_T2'] %d" % stoic_Cal_dict["BME280_1_CAL_T2"])
         #  Data sheet T3 Signed
         stoic_Cal_dict["BME280_1_CAL_T3"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.5"),stn_dict.get("cal-BME280-1.2.4"))
         #  Data sheet P1 Unsigned
@@ -296,8 +305,9 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
             packet = {'dateTime': int(time.time() + 0.5),
                       'usUnits': weewx.METRICWX}
             data = self.StoicWatcher.get_processed_data_with_retry(self.max_tries, self.retry_wait)
-            packet.update(data)
-            yield packet
+            if data != None:
+                packet.update(data)
+                yield packet
 
 class StoicWatcher(object):
     
@@ -384,6 +394,8 @@ class StoicWatcher(object):
             posEnd = LineIn.find(",")
         
         Temp = self.sensor_parse_MCP9808_Temp(LineIn[pos+1:posEnd])
+        
+        loginf("key_parse_2T_BoxTemp temp %f" % Temp)
             
         data = dict()
         data["extraTemp1"] = Temp
@@ -402,17 +414,17 @@ class StoicWatcher(object):
         The sensor does not know its altitude)
         """
         
-        loginf("Stoic sensor_parse_BME280_Pressure  HEX in %s" % DataHex)
+        #loginf("Stoic sensor_parse_BME280_Pressure  HEX in %s" % DataHex)
         
         RawPressure = long(DataHex,16) >> 4
         
-        loginf("Stoic sensor_parse_BME280_Pressure  RawPressure %d" % RawPressure)
-        loginf("Stoic sensor_parse_BME280_Pressure  RawPressure %X" % RawPressure)
+        #loginf("Stoic sensor_parse_BME280_Pressure  RawPressure %d" % RawPressure)
+        #loginf("Stoic sensor_parse_BME280_Pressure  RawPressure %X" % RawPressure)
         
         
         # TEST Line
-        loginf("self.stoic_Cal_dict[BME280ID+'_CAL_P6''] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_P6"])
-        loginf("self.stoic_Cal_dict[BME280ID+'_CAL_P6''] type  %s" % type(self.stoic_Cal_dict[BME280ID+"_CAL_P6"]))
+        #loginf("self.stoic_Cal_dict[BME280ID+'_CAL_P6''] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_P6"])
+        #loginf("self.stoic_Cal_dict[BME280ID+'_CAL_P6''] type  %s" % type(self.stoic_Cal_dict[BME280ID+"_CAL_P6"]))
 
         #var1 = ((BME280_S64_t)t_fine) - 128000;
         var1 = TFine - long(128000)
@@ -456,8 +468,8 @@ class StoicWatcher(object):
         p = ((p + var1 + var2) >> 8) + (self.stoic_Cal_dict[BME280ID+"_CAL_P7"] << 4)
         
     # p is integer pressure. p / 256  gives Pa.  (p / 256) / 100 gives hPa
-        loginf("Stoic sensor_parse_BME280_Pressure  Integer Pressure %d" % p)
-        loginf("Stoic sensor_parse_BME280_Pressure  Integer Pressure %X" % p)
+        #loginf("Stoic sensor_parse_BME280_Pressure  Integer Pressure %d" % p)
+        #loginf("Stoic sensor_parse_BME280_Pressure  Integer Pressure %X" % p)
         
         # Units of hPa or mbar (same thing)
         Pressure = float(p) / float(25600.0)
@@ -481,27 +493,27 @@ class StoicWatcher(object):
         
         RawTemp = long(DataHex,16) >> 4
         
-        loginf("Stoic sensor_parse_BME280_TFine  RawTemp %d" % RawTemp)
-        loginf("Stoic sensor_parse_BME280_TFine  RawTemp %X" % RawTemp)
+        #loginf("Stoic sensor_parse_BME280_TFine  RawTemp %d" % RawTemp)
+        #loginf("Stoic sensor_parse_BME280_TFine  RawTemp %X" % RawTemp)
         
-        loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T1'] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_T1"])
-        loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T2'] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_T2"])
-        loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T3'] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_T3"])
+        #loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T1'] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_T1"])
+        #loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T2'] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_T2"])
+        #loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T3'] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_T3"])
         
-        loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T1'] %X" % self.stoic_Cal_dict[BME280ID+"_CAL_T1"])
-        loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T2'] %X" % self.stoic_Cal_dict[BME280ID+"_CAL_T2"])
-        loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T3'] %X" % self.stoic_Cal_dict[BME280ID+"_CAL_T3"])
+        #loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T1'] %X" % self.stoic_Cal_dict[BME280ID+"_CAL_T1"])
+        #loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T2'] %X" % self.stoic_Cal_dict[BME280ID+"_CAL_T2"])
+        #loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T3'] %X" % self.stoic_Cal_dict[BME280ID+"_CAL_T3"])
         
         # This mess comes from the data sheet. Someone must like LISP
         var1  = ( ((RawTemp>>3) - (self.stoic_Cal_dict[BME280ID+"_CAL_T1"]<<1)) * (self.stoic_Cal_dict[BME280ID+"_CAL_T2"]) ) >> 11
-        loginf("Stoic sensor_parse_BME280_TFine var1 %d" % var1)
+        #loginf("Stoic sensor_parse_BME280_TFine var1 %d" % var1)
         var2  = (( ( ((RawTemp>>4) - (self.stoic_Cal_dict[BME280ID+"_CAL_T1"])) * ((RawTemp>>4) - (self.stoic_Cal_dict[BME280ID+"_CAL_T1"])) ) >> 12) * (self.stoic_Cal_dict[BME280ID+"_CAL_T3"]) ) >> 14
-        loginf("Stoic sensor_parse_BME280_TFine var2 %d" % var2)
+        #loginf("Stoic sensor_parse_BME280_TFine var2 %d" % var2)
         TFine = var1 + var2
         
         #TEST Line
-        loginf("Stoic sensor_parse_BME280_TFine %d" % TFine)
-        loginf("Stoic sensor_parse_BME280_TFine type %s" % type(TFine))
+        #loginf("Stoic sensor_parse_BME280_TFine %d" % TFine)
+       # loginf("Stoic sensor_parse_BME280_TFine type %s" % type(TFine))
          
 
         # The limits for the sensor are -40 to 85 C. Equivalent to an output of -4000 or 8500
@@ -521,13 +533,13 @@ class StoicWatcher(object):
         if TFine == None:
             return None
         
-        loginf("Stoic sensor_parse_BME280_Temperature TFine %s" % type(TFine))
+        #loginf("Stoic sensor_parse_BME280_Temperature TFine %s" % type(TFine))
         
-        loginf("Stoic sensor_parse_BME280_Temperature TFine %d" % TFine)
+        #loginf("Stoic sensor_parse_BME280_Temperature TFine %d" % TFine)
         
-        loginf("(TFine * 5 ) >> 8 %d" % ((TFine * 5 ) >> 8))
-        loginf("float((TFine * 5 ) >> 8) %f" % float((TFine * 5 ) >> 8))
-        loginf("float((TFine * 5 ) >> 8)/float(100.0) %f" % (float((TFine * 5 ) >> 8)/float(100.0)))
+       # loginf("(TFine * 5 ) >> 8 %d" % ((TFine * 5 ) >> 8))
+        #loginf("float((TFine * 5 ) >> 8) %f" % float((TFine * 5 ) >> 8))
+        #loginf("float((TFine * 5 ) >> 8)/float(100.0) %f" % (float((TFine * 5 ) >> 8)/float(100.0)))
         
         Temperature = float((TFine * 5 ) >> 8)/float(100.0)
         
@@ -658,9 +670,18 @@ class StoicWatcher(object):
         
         # TEST line
         #loginf("And in self %s" % self.stoic_Cal_dict["rain_mm_Per_Tip"])
+        try:
+            CurrentRainRaw = int(DataHexCurrent,16)
+            LastRainRaw = int(DataHexLast,16)
+        except (ValueError), e:
+            loginf("Failed to parse or failed to get a proper hex number, DataHexCurrent, DataHexLast: %s %s" %(DataHexCurrent, DataHexLast))
+            logerr("Failed to parse or failed to get a proper hex number, DataHexCurrent, DataHexLast: %s %s" %(DataHexCurrent, DataHexLast))
+            loginf(traceback.format_exc())
+            logerr(traceback.format_exc())
+            raise
         
-        CurrentRainRaw = int(DataHexCurrent,16)
-        LastRainRaw = int(DataHexLast,16)
+        # Test Line
+        loginf("Sensor_parse_TippingBuckedt_Rain DataHexCurrent, DataHexLast: %s %s" %(DataHexCurrent, DataHexLast))
         
         # The counter max int is 15
         if(CurrentRainRaw < LastRainRaw):
@@ -690,24 +711,34 @@ class StoicWatcher(object):
         entered as rain
         Units mm
         """
-        
-        posStartCurrent = LineIn.find(",")
-        posEndCurrent = posStartCurrent + LineIn[posStartCurrent+1:].find(",")
-        posStartLast = posEndCurrent + 1
+        try:
+            posStartCurrent = LineIn.find(",")
+            posEndCurrent = posStartCurrent + LineIn[posStartCurrent+1:].find(",")
+            posStartLast = posEndCurrent + 1
         
         # Does the line have a checksum indicator
-        if(LineIn.find("^") == -1):
-            posEndLast = LineIn.find(";")
-        else:
-            posEndLast = posStartLast + LineIn[posStartLast+1:].find(",") + 1
+            if(LineIn.find("^") == -1):
+                posEndLast = LineIn.find(";")
+            else:
+                posEndLast = posStartLast + LineIn[posStartLast+1:].find(",") + 1
             
         # TODO add exception if hex lengths are wrong
         # TODO raise exception if first 4 bits are not 0000
+        # TODO reduce to half byte printed?
         
-        Rain = self.sensor_parse_TippingBuckedt_Rain(LineIn[posStartCurrent+1:posEndCurrent+1],LineIn[posStartLast+1:posEndLast])
+            Rain = self.sensor_parse_TippingBuckedt_Rain(LineIn[posStartCurrent+1:posEndCurrent+1],LineIn[posStartLast+1:posEndLast])
             
-        data = dict()
-        data["rain"] = Rain
+            data = dict()
+            data["rain"] = Rain
+            
+        except:
+            loginf("RAIN LOST Total failure in rain. Rain data may have been lost., LineIn: %s" %LineIn)
+            logerr("RAIN LOST Total failure in rain. Rain data may have been lost., LineIn: %s" %LineIn)
+            logmsg(LOG_EMERG, "STOIC: RAIN LOST Total failure in rain. Rain data may have been lost., LineIn: %s" %LineIn)
+            loginf(traceback.format_exc())
+            logerr(traceback.format_exc())
+            raise
+        
         
         return data
     
@@ -727,14 +758,19 @@ class StoicWatcher(object):
         if(DirectionRaw == 0):
             return self.stoic_Cal_dict["wind_direction_dead_zone_dir"]
         
+        loginf("self.stoic_Cal_dict['wind_direction_cal_offset'] %f" % self.stoic_Cal_dict["wind_direction_cal_offset"])
+        loginf("self.stoic_Cal_dict['wind_direction_cal_slope'] %f" % self.stoic_Cal_dict["wind_direction_cal_slope"])
         
-        WindDirection = (float(DirectionRaw) - self.stoic_Cal_dict["wind_direction_cal_offset"]) / self.stoic_Cal_dict["wind_mps_per_click_per_2_25_s"]
+        
+        WindDirection = (float(DirectionRaw) - self.stoic_Cal_dict["wind_direction_cal_offset"]) / self.stoic_Cal_dict["wind_direction_cal_slope"]
+        
+        loginf("sensor_parse_wind_direction WindDirection %f" % WindDirection)
         
         return WindDirection
         
     
     def sensor_parse_wind_direction_gust(self,LineIn_5WGD):
-        return sensor_parse_wind_direction(LineIn,None)
+        return self.sensor_parse_wind_direction(LineIn_5WGD,None)
         
     def sensor_parse_wind_speed_gust(self,LineIn_6WGS):
         """
@@ -742,9 +778,9 @@ class StoicWatcher(object):
         
         """
         # Test line
-        loginf("LineIn_5WGD %s" % LineIn_5WGD)
+        loginf("LineIn_6WGS %s" % LineIn_6WGS)
         
-        GustSpeedRaw = int(LineIn_5WGD,16)
+        GustSpeedRaw = int(LineIn_6WGS,16)
         
         GustSpeed = float(GustSpeedRaw) * self.stoic_Cal_dict["wind_mps_per_click_per_2_25_s"]
         
@@ -775,19 +811,34 @@ class StoicWatcher(object):
         its usual mess.
         """
 
-        if not wind_gust_line_validation(LineIn):
+        if not self.wind_gust_line_validation(LineIn):
             loginf("key_parse_5WGD_5WGS_WindGust received an invalid line")
             return None
         
         posStart = LineIn.find(",") + 1
         posEnd = LineIn.find(";")
         
-        GustDirection = sensor_parse_wind_direction_gust(LineIn[posStart:posEnd])
+        loginf("key_parse_6WGS_5WGD_wind_gust LineIn %s" % LineIn)
         
-        posStart = LineIn[posEnd:].find(",") + 1
-        posEnd = LineIn[posEnd:].find(";")
+        loginf("key_parse_6WGS_5WGD_wind_gust speed LineIn[posStart:posEnd %s" % LineIn[posStart:posEnd])
         
-        GustSpeed = sensor_parse_wind_speed_gust(LineIn[posStart:posEnd])
+        GustSpeed = self.sensor_parse_wind_speed_gust(LineIn[posStart:posEnd])
+        
+        
+        posStart = LineIn[posEnd+1:].find(",") + posEnd +1 +1
+        posEnd = LineIn[posEnd+1:].find(";") + posEnd +1
+        
+        loginf("key_parse_6WGS_5WGD_wind_gust dir LineIn[posStart:posEnd %s" % LineIn[posStart:posEnd])
+        
+        GustDirection = self.sensor_parse_wind_direction_gust(LineIn[posStart:posEnd])
+        
+        if GustDirection > 360:
+            loginf("GustDirection is a tad off %f" % GustDirection)
+            
+        if GustDirection < 0:
+            loginf("GustDirection is a tad off %f" % GustDirection)
+        
+        
         
         data = dict()
         data["windGustDir"] = GustDirection
@@ -804,6 +855,9 @@ class StoicWatcher(object):
     #def wind_mean_line_validation(self,LineIn):
         
     #def key_parse_6WMS_5WMD_wind_mean(self,LineIn):
+    """
+    No wind is recorded as 0 deg direction. 360 is for north with wind.
+    """ 
         
         
     
@@ -816,22 +870,48 @@ class StoicWatcher(object):
         pos = LineIn.find(",")
         
         # Call the correct parser based on the key
+        try:
         #Temperature in the circuit box
-        if LineIn[1:pos] == "2T":
-            return self.key_parse_2T_BoxTemp(LineIn)
-        elif LineIn[1:pos] == "3TPH":
-            return self.key_parse_3TPH_FARS(LineIn)
-        elif LineIn[1:pos] == "4R":
-            return self.key_parse_4R_Rain(LineIn)
-        elif LineIn[1:pos] == "6WGS":
-            return self.key_parse_6WGS_5WGD_wind_gust(LineIn)
+            if LineIn[1:pos] == "2T":
+                return self.key_parse_2T_BoxTemp(LineIn)
+            elif LineIn[1:pos] == "3TPH":
+                return self.key_parse_3TPH_FARS(LineIn)
+            elif LineIn[1:pos] == "4R":
+                return self.key_parse_4R_Rain(LineIn)
+            elif LineIn[1:pos] == "6WGS":
+                return self.key_parse_6WGS_5WGD_wind_gust(LineIn)
         #elif LineIn[1:pos] == "6WMS":
         #    return self.key_parse_6WMS_5WMD_wind_mean(LineIn)
-        else:
+            else:
             # TODO fix this
-            data = dict()
-            data["inTemp"] = 15
-            return data
+                return None
+        except (ValueError), e:
+            loginf("ValueError - parse_raw_data - Failed to get a proper hex number?, LineIn: %s" %LineIn)
+            logerr("ValueError - parse_raw_data - Failed to get a proper hex number?, LineIn: %s" %LineIn)
+            loginf(traceback.format_exc())
+            return None
+        except (LookupError), e:
+            loginf("LookupError - parse_raw_data - LineIn: %s" %LineIn)
+            logerr("LookupError - parse_raw_data - LineIn: %s" %LineIn)
+            loginf(traceback.format_exc())
+            return None
+        except (IndexError, KeyError), e:
+            loginf("IndexError, KeyError - parse_raw_data - GOK, LineIn: %s" %LineIn)
+            logerr("IndexError, KeyError - parse_raw_data - GOK, LineIn: %s" %LineIn)
+            loginf(traceback.format_exc())
+            return None
+        except (ArithmeticError), e:
+            loginf("ArithmeticError - parse_raw_data - GOK, LineIn: %s" %LineIn)
+            logerr("ArithmeticError - parse_raw_data - GOK, LineIn: %s" %LineIn)
+            loginf(traceback.format_exc())
+            return None
+        except (TypeError), e:
+            loginf("TypeError - parse_raw_data - GOK, LineIn: %s" %LineIn)
+            logerr("TypeError - parse_raw_data - GOK, LineIn: %s" %LineIn)
+            loginf(traceback.format_exc())
+            return None
+        
+            
     
     @staticmethod
     def validate_string(LineIn):
@@ -840,6 +920,15 @@ class StoicWatcher(object):
             raise weewx.WeeWxIOError("Unexpected line length %d" % len(LineIn))
         if(LineIn.find(";") == -1):
             raise weewx.WeeWxIOError("Line lacks terminator ; %s" % LineIn)
+        
+        if(LineIn.find("4R") != -1):
+            if(LineIn.find("4R") != 1):
+                loginf("RAIN LOST validate_string found '4R' out of place. Rain data may have been lost., LineIn: %s" %LineIn)
+                logerr("RAIN LOST validate_string found '4R' out of place. Rain data may have been lost., LineIn: %s" %LineIn)
+                logmsg(LOG_EMERG, "STOIC: RAIN LOST validate_string found '4R' out of place. Rain data may have been lost., LineIn: %s" %LineIn)
+                # TODO attempt recovery by reading the rain
+                raise weewx.WeeWxIOError(" '4R' is out of place. Rain data may have been lost %s" % LineIn)
+        
         #TODO uncomment this for proper validation
         #if(LineIn.find(",") == -1):
         #    raise weewx.WeeWxIOError("Line lacks seporator , %s" % LineIn)
