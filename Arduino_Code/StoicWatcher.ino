@@ -1,7 +1,7 @@
 /*
 	Stoic Watcher
-	v0.0.8
-	2018-02-01
+	v0.0.10
+	2018-02-06
  */
 
 
@@ -48,7 +48,7 @@ void setup()
 		// wait for serial port to connect.
 	}
 
-	Serial.println(F("#StoicWatcher Starting v0.0.8;"));
+	Serial.println(F("#StoicWatcher Starting v0.0.10;"));
 	Serial.println(F("!startup;"));
 
 
@@ -61,7 +61,7 @@ void setup()
 
 	T2_CircuitBox_Sensor.InitializeSensor();
 
-	// TODO Need to reset the wind speed counter on startup
+	// TODO Need to reset the wind speed counter on startup (hardware)
 	W6_WindSpeed_Mean_Sensor.InitializeSensor();
 
 	// Done above
@@ -94,14 +94,24 @@ void setup()
 
 void loop()
 {
-	/*
+	/* Time:
 	 * Each action in the primary lifecycle gets 100 ms. Each further item in the 1 second and 5 second lifecycles gets 100 ms.
-	 * Taking the mean of the wind direction takes about 70 ms
+	 * Taking the mean of the wind direction takes about 147 ms (Not good)
+	 *
+	 * RAM:
+	 * 527 bytes are available in wind dir mean
 	 * */
+
+
 
 
 	if(SW_CK_InterruptOccurred())
 	{
+
+		// Time test
+
+		//unsigned long time = millis();
+
 		// First clock housekeeping
 		SW_CK_ClockIntruptProcessing();
 
@@ -109,8 +119,6 @@ void loop()
 		if(SW_CK_EverySecond())
 		{
 			W5_WindDir_Mean_Readout.AcquireDirectionDataOnly();
-			Serial.println(F("# if SW_CK_EverySecond() is running;"));
-
 		}
 
 
@@ -219,18 +227,24 @@ void loop()
 		}
 
 		// Wind Speed readout.
-		Serial.println(F("# if SW_CK_EveryFifthSecond() is testing;"));
 		if(SW_CK_EveryFifthSecond())
 		{
 			W6_WindSpeed_Mean_Sensor.AcquireData();
-			Serial.println(F("# if SW_CK_EveryFifthSecond() is running;"));
 
 			W6_WindSpeed_Mean_Sensor.SendMostRecentRawMean();
 			W5_WindDir_Mean_Readout.SendMeanAndBinBlock();
+// TODO Wind mean direction prints before speed starts to. Why? Maybe zero speed?
+
 		}
 
 
+		// Time test
 
+		/*Serial.flush();
+			unsigned long Endtime = millis();
+			Serial.print(F("# Time for this cycle "));
+			Serial.print(Endtime-time);
+			Serial.println(F(";"));*/
 
 
 

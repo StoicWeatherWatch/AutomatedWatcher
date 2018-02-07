@@ -1,7 +1,7 @@
 /*
  * SW_Wind_Dir_Analog.h
  *
- *  Created on: 2018-01-31
+ *  Created on: 2018-02-6
  *      Author: StoicWeather
  */
 
@@ -11,7 +11,7 @@
 #include "SW_Ard_Analog.h"
 
 // Tests to see how llong it takes to serial write certain things.
-#define RUN_TIME_TEST
+//#define RUN_TIME_TEST
 
 
 // Make certain it is called the correct number of times

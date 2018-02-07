@@ -1,7 +1,7 @@
 /*
  * SW_Wind_Speed_Mean.cpp
  *
- *  Created on: 2018-02-04
+ *  Created on: 2018-02-06
  *      Author: StoicWeather
  */
 
@@ -107,7 +107,7 @@ void SW_Wind_Speed_Mean::SendMostRecentRawMean()
 
 	Serial.print(F("*"));
 	Serial.print(SensorNumber,DEC);
-	Serial.print(F("WSM,"));
+	Serial.print(F("WMS,"));
 	SerialHexByteAndAHalfPrint(Difference);
 	Serial.print(F(";"));
 

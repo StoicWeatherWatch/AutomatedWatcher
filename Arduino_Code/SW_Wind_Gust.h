@@ -1,7 +1,7 @@
 /*
  * SW_Wind_Gust.h
  *
- *  Created on: 2018-02-04
+ *  Created on: 2018-02-06
  *      Author: StoicWeather
  */
 
@@ -14,13 +14,14 @@
 // This assumes 1 count = 1 MPH. True if reading out every 2.25 seconds. 10 knots = 11.5078 MPH. We reound up.
 //#define GUST_MINIMUM_DIFFERENCE 12
 
+// TODO set this correctly
 // For testing, 12 is hard to hit rotating by hand
 #define GUST_MINIMUM_DIFFERENCE 3
 
 // We have 13 bits. The counter may wrap
 #define MAX_WIND_CTS     0b1111111111111
 
-#define TEST_PRINTS
+//#define TEST_PRINTS
 
 /*
  *

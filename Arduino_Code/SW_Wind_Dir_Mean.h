@@ -1,7 +1,7 @@
 /*
  * SW_Wind_Dir_Mean.h
  *
- *  Created on: 2018-02-04
+ *  Created on: 2018-02-06
  *      Author: StoicWeather
  */
 
@@ -17,7 +17,7 @@
 #define HALF_BIN_SIZE 32
 #define MAX_ADC_VALUE 1023
 
-#define RUN_RAM_TEST
+//#define RUN_RAM_TEST
 
 /*
  *

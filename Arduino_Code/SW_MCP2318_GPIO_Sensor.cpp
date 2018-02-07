@@ -1,7 +1,7 @@
 /*
  * SW_MCP2318_GPIO_Sensor.cpp
  *
- *  Created on: 2018-02-01
+ *  Created on: 2018-02-06
  *      Author: StoicWeather
  *
  */
@@ -59,9 +59,9 @@ int SW_MCP2318_GPIO_Sensor::AcquireDataAndReturn()
 	//Serial.println(F(";"));
 
 	//TEST LINE
-	Serial.print(F("# MCP23018 readin "));
+	/*Serial.print(F("# MCP23018 readin "));
 	Serial.print(DataIn, HEX);
-	Serial.println(F(";"));
+	Serial.println(F(";"));*/
 
 	return DataIn;
 }

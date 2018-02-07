@@ -1,7 +1,7 @@
 /*
  * SW_Clock.cpp
  *
- *  Created on: 2018-01-21
+ *  Created on: 2018-02-06
  *      Author: StoicWeather
  */
 
@@ -78,19 +78,10 @@ void SW_CK_ClockIntruptProcessing()
 {
 	SW_CK_CKInterrupted = false;
 
-	//TEST Line
-	Serial.println("");
-	Serial.println("");
-	Serial.println("#SW_CK_ClockIntruptProcessing;");
 
 	SW_CK_CKShortCountTo9++;
 	SW_CK_CKShortCountTo4++;
 
-	//TEST Line
-		Serial.print("#SW_CK_CKShortCountTo9  ");
-		Serial.println(SW_CK_CKShortCountTo9);
-		Serial.print("#SW_CK_CKShortCountTo4  ");
-		Serial.println(SW_CK_CKShortCountTo4);
 
 
 	if(SW_CK_CKShortCountTo9 >= SW_CK_SHORT_COUNT_PERIOD)
@@ -134,8 +125,7 @@ void SW_CK_ClockIntruptProcessing()
 		SW_CK_FiveSecondCount++;
 		SW_CK_CKShortCountTo4 = 0;
 
-		Serial.print(F("# 5 second count "));
-		Serial.println(SW_CK_FiveSecondCount);
+
 
 
 		// Makes certain Every second returns true only once
@@ -145,7 +135,6 @@ void SW_CK_ClockIntruptProcessing()
 				{
 			SW_CK_FiveSecondCount = 0;
 			SW_CK_EveryFifthSecondNotCalled = true;
-			Serial.println(F("# 5 seconds;"));
 
 				}
 
@@ -209,19 +198,14 @@ int SW_CK_GetSubSecondCount()
 // This will be true once every 5th second
 bool SW_CK_EveryFifthSecond()
 {
-
-	Serial.println(F("# SW_CK_EveryFifthSecond() called;"));
 	if(SW_CK_EveryFifthSecondNotCalled)
 	{
-		Serial.println(F("# SW_CK_EveryFifthSecond()  is true;"));
-
 	SW_CK_EveryFifthSecondNotCalled = false;
 	return true;
 	}
 	else
 	{
 		return false;
-		Serial.println(F("# SW_CK_EverySecond()  is false;"));
 	}
 
 }
@@ -229,10 +213,8 @@ bool SW_CK_EveryFifthSecond()
 // This will be true once every second
 bool SW_CK_EverySecond()
 {
-	Serial.println(F("# SW_CK_EverySecond() called;"));
 	if(SW_CK_EverySecondNotCalled)
 	{
-		Serial.println(F("# SW_CK_EverySecond() true;"));
 		SW_CK_EverySecondNotCalled = false;
 		return true;
 	}

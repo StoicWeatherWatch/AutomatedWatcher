@@ -1,7 +1,7 @@
 /*
  * SW_Wind_Dir_Mean.cpp
  *
- *  Created on: 2018-02-04
+ *  Created on: 2018-02-06
  *      Author: StoicWeather
  */
 
@@ -136,9 +136,9 @@ void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 	int rotation = (BinList[NUMBER_OF_BINS-1] << BITS_TO_SHIFT_FOR_BINNING) + HALF_BIN_SIZE;
 
 		//TEST lines
-		Serial.print(F("# bin rotation "));
+		/*Serial.print(F("# bin rotation "));
 			Serial.print(rotation);
-			Serial.println(F(";"));
+			Serial.println(F(";"));*/
 
 			long sum = 0;
 			for(int i = 0; i < DirectionQueueLength; i++)
@@ -160,12 +160,11 @@ void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 		// Send sum, rotation, bin info
 			Serial.print(F("*"));
 				Serial.print(SensorNumberAnalog,DEC);
-				Serial.print(F("WDM,"));
+				Serial.print(F("WMD,"));
 				SerialHexFourAndAHalfBytefPrint(sum);
 				Serial.print(F(","));
-
-						Serial.print(BinList[NUMBER_OF_BINS-1]);
-				Serial.print(F(";"));
+				Serial.print(BinList[NUMBER_OF_BINS-1]);
+				Serial.println(F(";"));
 
 				// TODO Print Bin Info
 				// Full width at half max. Sum up bins until you reach half the number of measurments. Report all bins in bin list.

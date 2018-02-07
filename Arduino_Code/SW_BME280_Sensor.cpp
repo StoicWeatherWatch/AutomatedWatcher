@@ -1,7 +1,7 @@
 /*
  * SW_BME280_Sensor.cpp
  *
- *  Created on: 2018-01-21
+ *  Created on: 2018-02-06
  *      Author: StoicWeather
  */
 
@@ -88,7 +88,7 @@ bool SW_BME280_Sensor::RetrieveDataAndSend()
 	Serial.println(F(";"));
 
 	// TEST Lines
-	Serial.print("#");
+	/*Serial.print("#");
 	Serial.print(SensorNumber,DEC);
 	Serial.print("TPH,");
 	for(int i = 0; i < BME280_DATA_LEN; i++)
@@ -100,7 +100,7 @@ bool SW_BME280_Sensor::RetrieveDataAndSend()
 				Serial.print(F(","));
 			}
 		}
-	Serial.println(F(";"));
+	Serial.println(F(";"));*/
 // END TEST
 
 	return true;

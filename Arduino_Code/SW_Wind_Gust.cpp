@@ -1,7 +1,7 @@
 /*
  * SW_Wind_Gust.cpp
  *
- *  Created on: 2018-02-04
+ *  Created on: 2018-02-06
  *      Author: StoicWeather
  */
 
@@ -117,6 +117,7 @@ void SW_Wind_Gust::SendWindGustData()
 	}
 	Serial.println(F(";"));
 
+	// TEST BLOCK
 	Serial.println(F("#SentRecordQueue;"));
 	Serial.print(F("#"));
 
@@ -169,6 +170,8 @@ if(HaveFullSpeedQueue)
 	}
 
 	// TEST Block
+#ifdef TEST_PRINTS
+
 	Serial.print(F("# CUrrent , max, min"));
 	Serial.print(WindSpeedGustQueue[CurrentSpeedQueueLoc]);
 	Serial.print(F(","));
@@ -176,17 +179,24 @@ if(HaveFullSpeedQueue)
 	Serial.print(F(","));
 	Serial.print(minSpeed);
 	Serial.println(F(";"));
+#endif /*TEST_PRINTS*/
 
 	// Max must be 10 knots above min and not have been sent
 	if(maxSpeed >= (minSpeed + (byte)GUST_MINIMUM_DIFFERENCE))
 	{
 		// TEST line
+#ifdef TEST_PRINTS
+
 		Serial.println(F(" # Max is above threshold;"));
+#endif /*TEST_PRINTS*/
 
 		if(GustNotSentPreviously(MaxPos))
 		{
 			// TEST line
+#ifdef TEST_PRINTS
+
 					Serial.println(F(" # Max has not been sent;"));
+					#endif /*TEST_PRINTS*/
 			// set sent to true
 			SetSentRecord(MaxPos, true);
 			// send data
@@ -197,7 +207,7 @@ if(HaveFullSpeedQueue)
 			Serial.print(F(";"));
 
 			Serial.print(F("*"));
-			Serial.print(SensorNumber,DEC);
+			Serial.print(SensorNumberAnalog,DEC);
 			Serial.print(F("WGD,"));
 			SerialHexByteAndAHalfPrint(GetDirectionReadingAt((byte)MaxPos));
 			Serial.println(F(";"));

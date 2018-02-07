@@ -1,7 +1,7 @@
 /*
  * SW_Wind_Dir_Analog.cpp
  *
- *  Created on: 2018-01-31
+ *  Created on: 2018-02-06
  *      Author: StoicWeather
  */
 
@@ -34,6 +34,7 @@ SW_Wind_Dir_Analog::SW_Wind_Dir_Analog(byte AAQ0PinIn, byte NumberOfRecordsIn, b
 }
 
 
+// TODO does this ever get called?
 bool SW_Wind_Dir_Analog::AcquireAnalogDataAndSend()
 {
 	int AAQread = Read_Pin();
@@ -162,6 +163,8 @@ int SW_Wind_Dir_Analog::GetDirectionReadingAt(byte TargetQueueLoc)
 
 bool SW_Wind_Dir_Analog::SendDirectionQueue()
 {
+	// TODO Does this ever get called?
+	Serial.println(F("# SendDirectionQueue Does this ever get called?;"));
 	if(!HaveFullDirectionQueue)
 	{
 		Serial.println(F("#Wind SendQueue Queue not full;"));
