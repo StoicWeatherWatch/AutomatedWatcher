@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.0.5
-# 2018-01-30
+# Version 0.0.7
+# 2018-02-06
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -23,11 +23,13 @@ Supported Keys:                                    Mapped DB name
    This is BME280ID "BME280-1"
 4R Rain tipping bucket - rain
    Reported since last report - a difference
-5WDx Wind direction
+5WMD Wind direction mean
+6WMS Wind speed mean
+      6WMS and 5WMD are expected on the same line. (int
 5WGD Wind gust direction. Reported as 4 readings which can be averaged.
-6WSx Wind speed
 6WGS wind speed gust. Reported as current, min, max. From 54 records. At 2.25 seconds 121.5 seconds
-5WGD and 6WGS are expected on the same line. 
+      6WGS and 5WGD are expected on the same line. 
+
 
 Alert format
 !Key,Value;
@@ -78,7 +80,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.0.5'
+DRIVER_VERSION = '0.0.7'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -147,6 +149,12 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         
         # Rain
         stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip'))
+        
+        # Wind
+        stoic_Cal_dict["wind_mps_per_click_per_2_25_s"] = float(stn_dict.get('wind_mps_per_click_per_2_25_s'))
+        stoic_Cal_dict["wind_direction_cal_offset"] = float(stn_dict.get('wind_direction_cal_offset'))
+        stoic_Cal_dict["wind_direction_cal_slope"] = float(stn_dict.get('wind_direction_cal_slope'))
+        stoic_Cal_dict["wind_direction_dead_zone_dir"] = float(stn_dict.get('wind_direction_dead_zone_dir'))
         
         # BME280 A 3TPH "BME280-1"
         # The BME280 has lots of calibration data which is hard coded in the factory. 
@@ -703,23 +711,99 @@ class StoicWatcher(object):
         
         return data
     
-    def sensor_parse_wind_direction_gust(self,WDG_arr):
+    def sensor_parse_wind_direction(self,LineIn, CompassRotation):
+        """
+        Wind direction is reported as a raw ADC value which has been rotated through the compass directions.
         
-    def sensor_parse_wind_speed_gust(self,current,min,max):
+        
+        """
+        DirectionRaw = int(LineIn,16)
+        
+        if(CompassRotation == None):
+            RotationCorrection = 0
+        #else:
+        
+        # The wind direction read out has a dead zone which reads as 0 but points a bit off from 0
+        if(DirectionRaw == 0):
+            return self.stoic_Cal_dict["wind_direction_dead_zone_dir"]
+        
+        
+        WindDirection = (float(DirectionRaw) - self.stoic_Cal_dict["wind_direction_cal_offset"]) / self.stoic_Cal_dict["wind_mps_per_click_per_2_25_s"]
+        
+        return WindDirection
+        
+    
+    def sensor_parse_wind_direction_gust(self,LineIn_5WGD):
+        return sensor_parse_wind_direction(LineIn,None)
+        
+    def sensor_parse_wind_speed_gust(self,LineIn_6WGS):
+        """
+        The gust speed is measured at 2.25 second intervals. One clikc per second is 1 mph. Thus
+        
+        """
+        # Test line
+        loginf("LineIn_5WGD %s" % LineIn_5WGD)
+        
+        GustSpeedRaw = int(LineIn_5WGD,16)
+        
+        GustSpeed = float(GustSpeedRaw) * self.stoic_Cal_dict["wind_mps_per_click_per_2_25_s"]
+        
+        return GustSpeed
+        
         
     def wind_gust_line_validation(self,LineIn):
+        if LineIn.find("*6WGS") == -1:
+            logdbg("StoicWS wind_gust_line_validation no *6WGS")
+            return False
+        pos = LineIn.find(";")
+        if pos == -1:
+            logdbg("StoicWS wind_gust_line_validation no ;")
+            return False
+        if LineIn[pos:].find("*5WGD") == -1:
+            logdbg("StoicWS wind_gust_line_validation no *5WGD")
+            return False
+        if LineIn[pos+1:].find(";") == -1:
+            logdbg("StoicWS wind_gust_line_validation no second ;")
+            return False
+        
         return True
     
     
-    def key_parse_5WDG_5WSG_WindGust(self,LineIn):
+    def key_parse_6WGS_5WGD_wind_gust(self,LineIn):
+        """
+        The wind gust formatt is *6WGS,1A;*5WGD,141; Speed is clicks per 2.25 seconds direction is 
+        its usual mess.
+        """
 
         if not wind_gust_line_validation(LineIn):
-            loginf("key_parse_5WDG_5WSG_WindGust received an invalid line")
+            loginf("key_parse_5WGD_5WGS_WindGust received an invalid line")
             return None
-        posStart = LineIn.find(",")
-        for i in range(4)
-            pos = LineIn.find(",")
-            WDG_arr[i]
+        
+        posStart = LineIn.find(",") + 1
+        posEnd = LineIn.find(";")
+        
+        GustDirection = sensor_parse_wind_direction_gust(LineIn[posStart:posEnd])
+        
+        posStart = LineIn[posEnd:].find(",") + 1
+        posEnd = LineIn[posEnd:].find(";")
+        
+        GustSpeed = sensor_parse_wind_speed_gust(LineIn[posStart:posEnd])
+        
+        data = dict()
+        data["windGustDir"] = GustDirection
+        data["windGust"] = GustSpeed
+        
+        # TEST lines
+        loginf("key_parse_6WGS_5WGD_wind_gust windGustDir %f" % data["windGustDir"])
+        loginf("key_parse_6WGS_5WGD_wind_gust windGust %f" % data["windGust"])
+        
+        return data
+
+   # def sensor_parse_wind_direction_mean(self,LineIn_5WGD):
+    #def sensor_parse_wind_speed_mean(self,LineIn_6WGS):
+    #def wind_mean_line_validation(self,LineIn):
+        
+    #def key_parse_6WMS_5WMD_wind_mean(self,LineIn):
         
         
     
@@ -739,9 +823,10 @@ class StoicWatcher(object):
             return self.key_parse_3TPH_FARS(LineIn)
         elif LineIn[1:pos] == "4R":
             return self.key_parse_4R_Rain(LineIn)
-        elif LineIn[1:pos] == "5WDG":
-            return self.key_parse_5WDG_5WSG_WindGust(LineIn)
-
+        elif LineIn[1:pos] == "6WGS":
+            return self.key_parse_6WGS_5WGD_wind_gust(LineIn)
+        #elif LineIn[1:pos] == "6WMS":
+        #    return self.key_parse_6WMS_5WMD_wind_mean(LineIn)
         else:
             # TODO fix this
             data = dict()
@@ -758,7 +843,6 @@ class StoicWatcher(object):
         #TODO uncomment this for proper validation
         #if(LineIn.find(",") == -1):
         #    raise weewx.WeeWxIOError("Line lacks seporator , %s" % LineIn)
-        return LineIn
     
     
     def get_raw_data_with_retry(self, max_tries=5, retry_wait=3):
