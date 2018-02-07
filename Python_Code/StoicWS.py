@@ -15,7 +15,9 @@ An Arduino based weather station.
 Stoic sends data constantly via a USB serial port. 
 
 Data format
-*Key,Value;
+*Key,Value(s);
+Items on the same line
+*Key,Value(s);+key,Value(s);
 
 Supported Keys:                                    Mapped DB name
 2T Temperature in Box  -                           extraTemp1
@@ -795,8 +797,8 @@ class StoicWatcher(object):
         if pos == -1:
             logdbg("StoicWS wind_gust_line_validation no ;")
             return False
-        if LineIn[pos:].find("*5WGD") == -1:
-            logdbg("StoicWS wind_gust_line_validation no *5WGD")
+        if LineIn[pos:].find("+5WGD") == -1:
+            logdbg("StoicWS wind_gust_line_validation no +5WGD")
             return False
         if LineIn[pos+1:].find(";") == -1:
             logdbg("StoicWS wind_gust_line_validation no second ;")
@@ -807,7 +809,7 @@ class StoicWatcher(object):
     
     def key_parse_6WGS_5WGD_wind_gust(self,LineIn):
         """
-        The wind gust formatt is *6WGS,1A;*5WGD,141; Speed is clicks per 2.25 seconds direction is 
+        The wind gust formatt is *6WGS,1A;+5WGD,141; Speed is clicks per 2.25 seconds direction is 
         its usual mess.
         """
 
@@ -918,9 +920,8 @@ class StoicWatcher(object):
         # TODO add aditional validation
         if (len(LineIn)<1):
             raise weewx.WeeWxIOError("Unexpected line length %d" % len(LineIn))
-        if(LineIn.find(";") == -1):
-            raise weewx.WeeWxIOError("Line lacks terminator ; %s" % LineIn)
-        
+    
+        # Cannot be easily recovered if lost. 
         if(LineIn.find("4R") != -1):
             if(LineIn.find("4R") != 1):
                 loginf("RAIN LOST validate_string found '4R' out of place. Rain data may have been lost., LineIn: %s" %LineIn)
@@ -928,6 +929,11 @@ class StoicWatcher(object):
                 logmsg(LOG_EMERG, "STOIC: RAIN LOST validate_string found '4R' out of place. Rain data may have been lost., LineIn: %s" %LineIn)
                 # TODO attempt recovery by reading the rain
                 raise weewx.WeeWxIOError(" '4R' is out of place. Rain data may have been lost %s" % LineIn)
+        
+        if(LineIn.find(";") == -1):
+            raise weewx.WeeWxIOError("Line lacks terminator ; %s" % LineIn)
+        if(LineIn[1:].find("*") != -1)
+            raise weewx.WeeWxIOError("Line has extra start * %s" % LineIn)
         
         #TODO uncomment this for proper validation
         #if(LineIn.find(",") == -1):

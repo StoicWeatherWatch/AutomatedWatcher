@@ -158,7 +158,7 @@ void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 
 
 		// Send sum, rotation, bin info
-			Serial.print(F("*"));
+			Serial.print(F("+"));
 				Serial.print(SensorNumberAnalog,DEC);
 				Serial.print(F("WMD,"));
 				SerialHexFourAndAHalfBytefPrint(sum);

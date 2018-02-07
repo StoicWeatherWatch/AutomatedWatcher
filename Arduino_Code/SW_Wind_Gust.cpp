@@ -203,10 +203,10 @@ if(HaveFullSpeedQueue)
 			Serial.print(F("*"));
 			Serial.print(SensorNumber,DEC);
 			Serial.print(F("WGS,"));
-			SerialHexBytePrint(maxSpeed);
+			SerialHexBytePrint(WindSpeedGustQueue[MaxPos]);
 			Serial.print(F(";"));
 
-			Serial.print(F("*"));
+			Serial.print(F("+"));
 			Serial.print(SensorNumberAnalog,DEC);
 			Serial.print(F("WGD,"));
 			SerialHexByteAndAHalfPrint(GetDirectionReadingAt((byte)MaxPos));
