@@ -1,7 +1,7 @@
 /*
  * SW_Wind_Dir_Mean.cpp
  *
- *  Created on: 2018-02-06
+ *  Created on: 2018-02-08
  *      Author: StoicWeather
  */
 
@@ -29,6 +29,8 @@ void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 
 		int *DirectionQueueCopy;
 		DirectionQueueCopy = (int*)calloc(DirectionQueueLength, sizeof(int));
+
+
 
 		for(int i = 0; i < DirectionQueueLength; i++)
 		{
@@ -127,13 +129,40 @@ void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 	Serial.println(F(";"));
 #endif
 
-
+	// TEST Lines
+	/*Serial.println(F("# BinList ;"));
+	Serial.print(F("# "));
+	for(int i =0;i < NUMBER_OF_BINS; i++)
+	{
+		Serial.print(BinList[i],HEX);
+		Serial.print(F(" "));
+	}
+	Serial.println(F(";"));
+	Serial.println(F("# Bins ;"));
+		Serial.print(F("# "));
+		for(int i =0;i < NUMBER_OF_BINS; i++)
+		{
+			Serial.print(Bins[i],HEX);
+			Serial.print(F(" "));
+		}
+		Serial.println(F(";"));*/
 
 
 
 		// Rotate the compass
+		// If we are in the first half, we add enough to get the largest bin to 512
+		// In the upper half, add enough to get the largest bin to 1536
+		int rotation;
+		if(BinList[NUMBER_OF_BINS-1] >= (NUMBER_OF_BINS / 2))
+		{
+			rotation = 1535 - ((BinList[NUMBER_OF_BINS-1] << BITS_TO_SHIFT_FOR_BINNING) + HALF_BIN_SIZE);
+		}
+		else
+		{
+			rotation = 511 - ((BinList[NUMBER_OF_BINS-1] << BITS_TO_SHIFT_FOR_BINNING) + HALF_BIN_SIZE);
+		}
 	// Sum the data
-	int rotation = (BinList[NUMBER_OF_BINS-1] << BITS_TO_SHIFT_FOR_BINNING) + HALF_BIN_SIZE;
+
 
 		//TEST lines
 		/*Serial.print(F("# bin rotation "));
@@ -146,7 +175,7 @@ void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 				DirectionQueueCopy[i] += rotation;
 				if(DirectionQueueCopy[i] > MAX_ADC_VALUE)
 				{
-					DirectionQueueCopy[i] -= MAX_ADC_VALUE+1;
+					DirectionQueueCopy[i] -= (MAX_ADC_VALUE+1);
 				}
 
 				sum += DirectionQueueCopy[i];
@@ -163,7 +192,7 @@ void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 				Serial.print(F("WMD,"));
 				SerialHexFourAndAHalfBytefPrint(sum);
 				Serial.print(F(","));
-				Serial.print(BinList[NUMBER_OF_BINS-1]);
+				SerialHexBytePrint(BinList[NUMBER_OF_BINS-1]);
 				Serial.println(F(";"));
 
 				// TODO Print Bin Info

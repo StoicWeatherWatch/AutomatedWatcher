@@ -1,7 +1,7 @@
 /*
  * SW_Wind_Dir_Analog.cpp
  *
- *  Created on: 2018-02-06
+ *  Created on: 2018-02-08
  *      Author: StoicWeather
  */
 
@@ -89,7 +89,7 @@ int SW_Wind_Dir_Analog::GetMostRecentDirection()
 bool SW_Wind_Dir_Analog::RecordDirectionReading(int AAQread)
 {
 
-	//Serial.println(F("#Wind RecordReading;"));
+
 	CurrentDirectionQueueLoc++;
 
 	// TODO CurrentQueueLoc >QueueLength >= ?
@@ -119,42 +119,53 @@ bool SW_Wind_Dir_Analog::RecordDirectionReading(int AAQread)
 		DirectionQueue[Pointer] = (DirectionQueue[Pointer] & 240) + ((byte)((AAQread & 1792) >> 8));
 	}
 
-
-
-
-	return true;
-
-}
-
-bool SW_Wind_Dir_Analog::SendDirectionAverage()
-{
-	if(!HaveFullDirectionQueue)
+// TEST LINES
+	/*Serial.println(F("#Direction queue;"));
+	Serial.print(F("# "));
+	for(int i = 0;i<(DirectionQueueLength*3)/2; i++)
 	{
-		return false;
+		SerialHexBytePrint(DirectionQueue[i]);
+		Serial.print(F(" "));
 	}
 
-	// TODO impliment
+		Serial.println(F(";"));*/
 
 	return true;
+
 }
+
+
 
 int SW_Wind_Dir_Analog::GetDirectionReadingAt(byte TargetQueueLoc)
 {
 
 		byte Pointer = ((TargetQueueLoc*3)/2) + ((TargetQueueLoc*3)%2);
 
+
 			int Reading = (int)DirectionQueue[Pointer];
-			if(((CurrentDirectionQueueLoc*3)%2) == 0)
+
+
+			if(((TargetQueueLoc)%2) == 0)
 				{
+
 					Pointer++;
+
+
 					// Will want to change 1792 if using a ADC with more than 10 bits
 					Reading += ((int)(DirectionQueue[Pointer] & 240)) << 4;
+
+
 
 				}
 				else
 				{
 					Pointer--;
+
+
+
 					Reading += ((int)(DirectionQueue[Pointer] & 15)) << 8;
+
+
 				}
 
 			return Reading;

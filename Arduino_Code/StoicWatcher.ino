@@ -1,7 +1,7 @@
 /*
 	Stoic Watcher
-	v0.0.10
-	2018-02-06
+	v0.0.12
+	2018-02-08
  */
 
 
@@ -18,6 +18,8 @@
  */
 
 // TODO Housekeeping, report uptime and chip temperature
+
+// TODO Every five seconds will trigger - thus skip certain slower things when long stuff is running
 
 
 
@@ -48,7 +50,7 @@ void setup()
 		// wait for serial port to connect.
 	}
 
-	Serial.println(F("#StoicWatcher Starting v0.0.10;"));
+	Serial.println(F("#StoicWatcher Starting v0.0.12;"));
 	Serial.println(F("!startup;"));
 
 
@@ -158,6 +160,7 @@ void loop()
 			// 4
 
 			WG6_WindGust_Multiple.AcquireWindGustDirection();
+			//WG6_WindGust_Multiple.AcquireAnalogDataAndSend();
 
 			break;
 		case 5 :
@@ -183,7 +186,9 @@ void loop()
 			}
 
 			// Currently 40 counts or every 90 seconds
-			if(SW_CK_GetCKLongCount() == 0)
+			// Using 4 not zero so it does not line up with the wind dir mean
+			// TODO be more sophisticated about this
+			if(SW_CK_GetCKLongCount() == 4)
 			{
 				T2_CircuitBox_Sensor.AcquireData();
 				T2_CircuitBox_Sensor.SendRawDataSerial();
@@ -233,7 +238,7 @@ void loop()
 
 			W6_WindSpeed_Mean_Sensor.SendMostRecentRawMean();
 			W5_WindDir_Mean_Readout.SendMeanAndBinBlock();
-// TODO Wind mean direction prints before speed starts to. Why? Maybe zero speed?
+// TODO Wind mean direction prints before speed starts to. Why? Maybe zero speed? Might be fixed. Changed speed records from 30 to 24
 
 		}
 

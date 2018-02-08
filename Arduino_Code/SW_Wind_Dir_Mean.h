@@ -1,7 +1,7 @@
 /*
  * SW_Wind_Dir_Mean.h
  *
- *  Created on: 2018-02-06
+ *  Created on: 2018-02-08
  *      Author: StoicWeather
  */
 

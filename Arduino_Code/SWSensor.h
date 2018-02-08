@@ -7,6 +7,8 @@
  *      This is a virtual superclass for I2C sensors for the Stoic Watcher weather station.
  */
 
+// TODO add an alert ! when a sensor is not reachable.
+
 #ifndef SWSENSOR_H_
 #define SWSENSOR_H_
 
@@ -20,7 +22,7 @@
 
 //Set to perform conversion from raw bits to measurement values.
 // Unset to leave that to higher level processor. This may be preferred as there is no double.
-#define PERFORM_DATA_PROCESSING
+//#define PERFORM_DATA_PROCESSING
 
 #ifdef PERFORM_DATA_PROCESSING
 	#include "math.h"
