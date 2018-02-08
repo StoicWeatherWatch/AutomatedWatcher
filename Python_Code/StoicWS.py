@@ -50,6 +50,7 @@ rain_mm_Per_Tip - Tipping bucket conversion factor 0.2794
 
 """
 
+
 # TODO First readout after !Startup; is not reported. Used as baseline for wind etc.
 
 # TODO If your lose the  connection, you should raise an exception of type 
@@ -157,9 +158,13 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         
         # Wind
         stoic_Cal_dict["wind_mps_per_click_per_2_25_s"] = float(stn_dict.get('wind_mps_per_click_per_2_25_s'))
+        stoic_Cal_dict["wind_mps_per_click_per_120_s"] = float(stn_dict.get('wind_mps_per_click_per_120_s'))
         stoic_Cal_dict["wind_direction_cal_offset"] = float(stn_dict.get('wind_direction_cal_offset'))
         stoic_Cal_dict["wind_direction_cal_slope"] = float(stn_dict.get('wind_direction_cal_slope'))
         stoic_Cal_dict["wind_direction_dead_zone_dir"] = float(stn_dict.get('wind_direction_dead_zone_dir'))
+        stoic_Cal_dict["wind_direction_number_of_mean_points"] = int(stn_dict.get('wind_direction_number_of_mean_points'))
+        stoic_Cal_dict["wind_direction_number_of_bins"] = int(stn_dict.get('wind_direction_number_of_bins'))
+        stoic_Cal_dict["wind_direction_max_ADC"] = int(stn_dict.get('wind_direction_max_ADC'))
         
         loginf("self.stoic_Cal_dict['wind_direction_cal_offset'] %f" % stoic_Cal_dict["wind_direction_cal_offset"])
         loginf("stoic_Cal_dict['wind_direction_cal_slope'] %f" % stoic_Cal_dict["wind_direction_cal_slope"])
@@ -307,6 +312,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
             packet = {'dateTime': int(time.time() + 0.5),
                       'usUnits': weewx.METRICWX}
             data = self.StoicWatcher.get_processed_data_with_retry(self.max_tries, self.retry_wait)
+            
             if data != None:
                 packet.update(data)
                 yield packet
@@ -744,18 +750,17 @@ class StoicWatcher(object):
         
         return data
     
-    def sensor_parse_wind_direction(self,LineIn, CompassRotation):
+        
+    
+    def sensor_parse_wind_direction_gust(self,LineIn_5WGD):
         """
         Wind direction is reported as a raw ADC value which has been rotated through the compass directions.
         
         
         """
-        DirectionRaw = int(LineIn,16)
+        DirectionRaw = int(LineIn_5WGD,16)
         
-        if(CompassRotation == None):
-            RotationCorrection = 0
-        #else:
-        
+       
         # The wind direction read out has a dead zone which reads as 0 but points a bit off from 0
         if(DirectionRaw == 0):
             return self.stoic_Cal_dict["wind_direction_dead_zone_dir"]
@@ -766,13 +771,9 @@ class StoicWatcher(object):
         
         WindDirection = (float(DirectionRaw) - self.stoic_Cal_dict["wind_direction_cal_offset"]) / self.stoic_Cal_dict["wind_direction_cal_slope"]
         
-        loginf("sensor_parse_wind_direction WindDirection %f" % WindDirection)
+        loginf("sensor_parse_wind_direction_gust WindDirection %f" % WindDirection)
         
         return WindDirection
-        
-    
-    def sensor_parse_wind_direction_gust(self,LineIn_5WGD):
-        return self.sensor_parse_wind_direction(LineIn_5WGD,None)
         
     def sensor_parse_wind_speed_gust(self,LineIn_6WGS):
         """
@@ -814,7 +815,7 @@ class StoicWatcher(object):
         """
 
         if not self.wind_gust_line_validation(LineIn):
-            loginf("key_parse_5WGD_5WGS_WindGust received an invalid line")
+            loginf("key_parse_5WGD_5WGS_WindGust received an invalid line %s" % LineIn)
             return None
         
         posStart = LineIn.find(",") + 1
@@ -851,15 +852,150 @@ class StoicWatcher(object):
         loginf("key_parse_6WGS_5WGD_wind_gust windGust %f" % data["windGust"])
         
         return data
+    
 
-   # def sensor_parse_wind_direction_mean(self,LineIn_5WGD):
-    #def sensor_parse_wind_speed_mean(self,LineIn_6WGS):
-    #def wind_mean_line_validation(self,LineIn):
+    def sensor_parse_wind_direction_mean(self,LineInDirection,LineInBin):
+        """
+        Mean direction is tricky. The Stoic Watcher bins and data and adds a rotation. Then it sums the the rotated readings.
         
-    #def key_parse_6WMS_5WMD_wind_mean(self,LineIn):
+        Here we devide by the total number of readings and un rotate.
+        """
+        
+        #Test Lines
+        loginf("sensor_parse_wind_direction_mean LineInDirection %s" % LineInDirection)
+        loginf("sensor_parse_wind_direction_mean LineInBin %s" % LineInBin)
+        
+        DirectionRaw = int(LineIn_5WMD,16)
+        BinNumber = int(LineInBin,16)
+        
+        loginf("sensor_parse_wind_direction_mean DirectionRaw %d" % DirectionRaw)
+        loginf("sensor_parse_wind_direction_mean BinNumber %d" % BinNumber)
+        
+        # Divide to take mean
+        DirectionMeanRaw = DirectionRaw / self.stoic_Cal_dict["wind_direction_number_of_mean_points"]
+        
+        # unrotate
+        if(BinNumber >= (self.stoic_Cal_dict["wind_direction_number_of_bins"] / 2))
+            rotation = 1535 - ((BinNumber * 64) + self.stoic_Cal_dict["wind_direction_half_bin_size"])
+        else:
+            rotation = 511 - ((BinNumber * 64) + self.stoic_Cal_dict["wind_direction_half_bin_size"])
+        
+        
+        DirectionMeanRaw = DirectionMeanRaw - rotation
+        
+        if DirectionMeanRaw < 0:
+            DirectionMeanRaw += 1024
+            
+        loginf("sensor_parse_wind_direction_mean DirectionMeanRaw %d" % DirectionMeanRaw)
+        loginf("sensor_parse_wind_direction_mean DirectionMeanRaw type %s" % type(DirectionMeanRaw))
+       
+        # The wind direction read out has a dead zone which reads as 0 but points a bit off from 0
+        if(DirectionRaw == 0):
+            return self.stoic_Cal_dict["wind_direction_dead_zone_dir"]
+        
+        loginf("self.stoic_Cal_dict['wind_direction_cal_offset'] %f" % self.stoic_Cal_dict["wind_direction_cal_offset"])
+        loginf("self.stoic_Cal_dict['wind_direction_cal_slope'] %f" % self.stoic_Cal_dict["wind_direction_cal_slope"])
+        
+        
+        WindDirection = (float(DirectionRaw) - self.stoic_Cal_dict["wind_direction_cal_offset"]) / self.stoic_Cal_dict["wind_direction_cal_slope"]
+        
+        loginf("sensor_parse_wind_direction_mean WindDirection %f" % WindDirection)
+        
+        return WindDirection
+    
+        
+    def sensor_parse_wind_speed_mean(self,LineIn_6WMS):
+        """
+        The wind mean is a simple thing. The Stoic Watcher sends the difference between the current count and the count at time interval ago.
+        V = P(2.25/T)
+        For the davis anemometer, speed (mph) = counts * 2.25  / time of sample
+        We report speed in m/s here
+        
+        """
+        # Test line
+        loginf("LineIn_6WGS %s" % LineIn_6WGS)
+        
+        MeanSpeedRaw = int(LineIn_6WGS,16)
+        
+        loginf("MeanSpeedRaw %d" % MeanSpeedRaw)
+        
+        MeanSpeed = float(MeanSpeedRaw) * self.stoic_Cal_dict["wind_mps_per_click_per_120_s"]
+        
+        loginf("MeanSpeed %f" % MeanSpeed)
+        
+        return MeanSpeed
+        
+    def wind_mean_line_validation(self,LineIn):
+        if LineIn.find("*6WMS") == -1:
+            logdbg("StoicWS wind_mean_line_validation no *6WMS")
+            return False
+        pos = LineIn.find(";")
+        if pos == -1:
+            logdbg("StoicWS wind_mean_line_validation no ;")
+            return False
+        if LineIn[pos:].find("+5WMD") == -1:
+            logdbg("StoicWS wind_mean_line_validation no +5WMD")
+            return False
+        if LineIn[pos+1:].find(";") == -1:
+            logdbg("StoicWS wind_mean_line_validation no second ;")
+            return False
+        
+        
+        return True
+        
+    def key_parse_6WMS_5WMD_wind_mean(self,LineIn):
     """
+    Wind comes on one line *6WMS,<data>;+5WMD,<data>;
+    
     No wind is recorded as 0 deg direction. 360 is for north with wind.
     """ 
+        if not self.wind_mean_line_validation(LineIn):
+            loginf("key_parse_6WMS_5WMD_wind_mean received an invalid line %s" % LineIn)
+            return None
+        
+        posStart = LineIn.find(",") + 1
+        posEnd = LineIn.find(";")
+        
+        loginf("key_parse_6WMS_5WMD_wind_mean LineIn %s" % LineIn)
+        
+        loginf("key_parse_6WMS_5WMD_wind_mean speed LineIn[posStart:posEnd] %s" % LineIn[posStart:posEnd])
+        
+        MeanSpeed = self.sensor_parse_wind_speed_mean(LineIn[posStart:posEnd])
+        
+        
+        posStart = LineIn[posEnd+1:].find(",") + posEnd +1 +1
+        posEnd = LineIn[posEnd+1:].find(";") + posEnd +1
+        
+        loginf("key_parse_6WMS_5WMD_wind_mean dir LineIn[posStart:posEnd] %s" % LineIn[posStart:posEnd])
+        
+        posMiddle = LineIn[posStart:posEnd].find(",")
+        
+        MeanDirection = self.sensor_parse_wind_direction_mean(LineIn[posStart:posMiddle],LineIn[posMiddle+1:posEnd])
+        
+        if MeanDirection > 360:
+            loginf("MeanDirection is a tad off %f" % MeanDirection)
+            
+        if MeanDirection < 0:
+            loginf("MeanDirection is a tad off %f" % MeanDirection)
+            
+        # These are rules from WeeWX
+        if (MeanDirection = 0) and (MeanSpeed > 0):
+            MeanDirection = 360
+        if MeanSpeed == 0:
+            MeanDirection = 0
+        
+        
+        
+        data = dict()
+        data["windDir"] = MeanDirection
+        data["windSpeed"] = MeanSpeed
+        
+        # TEST lines
+        loginf("key_parse_6WMS_5WMD_wind_mean windDir %f" % data["windDir"])
+        loginf("key_parse_6WMS_5WMD_wind_mean windSpeed %f" % data["windSpeed"])
+        
+        return data
+    
         
         
     
@@ -921,7 +1057,7 @@ class StoicWatcher(object):
         if (len(LineIn)<1):
             raise weewx.WeeWxIOError("Unexpected line length %d" % len(LineIn))
     
-        # Cannot be easily recovered if lost. 
+        # Rain cannot be easily recovered if lost. 
         if(LineIn.find("4R") != -1):
             if(LineIn.find("4R") != 1):
                 loginf("RAIN LOST validate_string found '4R' out of place. Rain data may have been lost., LineIn: %s" %LineIn)
@@ -935,9 +1071,19 @@ class StoicWatcher(object):
         if(LineIn[1:].find("*") != -1)
             raise weewx.WeeWxIOError("Line has extra start * %s" % LineIn)
         
-        #TODO uncomment this for proper validation
-        #if(LineIn.find(",") == -1):
-        #    raise weewx.WeeWxIOError("Line lacks seporator , %s" % LineIn)
+        pos = LineIn[1:].find("+")
+        if(LineIn[pos:].find(";") == -1):
+            raise weewx.WeeWxIOError("Line lacks second terminator ; %s" % LineIn)
+        
+        # Check line starts
+        ValidLineStarts = set(["*","#","!"])
+        if not (LineIn[0:1] in ValidLineStarts):
+            raise weewx.WeeWxIOError("Line lacks valid line start *,#,! %s" % LineIn)
+        
+        #Only for data strings that start with data cue
+        if(LineIn.find("*") == 0):
+            if(LineIn.find(",") == -1):
+                raise weewx.WeeWxIOError("Line lacks seporator , %s" % LineIn)
     
     
     def get_raw_data_with_retry(self, max_tries=5, retry_wait=3):
@@ -974,7 +1120,7 @@ class StoicWatcher(object):
             elif LineIn[0] == "#":
                 loginf('StoicWS: %s' % LineIn)
             #else:
-                # Not a valid line, Ignored
+                # Not a valid line, validate_string should eleminate these but simply ignored here
         
         ParsedData = self.parse_raw_data(LineIn)
         
