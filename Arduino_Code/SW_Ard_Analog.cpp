@@ -22,8 +22,8 @@ int SW_Ard_Analog::Read_Pin()
 
 #ifdef RUN_SIMULATOR
 
-	ADCresult = 592;
-	Serial.println(F("# RUN_SIMULATOR ;"));
+	ADCresult = (int)SIM_VALUE;
+	//Serial.println(F("# RUN_SIMULATOR ;"));
 
 #endif /*RUN_SIMULATOR*/
 

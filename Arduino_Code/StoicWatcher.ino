@@ -1,6 +1,6 @@
 /*
 	Stoic Watcher
-	v0.0.12
+	v0.0.13
 	2018-02-08
  */
 
@@ -50,7 +50,7 @@ void setup()
 		// wait for serial port to connect.
 	}
 
-	Serial.println(F("#StoicWatcher Starting v0.0.12;"));
+	Serial.println(F("#StoicWatcher Starting v0.0.13;"));
 	Serial.println(F("!startup;"));
 
 
@@ -72,10 +72,17 @@ void setup()
 	// Rain Sensor
 	// Set the rain reset high to reset the rain count
 	// TODO reevaluate the use of rain reset
-	pinMode(RAINCOUNT_RESET_D_PIN, OUTPUT);
-	digitalWrite(RAINCOUNT_RESET_D_PIN, HIGH);
+
+	// Master Reset
+	Serial.println(F("# Master Reset;"));
+	pinMode(MASTER_RESET_D_PIN, OUTPUT);
+	digitalWrite(MASTER_RESET_D_PIN, HIGH);
 	delay(10);
-	digitalWrite(RAINCOUNT_RESET_D_PIN, LOW);
+	digitalWrite(MASTER_RESET_D_PIN, LOW);
+	Serial.println(F("# Master Reset Complete;"));
+
+	// Rain reset?
+	//TODO Handle Rain Reset
 
 	R4_Rain_Readout.setup();
 

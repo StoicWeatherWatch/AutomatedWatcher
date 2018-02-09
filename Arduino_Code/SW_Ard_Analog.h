@@ -10,7 +10,8 @@
 #ifndef SW_ARD_ANALOG_H_
 #define SW_ARD_ANALOG_H_
 
-//#define RUN_SIMULATOR
+#define RUN_SIMULATOR
+#define SIM_VALUE 255
 
 #include "Arduino.h"
 

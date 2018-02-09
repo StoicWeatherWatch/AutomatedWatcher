@@ -83,6 +83,17 @@ void SW_Wind_Gust::AcquireWindGustSpeed()
 
 	LastGustReadout = DataIn;
 
+#ifdef RUN_GUST_SIMULATION
+	if((CurrentSpeedQueueLoc % 2) == 0)
+	{
+	Difference = 0;
+	}
+	else
+	{
+		Difference = (byte)50;
+	}
+#endif /*RUN_GUST_SIMULATION*/
+
 
 	WindSpeedGustQueue[CurrentSpeedQueueLoc] = Difference;
 

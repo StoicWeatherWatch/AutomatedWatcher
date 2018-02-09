@@ -56,9 +56,10 @@
 
 
 // Pins
-#define RAINCOUNT_RESET_D_PIN 13
-#define RAIN_DAQ0_D_PIN    9
-#define WIND_DIR_ADC_A_PIN 1
+#define RAINCOUNT_RESET_D_PIN  13
+#define MASTER_RESET_D_PIN      8
+#define RAIN_DAQ0_D_PIN         9
+#define WIND_DIR_ADC_A_PIN      1
 
 // Pin Ranges - number of pins starting with DAQ0
 #define RAIN_PIN_RANGE     4

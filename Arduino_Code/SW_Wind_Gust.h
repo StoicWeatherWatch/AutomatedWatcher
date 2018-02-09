@@ -17,6 +17,7 @@
 
 // For testing, 12 is hard to hit rotating by hand
 //#define GUST_MINIMUM_DIFFERENCE 3
+#define RUN_GUST_SIMULATION
 
 // We have 13 bits. The counter may wrap
 #define MAX_WIND_CTS     0b1111111111111
