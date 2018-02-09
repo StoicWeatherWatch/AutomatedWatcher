@@ -351,10 +351,12 @@ class StoicWatcher(object):
         
     def open(self):
         
+        # TODO validate that we are talking to the Arduino and not something else
+        
         if len(list(serial.tools.list_ports.comports())) == 0:
             loginf("Stoic: No serial ports found")
         
-        NumTrys = 10
+        NumTrys = 15
         PortNum = self.stoic_Cal_dict["serial_port_Lowest"]
         for i in range(NumTrys):
             try:
