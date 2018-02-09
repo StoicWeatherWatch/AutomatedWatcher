@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.0.7
-# 2018-02-06
+# Version 0.0.10
+# 2018-02-08
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -79,6 +79,7 @@ import serial
 import syslog
 import time
 import traceback
+import serial.tools.list_ports
 
 # TODO do I use binascii?
 import binascii
@@ -106,7 +107,7 @@ def loginf(msg):
 def logerr(msg):
     logmsg(syslog.LOG_ERR, msg)
     
-
+# TODO replace a lot of the loginf with logdbg
 
 
 class StoicWSDriver(weewx.drivers.AbstractDevice):
@@ -152,6 +153,13 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         # TODO make this a try so it fails gracefully when not in the dictionary
         
         #TODO Handle a value not present gracefully
+        #try:
+        
+        # General
+        # Serial
+        stoic_Cal_dict["serial_port_default"] = stn_dict.get('serial_port_default')
+        stoic_Cal_dict["serial_port_Prefix"] = stn_dict.get('serial_port_Prefix')
+        stoic_Cal_dict["serial_port_Lowest"] = int(stn_dict.get('serial_port_Lowest'))
         
         # Rain
         stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip'))
@@ -164,6 +172,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         stoic_Cal_dict["wind_direction_dead_zone_dir"] = float(stn_dict.get('wind_direction_dead_zone_dir'))
         stoic_Cal_dict["wind_direction_number_of_mean_points"] = int(stn_dict.get('wind_direction_number_of_mean_points'))
         stoic_Cal_dict["wind_direction_number_of_bins"] = int(stn_dict.get('wind_direction_number_of_bins'))
+        stoic_Cal_dict["wind_direction_half_bin_size"] = int(stn_dict.get('wind_direction_half_bin_size'))
         stoic_Cal_dict["wind_direction_max_ADC"] = int(stn_dict.get('wind_direction_max_ADC'))
         
         loginf("self.stoic_Cal_dict['wind_direction_cal_offset'] %f" % stoic_Cal_dict["wind_direction_cal_offset"])
@@ -263,7 +272,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
     def __init__(self, **stn_dict):
         self.model = stn_dict.get('model', 'StoicWS')
         # TODO Figure out the port
-        self.port = stn_dict.get('port', StoicWatcher.DEFAULT_PORT)
+        self.port = stn_dict.get('serial_port_default', StoicWatcher.DEFAULT_PORT)
         self.baudrate = stn_dict.get('baudrate', StoicWatcher.DEFAULT_BAUDRATE)
         self.max_tries = int(stn_dict.get('max_tries', 25))
         self.retry_wait = int(stn_dict.get('retry_wait', 3))
@@ -341,16 +350,42 @@ class StoicWatcher(object):
         self.close()
         
     def open(self):
-        logdbg("open serial port %s" % self.port)
         
-        self.serial_port = serial.Serial(self.port, self.baudrate,
-                                         timeout=self.timeout)
+        if len(list(serial.tools.list_ports.comports())) == 0:
+            loginf("Stoic: No serial ports found")
+        
+        NumTrys = 10
+        PortNum = self.stoic_Cal_dict["serial_port_Lowest"]
+        for i in range(NumTrys):
+            try:
+                loginf("Stoic: Attempting to Open com channel %s" % self.port)
+                self.serial_port = serial.Serial(self.port, self.baudrate,timeout=self.timeout)
+            except (serial.serialutil.SerialException), e:
+                loginf("Failed to open serial port: %s" % e)
+                loginf(traceback.format_exc())
+                
+                # Sometimes the arduino comes in on a different port. 
+                if str(e).find("could not open port") != -1:
+                    if str(e).find("No such file or directory") != -1:
+                        loginf("Stoic: Attempting a different port")
+                        
+                        self.port = self.stoic_Cal_dict["serial_port_Prefix"] + str(PortNum)
+                        PortNum += 1
+                
+                # on the last try give up completely, on the others take a nap
+                if i == NumTrys - 1:
+                    raise
+                else:
+                    time.sleep(5)
+            else:
+                break
         
         # python -m serial.tools.list_ports
         # Above will list ports
 
 # TODO should we handle rain in some way here
     def close(self):
+        loginf("Stoic: Close com channel >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" )
         if self.serial_port is not None:
             logdbg("close serial port %s" % self.port)
             self.serial_port.close()
@@ -613,7 +648,7 @@ class StoicWatcher(object):
         loginf("Stoic sensor_parse_BME280_Humidity %f " % Hum)
 
         return Hum
-            
+    
     
     def key_parse_3TPH_FARS(self,LineIn):
         """
@@ -865,7 +900,7 @@ class StoicWatcher(object):
         loginf("sensor_parse_wind_direction_mean LineInDirection %s" % LineInDirection)
         loginf("sensor_parse_wind_direction_mean LineInBin %s" % LineInBin)
         
-        DirectionRaw = int(LineIn_5WMD,16)
+        DirectionRaw = int(LineInDirection,16)
         BinNumber = int(LineInBin,16)
         
         loginf("sensor_parse_wind_direction_mean DirectionRaw %d" % DirectionRaw)
@@ -875,7 +910,7 @@ class StoicWatcher(object):
         DirectionMeanRaw = DirectionRaw / self.stoic_Cal_dict["wind_direction_number_of_mean_points"]
         
         # unrotate
-        if(BinNumber >= (self.stoic_Cal_dict["wind_direction_number_of_bins"] / 2))
+        if(BinNumber >= (self.stoic_Cal_dict["wind_direction_number_of_bins"] / 2)):
             rotation = 1535 - ((BinNumber * 64) + self.stoic_Cal_dict["wind_direction_half_bin_size"])
         else:
             rotation = 511 - ((BinNumber * 64) + self.stoic_Cal_dict["wind_direction_half_bin_size"])
@@ -890,18 +925,24 @@ class StoicWatcher(object):
         loginf("sensor_parse_wind_direction_mean DirectionMeanRaw type %s" % type(DirectionMeanRaw))
        
         # The wind direction read out has a dead zone which reads as 0 but points a bit off from 0
-        if(DirectionRaw == 0):
+        if(DirectionMeanRaw == 0):
             return self.stoic_Cal_dict["wind_direction_dead_zone_dir"]
         
         loginf("self.stoic_Cal_dict['wind_direction_cal_offset'] %f" % self.stoic_Cal_dict["wind_direction_cal_offset"])
         loginf("self.stoic_Cal_dict['wind_direction_cal_slope'] %f" % self.stoic_Cal_dict["wind_direction_cal_slope"])
         
         
-        WindDirection = (float(DirectionRaw) - self.stoic_Cal_dict["wind_direction_cal_offset"]) / self.stoic_Cal_dict["wind_direction_cal_slope"]
+        WindDirectionMean = (float(DirectionMeanRaw) - self.stoic_Cal_dict["wind_direction_cal_offset"]) / self.stoic_Cal_dict["wind_direction_cal_slope"]
         
-        loginf("sensor_parse_wind_direction_mean WindDirection %f" % WindDirection)
+        if WindDirectionMean > 360:
+            WindDirectionMean -= 360
+            
+        if WindDirectionMean < 0:
+            WindDirectionMean += 360
         
-        return WindDirection
+        loginf("sensor_parse_wind_direction_mean WindDirectionMean %f" % WindDirectionMean)
+        
+        return WindDirectionMean
     
         
     def sensor_parse_wind_speed_mean(self,LineIn_6WMS):
@@ -913,9 +954,9 @@ class StoicWatcher(object):
         
         """
         # Test line
-        loginf("LineIn_6WGS %s" % LineIn_6WGS)
+        loginf("LineIn_6WMS %s" % LineIn_6WMS)
         
-        MeanSpeedRaw = int(LineIn_6WGS,16)
+        MeanSpeedRaw = int(LineIn_6WMS,16)
         
         loginf("MeanSpeedRaw %d" % MeanSpeedRaw)
         
@@ -944,11 +985,11 @@ class StoicWatcher(object):
         return True
         
     def key_parse_6WMS_5WMD_wind_mean(self,LineIn):
-    """
-    Wind comes on one line *6WMS,<data>;+5WMD,<data>;
+        """
+        Wind comes on one line *6WMS,<data>;+5WMD,<data>;
     
-    No wind is recorded as 0 deg direction. 360 is for north with wind.
-    """ 
+        No wind is recorded as 0 deg direction. 360 is for north with wind.
+        """ 
         if not self.wind_mean_line_validation(LineIn):
             loginf("key_parse_6WMS_5WMD_wind_mean received an invalid line %s" % LineIn)
             return None
@@ -962,15 +1003,17 @@ class StoicWatcher(object):
         
         MeanSpeed = self.sensor_parse_wind_speed_mean(LineIn[posStart:posEnd])
         
+        posSecondBlock = LineIn.find("+")
         
-        posStart = LineIn[posEnd+1:].find(",") + posEnd +1 +1
-        posEnd = LineIn[posEnd+1:].find(";") + posEnd +1
+        posStart = LineIn[posSecondBlock+1:].find(",") + posSecondBlock +1 +1
+        posMiddle = LineIn[posStart:].find(",") + posStart 
+        posEnd = LineIn[posSecondBlock+1:].find(";") + posSecondBlock +1
+
         
-        loginf("key_parse_6WMS_5WMD_wind_mean dir LineIn[posStart:posEnd] %s" % LineIn[posStart:posEnd])
+        loginf("key_parse_6WMS_5WMD_wind_mean dir LineIn[posStart:posMiddle] %s" % LineIn[posStart:posMiddle])
+        loginf("key_parse_6WMS_5WMD_wind_mean bin LineIn[posMiddle +1:posEnd] %s" % LineIn[posMiddle +1:posEnd])
         
-        posMiddle = LineIn[posStart:posEnd].find(",")
-        
-        MeanDirection = self.sensor_parse_wind_direction_mean(LineIn[posStart:posMiddle],LineIn[posMiddle+1:posEnd])
+        MeanDirection = self.sensor_parse_wind_direction_mean(LineIn[posStart:posMiddle],LineIn[posMiddle +1:posEnd])
         
         if MeanDirection > 360:
             loginf("MeanDirection is a tad off %f" % MeanDirection)
@@ -979,7 +1022,7 @@ class StoicWatcher(object):
             loginf("MeanDirection is a tad off %f" % MeanDirection)
             
         # These are rules from WeeWX
-        if (MeanDirection = 0) and (MeanSpeed > 0):
+        if (MeanDirection == 0) and (MeanSpeed > 0):
             MeanDirection = 360
         if MeanSpeed == 0:
             MeanDirection = 0
@@ -1018,8 +1061,8 @@ class StoicWatcher(object):
                 return self.key_parse_4R_Rain(LineIn)
             elif LineIn[1:pos] == "6WGS":
                 return self.key_parse_6WGS_5WGD_wind_gust(LineIn)
-        #elif LineIn[1:pos] == "6WMS":
-        #    return self.key_parse_6WMS_5WMD_wind_mean(LineIn)
+            elif LineIn[1:pos] == "6WMS":
+                return self.key_parse_6WMS_5WMD_wind_mean(LineIn)
             else:
             # TODO fix this
                 return None
@@ -1054,6 +1097,9 @@ class StoicWatcher(object):
     @staticmethod
     def validate_string(LineIn):
         # TODO add aditional validation
+        
+        #loginf("Stoic: validate_string: %s" %LineIn)
+        
         if (len(LineIn)<1):
             raise weewx.WeeWxIOError("Unexpected line length %d" % len(LineIn))
     
@@ -1068,12 +1114,13 @@ class StoicWatcher(object):
         
         if(LineIn.find(";") == -1):
             raise weewx.WeeWxIOError("Line lacks terminator ; %s" % LineIn)
-        if(LineIn[1:].find("*") != -1)
+        if(LineIn[1:].find("*") != -1):
             raise weewx.WeeWxIOError("Line has extra start * %s" % LineIn)
         
         pos = LineIn[1:].find("+")
-        if(LineIn[pos:].find(";") == -1):
-            raise weewx.WeeWxIOError("Line lacks second terminator ; %s" % LineIn)
+        if pos != -1:
+            if(LineIn[pos:].find(";") == -1):
+                raise weewx.WeeWxIOError("Line lacks second terminator ; %s" % LineIn)
         
         # Check line starts
         ValidLineStarts = set(["*","#","!"])
