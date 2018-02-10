@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.0.11
-# 2018-02-08
+# Version 0.0.13
+# 2018-02-09
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -12,7 +12,7 @@
 """weeWX Driver for Stoic Weather Watch.
 An Arduino based weather station.
 
-Stoic sends data constantly via a USB serial port. 
+Stoic Watcher sends data constantly via a USB serial port. 
 
 Data format
 *Key,Value(s);
@@ -47,6 +47,8 @@ DEFAULT_BAUDRATE = 9600
 
 Looks for the following in the config file
 rain_mm_Per_Tip - Tipping bucket conversion factor 0.2794
+
+STOIC Stoic Thing Observes Information on Climate 
 
 """
 
@@ -87,7 +89,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.0.11'
+DRIVER_VERSION = '0.0.13'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -285,6 +287,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         self.port = stn_dict.get('serial_port_default', StoicWatcher.DEFAULT_PORT)
         self.baudrate = stn_dict.get('baudrate', StoicWatcher.DEFAULT_BAUDRATE)
         self.max_tries = int(stn_dict.get('max_tries', 25))
+        self.maxTrysBeforeCloseAndOpenPort = int(stn_dict.get('max_tries_before_cycle_port', 25))
         self.retry_wait = int(stn_dict.get('retry_wait', 3))
         debug_serial = int(stn_dict.get('debug_serial', 0))
         
@@ -330,7 +333,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         while True:
             packet = {'dateTime': int(time.time() + 0.5),
                       'usUnits': weewx.METRICWX}
-            data = self.StoicWatcher.get_processed_data_with_retry(self.max_tries, self.retry_wait)
+            data = self.StoicWatcher.get_processed_data_with_retry(self.max_tries, self.maxTrysBeforeCloseAndOpenPort, self.retry_wait)
             
             if data != None:
                 packet.update(data)
@@ -366,7 +369,7 @@ class StoicWatcher(object):
         if len(list(serial.tools.list_ports.comports())) == 0:
             loginf("Stoic: No serial ports found")
         
-        NumTrys = 15
+        NumTrys = 17
         PortNum = self.stoic_Cal_dict["serial_port_Lowest"]
         for i in range(NumTrys):
             try:
@@ -414,18 +417,20 @@ class StoicWatcher(object):
         """
         Parse the two hex bytes output from an MCP9808 tempriture sensor.
         Returns tempriture C
+        The MCP9808 outputs 13 bit data in twos complement. (Sort of twos compliment.)
+        The data is fixed point. 
         """
-        DataBin = int(DataHex,16)
+        DataRaw = int(DataHex,16)
         
         # Top three bits are garbage
-        DataBin = DataBin & int("1FFF",16)
+        DataRaw = DataRaw & int("1FFF",16)
         
-        #4th bit from highest is sign
-        if((DataBin >> 12) == 0):
-            Temp = float(DataBin & int("0FFF",16)) * (2**-4)
+        #4th bit from highest is sign. Positive if zero
+        if((DataRaw >> 12) == 0):
+            Temp = float(DataRaw & int("0FFF",16)) * (2**-4)
             
         else: # 1 and thus negative
-            Temp = 256.0 - (float(DataBin & int("0FFF",16)) * (2**-4))
+            Temp = 256.0 - (float(DataRaw & int("0FFF",16)) * (2**-4))
             
         return Temp
             
@@ -440,15 +445,19 @@ class StoicWatcher(object):
         
         entered as extraTemp1
         Units C
+        Sesnor is an MCP9808 on the I2C bus
+        Input format *2T,xxxx; or *2T,xxxx,^;  xxxx is two hex bytes read from the sensor.
         """
-        pos = LineIn.find(",")
+        # Pull the data from the text string that came in.
+        posStart = LineIn.find(",")
         # Does the line have a checksum indicator
         if(LineIn.find("^") == -1):
             posEnd = LineIn.find(";")
         else:
-            posEnd = LineIn.find(",")
+            posEnd = LineIn[posStart+1:].find(",") + posStart + 1
+            # TODO never tested with ^ 
         
-        Temp = self.sensor_parse_MCP9808_Temp(LineIn[pos+1:posEnd])
+        Temp = self.sensor_parse_MCP9808_Temp(LineIn[posStart+1:posEnd])
         
         loginf("key_parse_2T_BoxTemp temp %f" % Temp)
             
@@ -456,6 +465,8 @@ class StoicWatcher(object):
         data["extraTemp1"] = Temp
         
         return data
+    
+    
     
     def sensor_parse_BME280_Pressure(self, DataHex, BME280ID, TFine):
         """
@@ -786,11 +797,13 @@ class StoicWatcher(object):
         except:
             loginf("RAIN LOST Total failure in rain. Rain data may have been lost., LineIn: %s" %LineIn)
             logerr("RAIN LOST Total failure in rain. Rain data may have been lost., LineIn: %s" %LineIn)
-            logmsg(LOG_EMERG, "STOIC: RAIN LOST Total failure in rain. Rain data may have been lost., LineIn: %s" %LineIn)
+            logmsg(syslog.LOG_EMERG, "STOIC: RAIN LOST Total failure in rain. Rain data may have been lost., LineIn: %s" %LineIn)
             loginf(traceback.format_exc())
             logerr(traceback.format_exc())
             raise
         
+        # TODO test above. The last time it happened it spit an error. I changed LOG_EMERG to syslog.LOG_EMERG. THis has not been tested.
+        # Test by having the arduino spit an invalid line with 4R in it.
         
         return data
     
@@ -1129,9 +1142,11 @@ class StoicWatcher(object):
             if(LineIn.find("4R") != 1):
                 loginf("RAIN LOST validate_string found '4R' out of place. Rain data may have been lost., LineIn: %s" %LineIn)
                 logerr("RAIN LOST validate_string found '4R' out of place. Rain data may have been lost., LineIn: %s" %LineIn)
-                logmsg(LOG_EMERG, "STOIC: RAIN LOST validate_string found '4R' out of place. Rain data may have been lost., LineIn: %s" %LineIn)
+                logmsg(syslog.LOG_EMERG, "STOIC: RAIN LOST validate_string found '4R' out of place. Rain data may have been lost., LineIn: %s" %LineIn)
                 # TODO attempt recovery by reading the rain
                 raise weewx.WeeWxIOError(" '4R' is out of place. Rain data may have been lost %s" % LineIn)
+            # TODO test this. The last time it happened it spit an error. I changed LOG_EMERG to syslog.LOG_EMERG. THis has not been tested.
+        # Test by having the arduino spit an invalid line with 4R in it.
         
         if(LineIn.find(";") == -1):
             raise weewx.WeeWxIOError("Line lacks terminator ; %s" % LineIn)
@@ -1154,7 +1169,7 @@ class StoicWatcher(object):
                 raise weewx.WeeWxIOError("Line lacks seporator , %s" % LineIn)
     
     
-    def get_raw_data_with_retry(self, max_tries=5, retry_wait=3):
+    def get_raw_data_with_retry(self, max_tries=10, maxTrysBeforeCloseAndOpenPort=8, retry_wait=3):
         for ntries in range(0, max_tries):
             try:
                 LineIn = self.get_raw_data()
@@ -1164,6 +1179,10 @@ class StoicWatcher(object):
                 loginf("Failed attempt %d of %d to get readings: %s" %
                        (ntries + 1, max_tries, e))
                 time.sleep(retry_wait)
+                if ntries > maxTrysBeforeCloseAndOpenPort:
+                    loginf("No Good. Killing the port.")
+                    self.close()
+                    self.open()
         else:
             msg = "Max retries (%d) exceeded for readings" % max_tries
             logerr(msg)
@@ -1171,10 +1190,11 @@ class StoicWatcher(object):
             #TODO impliment the above better
             raise weewx.RetriesExceeded(msg)
         
-    def get_processed_data_with_retry(self, max_tries=25, retry_wait=3):
+    def get_processed_data_with_retry(self, max_tries=25, maxTrysBeforeCloseAndOpenPort=8, retry_wait=3):
         DataLine = False
         while not DataLine:
-            LineIn = self.get_raw_data_with_retry(max_tries, retry_wait)
+            LineIn = self.get_raw_data_with_retry(max_tries, maxTrysBeforeCloseAndOpenPort, retry_wait)
+            
             if LineIn[0] == "*":
                 # Data Line
                 DataLine = True
