@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.0.10
+# Version 0.0.11
 # 2018-02-08
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
@@ -87,7 +87,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.0.7'
+DRIVER_VERSION = '0.0.11'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -121,8 +121,6 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
     max_tries - how often to retry serial communication before giving up
     [Optional. Default is 5]
     """
-    
-    
     
         
     
@@ -164,19 +162,31 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         # Rain
         stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip'))
         
-        # Wind
+        # Wind Speed
         stoic_Cal_dict["wind_mps_per_click_per_2_25_s"] = float(stn_dict.get('wind_mps_per_click_per_2_25_s'))
         stoic_Cal_dict["wind_mps_per_click_per_120_s"] = float(stn_dict.get('wind_mps_per_click_per_120_s'))
-        stoic_Cal_dict["wind_direction_cal_offset"] = float(stn_dict.get('wind_direction_cal_offset'))
-        stoic_Cal_dict["wind_direction_cal_slope"] = float(stn_dict.get('wind_direction_cal_slope'))
+        
+        # Wind Direction
+        stoic_Cal_dict["wind_direction_cal_Main_Model_offset"] = float(stn_dict.get('wind_direction_cal_Main_Model_offset'))
+        stoic_Cal_dict["wind_direction_cal_Main_Model_slope"] = float(stn_dict.get('wind_direction_cal_Main_Model_slope'))
+        stoic_Cal_dict["wind_direction_cal_Low_Model_offset"] = float(stn_dict.get('wind_direction_cal_Low_Model_offset'))
+        stoic_Cal_dict["wind_direction_cal_Low_Model_slope"] = float(stn_dict.get('wind_direction_cal_Low_Model_slope'))
+        stoic_Cal_dict["wind_direction_cal_High_Model_offset"] = float(stn_dict.get('wind_direction_cal_High_Model_offset'))
+        stoic_Cal_dict["wind_direction_cal_High_Model_slope"] = float(stn_dict.get('wind_direction_cal_High_Model_slope'))
+        stoic_Cal_dict["wind_direction_Low_Model_Cutoff"] = int(stn_dict.get('wind_direction_Low_Model_Cutoff'))
+        stoic_Cal_dict["wind_direction_High_Model_Cutoff"] = int(stn_dict.get('wind_direction_High_Model_Cutoff'))
+        
+        
         stoic_Cal_dict["wind_direction_dead_zone_dir"] = float(stn_dict.get('wind_direction_dead_zone_dir'))
+        
+        # Wind constants for mean wind direction 
         stoic_Cal_dict["wind_direction_number_of_mean_points"] = int(stn_dict.get('wind_direction_number_of_mean_points'))
         stoic_Cal_dict["wind_direction_number_of_bins"] = int(stn_dict.get('wind_direction_number_of_bins'))
         stoic_Cal_dict["wind_direction_half_bin_size"] = int(stn_dict.get('wind_direction_half_bin_size'))
         stoic_Cal_dict["wind_direction_max_ADC"] = int(stn_dict.get('wind_direction_max_ADC'))
         
-        loginf("self.stoic_Cal_dict['wind_direction_cal_offset'] %f" % stoic_Cal_dict["wind_direction_cal_offset"])
-        loginf("stoic_Cal_dict['wind_direction_cal_slope'] %f" % stoic_Cal_dict["wind_direction_cal_slope"])
+        loginf("self.stoic_Cal_dict['wind_direction_cal_Main_Model_offset'] %f" % stoic_Cal_dict["wind_direction_cal_Main_Model_offset"])
+        loginf("stoic_Cal_dict['wind_direction_cal_Main_Model_slope'] %f" % stoic_Cal_dict["wind_direction_cal_Main_Model_slope"])
         
         loginf("stoic_Cal_dict['wind_mps_per_click_per_2_25_s'] %f" % stoic_Cal_dict["wind_mps_per_click_per_2_25_s"])
         loginf("stoic_Cal_dict['wind_direction_dead_zone_dir'] %f" % stoic_Cal_dict["wind_direction_dead_zone_dir"])
@@ -787,6 +797,28 @@ class StoicWatcher(object):
         
         return data
     
+    def sensor_parse_wind_direction_from_ADC(self,WindADCRaw):
+        """
+        Takes an int
+        """
+        
+        # The wind model uses a main, high, and low part
+        if WindADCRaw < self.stoic_Cal_dict["wind_direction_Low_Model_Cutoff"]:
+            Model = "Low"
+        elif WindADCRaw > self.stoic_Cal_dict["wind_direction_High_Model_Cutoff"]:
+            Model = "High"
+        else:
+            Model = "Main"
+            
+        Offset = "wind_direction_cal_" + Model + "_Model_offset"
+        slope = "wind_direction_cal_" + Model + "_Model_slope"
+            
+        WindDirectionDeg = (float(WindADCRaw) - self.stoic_Cal_dict[Offset]) / self.stoic_Cal_dict[slope]
+        
+        loginf("sensor_parse_wind_direction_from_ADC WindADCRaw Model WindDirectionDeg %d %s, %f" % (WindADCRaw, Model, WindDirectionDeg))
+        
+        return WindDirectionDeg
+    
         
     
     def sensor_parse_wind_direction_gust(self,LineIn_5WGD):
@@ -797,17 +829,9 @@ class StoicWatcher(object):
         """
         DirectionRaw = int(LineIn_5WGD,16)
         
+        
+        WindDirection = self.sensor_parse_wind_direction_from_ADC(DirectionRaw)
        
-        # The wind direction read out has a dead zone which reads as 0 but points a bit off from 0
-        if(DirectionRaw == 0):
-            return self.stoic_Cal_dict["wind_direction_dead_zone_dir"]
-        
-        loginf("self.stoic_Cal_dict['wind_direction_cal_offset'] %f" % self.stoic_Cal_dict["wind_direction_cal_offset"])
-        loginf("self.stoic_Cal_dict['wind_direction_cal_slope'] %f" % self.stoic_Cal_dict["wind_direction_cal_slope"])
-        
-        
-        WindDirection = (float(DirectionRaw) - self.stoic_Cal_dict["wind_direction_cal_offset"]) / self.stoic_Cal_dict["wind_direction_cal_slope"]
-        
         loginf("sensor_parse_wind_direction_gust WindDirection %f" % WindDirection)
         
         return WindDirection
@@ -841,6 +865,8 @@ class StoicWatcher(object):
         if LineIn[pos+1:].find(";") == -1:
             logdbg("StoicWS wind_gust_line_validation no second ;")
             return False
+        
+       # TODO add no speeds > 1023 ADC
         
         return True
     
@@ -890,6 +916,7 @@ class StoicWatcher(object):
         
         return data
     
+    
 
     def sensor_parse_wind_direction_mean(self,LineInDirection,LineInBin):
         """
@@ -918,28 +945,29 @@ class StoicWatcher(object):
             rotation = 511 - ((BinNumber * 64) + self.stoic_Cal_dict["wind_direction_half_bin_size"])
         
         
+        loginf("DirectionMeanRaw not yet unrotated %d" % DirectionMeanRaw)
+        
         DirectionMeanRaw = DirectionMeanRaw - rotation
+        
+        loginf("DirectionMeanRaw unrotated %d" % DirectionMeanRaw)
         
         if DirectionMeanRaw < 0:
             DirectionMeanRaw += 1024
+        
+        if DirectionMeanRaw > 1023:
+            DirectionMeanRaw -= 1024
             
         loginf("sensor_parse_wind_direction_mean DirectionMeanRaw %d" % DirectionMeanRaw)
         loginf("sensor_parse_wind_direction_mean DirectionMeanRaw type %s" % type(DirectionMeanRaw))
        
-        # The wind direction read out has a dead zone which reads as 0 but points a bit off from 0
-        if(DirectionMeanRaw == 0):
-            return self.stoic_Cal_dict["wind_direction_dead_zone_dir"]
-        
-        loginf("self.stoic_Cal_dict['wind_direction_cal_offset'] %f" % self.stoic_Cal_dict["wind_direction_cal_offset"])
-        loginf("self.stoic_Cal_dict['wind_direction_cal_slope'] %f" % self.stoic_Cal_dict["wind_direction_cal_slope"])
-        
-        
-        WindDirectionMean = (float(DirectionMeanRaw) - self.stoic_Cal_dict["wind_direction_cal_offset"]) / self.stoic_Cal_dict["wind_direction_cal_slope"]
+        WindDirectionMean = self.sensor_parse_wind_direction_from_ADC(DirectionMeanRaw)
         
         if WindDirectionMean > 360:
+            loginf("sensor_parse_wind_direction_mean this should never happen > 360")
             WindDirectionMean -= 360
             
         if WindDirectionMean < 0:
+            loginf("sensor_parse_wind_direction_mean this should never happen < 0")
             WindDirectionMean += 360
         
         loginf("sensor_parse_wind_direction_mean WindDirectionMean %f" % WindDirectionMean)
