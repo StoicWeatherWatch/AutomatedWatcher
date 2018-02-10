@@ -11,7 +11,7 @@
 #define SW_ARD_ANALOG_H_
 
 #define RUN_SIMULATOR
-#define SIM_VALUE 576
+#define SIM_VALUE 0
 
 #include "Arduino.h"
 
