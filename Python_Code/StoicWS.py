@@ -543,8 +543,7 @@ class StoicWatcher(object):
         
         Input is 3 byte of HEX. Only 20 bits have meaning
         """
-        
-        loginf("Stoic sensor_parse_BME280_TFine  HEX in %s" % DataHex)
+    
         
         RawTemp = long(DataHex,16) >> 4
         
@@ -649,8 +648,6 @@ class StoicWatcher(object):
         
         H = var1 >> 12
         
-        # TEST LINE 
-        loginf("Stoic sensor_parse_BME280_Humidity in Q22.10 %d " % H)
         
         # Hum = float(H) / float(1024)
         # Because we like complexity.       12345678901234567890121234567890
@@ -832,17 +829,15 @@ class StoicWatcher(object):
         
         WindDirection = self.sensor_parse_wind_direction_from_ADC(DirectionRaw)
        
-        loginf("sensor_parse_wind_direction_gust WindDirection %f" % WindDirection)
         
         return WindDirection
+        
         
     def sensor_parse_wind_speed_gust(self,LineIn_6WGS):
         """
         The gust speed is measured at 2.25 second intervals. One clikc per second is 1 mph. Thus
         
         """
-        # Test line
-        loginf("LineIn_6WGS %s" % LineIn_6WGS)
         
         GustSpeedRaw = int(LineIn_6WGS,16)
         
@@ -884,9 +879,6 @@ class StoicWatcher(object):
         posStart = LineIn.find(",") + 1
         posEnd = LineIn.find(";")
         
-        loginf("key_parse_6WGS_5WGD_wind_gust LineIn %s" % LineIn)
-        
-        loginf("key_parse_6WGS_5WGD_wind_gust speed LineIn[posStart:posEnd %s" % LineIn[posStart:posEnd])
         
         GustSpeed = self.sensor_parse_wind_speed_gust(LineIn[posStart:posEnd])
         
@@ -894,7 +886,6 @@ class StoicWatcher(object):
         posStart = LineIn[posEnd+1:].find(",") + posEnd +1 +1
         posEnd = LineIn[posEnd+1:].find(";") + posEnd +1
         
-        loginf("key_parse_6WGS_5WGD_wind_gust dir LineIn[posStart:posEnd %s" % LineIn[posStart:posEnd])
         
         GustDirection = self.sensor_parse_wind_direction_gust(LineIn[posStart:posEnd])
         
