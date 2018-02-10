@@ -27,7 +27,7 @@ bool SW_Wind_Speed_Mean::AcquireData()
 	// Prep queue
 	CurrentSpeedQueueLoc++;
 
-	// TODO CurrentQueueLoc >QueueLength >=?
+	// TODO CurrentQueueLoc >QueueLength >=? I think correct below
 	if(CurrentSpeedQueueLoc >= SpeedQueueLength)
 	{
 		CurrentSpeedQueueLoc = 0;

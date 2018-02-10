@@ -66,6 +66,7 @@ bool SW_MCP9808_Sensor::SendRawDataSerial()
 	return true;
 }
 
+/*  Unused
 byte SW_MCP9808_Sensor::GetRawTempreature_HighBits()
 {
 	return TemperatureRaw[0];
@@ -74,6 +75,7 @@ byte SW_MCP9808_Sensor::GetRawTempreature_LowBits()
 {
 	return TemperatureRaw[1];
 }
+*/
 
 #ifdef PERFORM_DATA_PROCESSING
 	float SW_MCP9808_Sensor::ProcessTemp()

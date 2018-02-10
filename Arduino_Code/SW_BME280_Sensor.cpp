@@ -106,13 +106,6 @@ bool SW_BME280_Sensor::RetrieveDataAndSend()
 	return true;
 }
 
-bool SW_BME280_Sensor::SendRawDataSerial()
-{
-
-	// TODO Fix this
-	return true;
-}
-
 
 // Verify that the chip we are talking to is correct.
 #ifdef VERIFY_CHIPS

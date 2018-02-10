@@ -30,8 +30,6 @@ public:
 	byte LastDataReading;
 
 
-
-
 	SW_Rain_Readout(byte DAQ0PinIN, byte DAQPinCountIN,byte ResetPinIN,byte SensorNumberIN);
 	bool AcquireDataAndSend();
 

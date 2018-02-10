@@ -29,7 +29,7 @@
 #endif /*PERFORM_DATA_PROCESSING*/
 
 // Set to send calibration data via serial at startup
-#define SEND_CALIBRATION_DATA
+//#define SEND_CALIBRATION_DATA
 
 /*
  *

@@ -52,10 +52,7 @@ public:
 
 	SW_MCP2318_GPIO_Sensor(byte AddressIn, I2C I2CBussIn, byte SensorNumberIN);
 
-
 	int AcquireDataAndReturn();
-
-
 
 // TODO make this static?
 	bool InitializeSensor();

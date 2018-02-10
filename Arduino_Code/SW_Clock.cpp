@@ -7,11 +7,8 @@
 
 #include "SW_Clock.h"
 
-#if(ARDUINO >= 100)
 #include <Arduino.h>
-#else
-#include <WProgram.h>
-#endif
+
 
 // TODO consider returning pointers from get functions. It would save memory.
 // TODO change get functions to match byte or int not just int.

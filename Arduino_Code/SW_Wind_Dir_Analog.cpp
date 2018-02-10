@@ -25,29 +25,12 @@ SW_Wind_Dir_Analog::SW_Wind_Dir_Analog(byte AAQ0PinIn, byte NumberOfRecordsIn, b
 	DirectionQueueLength = NumberOfRecordsIn;
 
 
-
 	Serial.print(F("#Wind Direction Initialized;"));
 
 
-
-
 }
 
 
-// TODO does this ever get called?
-bool SW_Wind_Dir_Analog::AcquireAnalogDataAndSend()
-{
-	int AAQread = Read_Pin();
-
-	Serial.print(F("*"));
-	Serial.print(SensorNumberAnalog,DEC);
-	Serial.print(F("WDINSTANT,"));
-	SerialHexByteAndAHalfPrint(AAQread);
-	Serial.println(F(";"));
-
-	return RecordDirectionReading(AAQread);
-
-}
 
 bool SW_Wind_Dir_Analog::AcquireDirectionDataOnly()
 {
@@ -60,6 +43,10 @@ bool SW_Wind_Dir_Analog::AcquireDirectionDataOnly()
 
 int SW_Wind_Dir_Analog::GetMostRecentDirection()
 {
+	// TODO this may never be called
+	Serial.println(F("#SW_Wind_Dir_Analog GetMostRecentDirection ???????????????????????????????;"));
+
+
 	if(CurrentDirectionQueueLoc == -1)
 	{
 		// No data yet
@@ -172,67 +159,4 @@ int SW_Wind_Dir_Analog::GetDirectionReadingAt(byte TargetQueueLoc)
 
 }
 
-bool SW_Wind_Dir_Analog::SendDirectionQueue()
-{
-	// TODO Does this ever get called?
-	Serial.println(F("# SendDirectionQueue Does this ever get called?;"));
-	if(!HaveFullDirectionQueue)
-	{
-		Serial.println(F("#Wind SendQueue Queue not full;"));
-		return false;
-	}
-
-#ifdef RUN_TIME_TEST
-	unsigned long time = millis();
-#endif
-
-	Serial.print(F("*"));
-	Serial.print(SensorNumberAnalog,DEC);
-	Serial.print(F("WDQ,")); // Wind Direction Queue
-
-	int QueueLocation = 0;
-	byte Pointer = 0;
-	int Reading = 0;
-
-	for(int i = 0; i < DirectionQueueLength; i++)
-	{
-		QueueLocation = CurrentDirectionQueueLoc + i;
-		if(QueueLocation >= DirectionQueueLength)
-		{
-			QueueLocation -= DirectionQueueLength;
-
-		}
-	Pointer = ((QueueLocation*3)/2) + ((QueueLocation*3)%2);
-
-		 Reading = (int)DirectionQueue[Pointer];
-			if(((CurrentDirectionQueueLoc*3)%2) == 0)
-				{
-					Pointer++;
-					// Will want to change 1792 if using a ADC with more than 10 bits
-					Reading += ((int)(DirectionQueue[Pointer] & 240)) << 4;
-
-				}
-				else
-				{
-					Pointer--;
-					Reading += ((int)(DirectionQueue[Pointer] & 15)) << 8;
-				}
-
-			SerialHexByteAndAHalfPrint(Reading);
-
-	}
-	Serial.println(F(";"));
-
-#ifdef RUN_TIME_TEST
-	Serial.flush();
-	unsigned long Endtime = millis();
-	Serial.print(F("# Time to print "));
-	Serial.print(Endtime-time);
-	Serial.println(F(";"));
-#endif
-
-
-
-	return true;
-}
 
