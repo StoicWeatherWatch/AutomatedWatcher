@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.0.13
-# 2018-02-09
+# Version 0.0.14
+# 2018-02-10
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -73,6 +73,8 @@ STOIC Stoic Thing Observes Information on Climate
 # TODO truncate T, P, and H at two decimal places. Anything more is past precision limits
 # TODO eleminate *3TPH,000000,000000,0000,^; and report an error instead
 
+# TODO crashes on disconnect of I2C sensor both the CHIP and probabily the arduino
+
 
 # TODO DO I need this? Python 2.7 should have with_statement
 from __future__ import with_statement
@@ -89,7 +91,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.0.13'
+DRIVER_VERSION = '0.0.14'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -130,8 +132,6 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         
         def BoschHEXHEX2UnsignedLong(msb,lsb):
             
-            loginf("BoschHEXHEX2UnsignedLong msb %s " % msb)
-            loginf("BoschHEXHEX2UnsignedLong lsb %s " % lsb)
            
             return  ((long(msb,16) << 8) + long(lsb,16))
             
@@ -187,31 +187,16 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         stoic_Cal_dict["wind_direction_half_bin_size"] = int(stn_dict.get('wind_direction_half_bin_size'))
         stoic_Cal_dict["wind_direction_max_ADC"] = int(stn_dict.get('wind_direction_max_ADC'))
         
-        loginf("self.stoic_Cal_dict['wind_direction_cal_Main_Model_offset'] %f" % stoic_Cal_dict["wind_direction_cal_Main_Model_offset"])
-        loginf("stoic_Cal_dict['wind_direction_cal_Main_Model_slope'] %f" % stoic_Cal_dict["wind_direction_cal_Main_Model_slope"])
+
         
-        loginf("stoic_Cal_dict['wind_mps_per_click_per_2_25_s'] %f" % stoic_Cal_dict["wind_mps_per_click_per_2_25_s"])
-        loginf("stoic_Cal_dict['wind_direction_dead_zone_dir'] %f" % stoic_Cal_dict["wind_direction_dead_zone_dir"])
+
         
-        # BME280 A 3TPH "BME280-1"
-        # The BME280 has lots of calibration data which is hard coded in the factory. 
-        # The calculations require at least 64 bit integer math
-        # Not easily automated at read in either...
-        #  Data sheet T1 Unsigned 
-        #stoic_Cal_dict["BME280_1_CAL_T1"] = (long(stn_dict.get("cal-BME280-1.2.1"),16) << 8) + long(stn_dict.get("cal-BME280-1.2.0"),16)
-        
-        # TEST Lines
-        #loginf("stn_dict.get('cal-BME280-1.2.1') %s" % stn_dict.get("cal-BME280-1.2.1"))
-        #loginf("stn_dict.get('cal-BME280-1.2.0') %s" % stn_dict.get("cal-BME280-1.2.0"))
+
         
         stoic_Cal_dict["BME280_1_CAL_T1"] = BoschHEXHEX2UnsignedLong(stn_dict.get("cal-BME280-1.2.1"),stn_dict.get("cal-BME280-1.2.0"))
-        # TEST LINE
-        #loginf("stoic_Cal_dict['BME280_1_CAL_T1'] %d" % stoic_Cal_dict["BME280_1_CAL_T1"])
+
         #  Data sheet T2 signed 
-        #stoic_Cal_dict["BME280_1_CAL_T2"] = ((long(stn_dict.get("cal-BME280-1.2.3"),16) >> 7) * long(-1) ) * (((long(stn_dict.get("cal-BME280-1.2.3"),16) & 0b01111111) << 8) + long(stn_dict.get("cal-BME280-1.2.2"),16))
         stoic_Cal_dict["BME280_1_CAL_T2"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.3"),stn_dict.get("cal-BME280-1.2.2"))
-         # TEST LINE
-        #loginf("stoic_Cal_dict['BME280_1_CAL_T2'] %d" % stoic_Cal_dict["BME280_1_CAL_T2"])
         #  Data sheet T3 Signed
         stoic_Cal_dict["BME280_1_CAL_T3"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.5"),stn_dict.get("cal-BME280-1.2.4"))
         #  Data sheet P1 Unsigned
@@ -229,10 +214,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         #  Data sheet P7 signed
         stoic_Cal_dict["BME280_1_CAL_P7"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.19"),stn_dict.get("cal-BME280-1.2.18"))
         #  Data sheet P8 signed 
-        #stoic_Cal_dict["BME280_1_CAL_P8"] = ((long(stn_dict.get("cal-BME280-1.2.21"),16) >> 7) * long(-1) ) * (((long(stn_dict.get("cal-BME280-1.2.21"),16) & 0b01111111) << 8) + long(stn_dict.get("cal-BME280-1.2.20"),16))
         stoic_Cal_dict["BME280_1_CAL_P8"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.21"),stn_dict.get("cal-BME280-1.2.20"))
-        # TEST LINE
-        loginf("stoic_Cal_dict['BME280_1_CAL_P8'] %d" % stoic_Cal_dict["BME280_1_CAL_P8"])
         #  Data sheet P9 signed
         stoic_Cal_dict["BME280_1_CAL_P9"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.23"),stn_dict.get("cal-BME280-1.2.22"))
         #  Data sheet H1 unsigned single byte memory A1
@@ -248,34 +230,21 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         #  Data sheet H5 signed 12 bits. E5 holds the least significant 4 bits in its high 4 and E6 holds the most significant bits
         sign = -1 if (long(stn_dict.get("cal-BME280-1.1.5"),16) >> 7 == 1) else 1
         stoic_Cal_dict["BME280_1_CAL_H5"] = (long(sign) * (((long(stn_dict.get("cal-BME280-1.1.5"),16) & 0b01111111) << 4) + (long(stn_dict.get("cal-BME280-1.1.4"),16) >> 4) ))
-        # TEST LINE
-        loginf('stn_dict.get("cal-BME280-1.1.5") %s' % stn_dict.get("cal-BME280-1.1.5") )
-        loginf('stn_dict.get("cal-BME280-1.1.4") %s' % stn_dict.get("cal-BME280-1.1.4") )
-        loginf('long(stn_dict.get("cal-BME280-1.2.5"),16) %d' % long(stn_dict.get("cal-BME280-1.1.5"),16) )
-        loginf('long(stn_dict.get("cal-BME280-1.2.4"),16) %d' % long(stn_dict.get("cal-BME280-1.1.4"),16) )
-        loginf('long(stn_dict.get("cal-BME280-1.2.5"),16) %X' % long(stn_dict.get("cal-BME280-1.1.5"),16) )
-        loginf('long(stn_dict.get("cal-BME280-1.2.4"),16) %X' % long(stn_dict.get("cal-BME280-1.1.4"),16) )
-        loginf('long(stn_dict.get("cal-BME280-1.1.5"),16) << 4 %d' % (long(stn_dict.get("cal-BME280-1.1.5"),16) << 4))
-        loginf('((long(stn_dict.get("cal-BME280-1.1.5"),16) & 0b01111111) << 4) %X' % ((long(stn_dict.get("cal-BME280-1.1.5"),16) & 0b01111111) << 4))
-        loginf('(long(stn_dict.get("cal-BME280-1.1.4"),16) >> 4) %X' % (long(stn_dict.get("cal-BME280-1.1.4"),16) >> 4))
-        loginf("stoic_Cal_dict['BME280_1_CAL_H5'] %d" % stoic_Cal_dict["BME280_1_CAL_H5"])
-        
+       
         
         #  Data sheet H6 signed byte E7
         sign = -1 if (long(stn_dict.get("cal-BME280-1.1.6"),16) >> 7 == 1) else 1
         stoic_Cal_dict["BME280_1_CAL_H6"] = long(sign) * (long(stn_dict.get("cal-BME280-1.1.6"),16) & 0b01111111)
-        # TEST LINE
-        loginf("stoic_Cal_dict['BME280_1_CAL_H6'] %d" % stoic_Cal_dict["BME280_1_CAL_H6"])
-        loginf("stoic_Cal_dict['BME280_1_CAL_H6'] %X" % stoic_Cal_dict["BME280_1_CAL_H6"])
+ 
 
         
         # Test stuff
-        for i in range(1,3+1):
-             loginf("stoic_Cal_dict['BME280_1_CAL_T" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_T"+str(i)])
-        for i in range(1,9+1):
-             loginf("stoic_Cal_dict['BME280_1_CAL_P" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_P"+str(i)])
-        for i in range(1,6+1):
-             loginf("stoic_Cal_dict['BME280_1_CAL_H" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_H"+str(i)])
+#         for i in range(1,3+1):
+#              loginf("stoic_Cal_dict['BME280_1_CAL_T" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_T"+str(i)])
+#         for i in range(1,9+1):
+#              loginf("stoic_Cal_dict['BME280_1_CAL_P" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_P"+str(i)])
+#         for i in range(1,6+1):
+#              loginf("stoic_Cal_dict['BME280_1_CAL_H" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_H"+str(i)])
 
         
         return stoic_Cal_dict
@@ -298,15 +267,9 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         loginf('driver version is %s' % DRIVER_VERSION)
         loginf('using serial port %s' % self.port)
         
-        #TEST LINE
-        loginf("stn_dict.get('rain_mm_Per_Tip') %s" % stn_dict.get('rain_mm_Per_Tip'))
-        # TEST Lines
-        loginf("stn_dict.get('cal-BME280-1.2.1') %s" % stn_dict.get("cal-BME280-1.2.1"))
-        loginf("stn_dict.get('cal-BME280-1.2.0') %s" % stn_dict.get("cal-BME280-1.2.0"))
         
         stoic_Cal_dict = self.readCalibrationDict(stn_dict)
-        #TEST LINE
-        loginf("stoic_Cal_dict[rain_mm_Per_Tip] %f" % stoic_Cal_dict["rain_mm_Per_Tip"])
+
         
 
         self.StoicWatcher = StoicWatcher(self.port, self.baudrate, stoic_Cal_dict, debug_serial=debug_serial)
@@ -448,6 +411,9 @@ class StoicWatcher(object):
         Sesnor is an MCP9808 on the I2C bus
         Input format *2T,xxxx; or *2T,xxxx,^;  xxxx is two hex bytes read from the sensor.
         """
+        # TODO add ! on arduino side if not detected. On this side respond by not recording data. 
+        # TODO add check of sensors to 90 min house keeping?
+        
         # Pull the data from the text string that came in.
         posStart = LineIn.find(",")
         # Does the line have a checksum indicator
@@ -669,6 +635,21 @@ class StoicWatcher(object):
 
         return Hum
     
+    def BME280_line_validation(self,LineIn):
+        """
+        *3TPH,PPPPPP,TTTTTT,HHHH,^;
+        *3TPH,5EC2E0,7E40D0,69A1,^;
+        
+        For now simply test for all zeros
+        
+        """
+        
+        if LineIn.find("*3TPH,000000,000000,0000") != -1:
+            loginf("BME280_line_validation failed: %s" %LineIn)
+            return False
+
+        return True
+    
     
     def key_parse_3TPH_FARS(self,LineIn):
         """
@@ -679,6 +660,9 @@ class StoicWatcher(object):
         """
         
         BME280ID = "BME280_1"
+        
+        if not self.BME280_line_validation(LineIn):
+            return None
         
         
         # Pressure
@@ -929,16 +913,12 @@ class StoicWatcher(object):
         Here we devide by the total number of readings and un rotate.
         """
         
-        #Test Lines
-        loginf("sensor_parse_wind_direction_mean LineInDirection %s" % LineInDirection)
-        loginf("sensor_parse_wind_direction_mean LineInBin %s" % LineInBin)
+
         
         DirectionRaw = int(LineInDirection,16)
         BinNumber = int(LineInBin,16)
         
-        loginf("sensor_parse_wind_direction_mean DirectionRaw %d" % DirectionRaw)
-        loginf("sensor_parse_wind_direction_mean BinNumber %d" % BinNumber)
-        
+
         # Divide to take mean
         DirectionMeanRaw = DirectionRaw / self.stoic_Cal_dict["wind_direction_number_of_mean_points"]
         
@@ -949,20 +929,17 @@ class StoicWatcher(object):
             rotation = 511 - ((BinNumber * 64) + self.stoic_Cal_dict["wind_direction_half_bin_size"])
         
         
-        loginf("DirectionMeanRaw not yet unrotated %d" % DirectionMeanRaw)
+
         
         DirectionMeanRaw = DirectionMeanRaw - rotation
-        
-        loginf("DirectionMeanRaw unrotated %d" % DirectionMeanRaw)
+
         
         if DirectionMeanRaw < 0:
             DirectionMeanRaw += 1024
         
         if DirectionMeanRaw > 1023:
             DirectionMeanRaw -= 1024
-            
-        loginf("sensor_parse_wind_direction_mean DirectionMeanRaw %d" % DirectionMeanRaw)
-        loginf("sensor_parse_wind_direction_mean DirectionMeanRaw type %s" % type(DirectionMeanRaw))
+
        
         WindDirectionMean = self.sensor_parse_wind_direction_from_ADC(DirectionMeanRaw)
         
@@ -974,7 +951,6 @@ class StoicWatcher(object):
             loginf("sensor_parse_wind_direction_mean this should never happen < 0")
             WindDirectionMean += 360
         
-        loginf("sensor_parse_wind_direction_mean WindDirectionMean %f" % WindDirectionMean)
         
         return WindDirectionMean
     
@@ -987,16 +963,13 @@ class StoicWatcher(object):
         We report speed in m/s here
         
         """
-        # Test line
-        loginf("LineIn_6WMS %s" % LineIn_6WMS)
+
         
         MeanSpeedRaw = int(LineIn_6WMS,16)
-        
-        loginf("MeanSpeedRaw %d" % MeanSpeedRaw)
+
         
         MeanSpeed = float(MeanSpeedRaw) * self.stoic_Cal_dict["wind_mps_per_click_per_120_s"]
         
-        loginf("MeanSpeed %f" % MeanSpeed)
         
         return MeanSpeed
         
@@ -1031,9 +1004,7 @@ class StoicWatcher(object):
         posStart = LineIn.find(",") + 1
         posEnd = LineIn.find(";")
         
-        loginf("key_parse_6WMS_5WMD_wind_mean LineIn %s" % LineIn)
-        
-        loginf("key_parse_6WMS_5WMD_wind_mean speed LineIn[posStart:posEnd] %s" % LineIn[posStart:posEnd])
+
         
         MeanSpeed = self.sensor_parse_wind_speed_mean(LineIn[posStart:posEnd])
         
@@ -1044,8 +1015,6 @@ class StoicWatcher(object):
         posEnd = LineIn[posSecondBlock+1:].find(";") + posSecondBlock +1
 
         
-        loginf("key_parse_6WMS_5WMD_wind_mean dir LineIn[posStart:posMiddle] %s" % LineIn[posStart:posMiddle])
-        loginf("key_parse_6WMS_5WMD_wind_mean bin LineIn[posMiddle +1:posEnd] %s" % LineIn[posMiddle +1:posEnd])
         
         MeanDirection = self.sensor_parse_wind_direction_mean(LineIn[posStart:posMiddle],LineIn[posMiddle +1:posEnd])
         
