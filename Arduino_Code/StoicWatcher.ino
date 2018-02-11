@@ -1,6 +1,6 @@
 /*
 	Stoic Watcher
-	v0.0.16
+	v0.1.0
 	2018-02-10
  */
 
@@ -50,7 +50,7 @@ void setup()
 		// wait for serial port to connect.
 	}
 	Serial.println(F(""));
-	Serial.println(F("#StoicWatcher Starting v0.0.16;"));
+	Serial.println(F("#StoicWatcher Starting v0.1.0;"));
 	Serial.println(F("!startup;"));
 
 
