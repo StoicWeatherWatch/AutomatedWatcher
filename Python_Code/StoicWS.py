@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.0.14
+# Version 0.1.0
 # 2018-02-10
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
@@ -91,7 +91,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.0.14'
+DRIVER_VERSION = '0.1.0'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -809,7 +809,7 @@ class StoicWatcher(object):
             
         WindDirectionDeg = (float(WindADCRaw) - self.stoic_Cal_dict[Offset]) / self.stoic_Cal_dict[slope]
         
-        loginf("sensor_parse_wind_direction_from_ADC WindADCRaw Model WindDirectionDeg %d %s, %f" % (WindADCRaw, Model, WindDirectionDeg))
+        #loginf("sensor_parse_wind_direction_from_ADC WindADCRaw Model WindDirectionDeg %d %s, %f" % (WindADCRaw, Model, WindDirectionDeg))
         
         return WindDirectionDeg
     
@@ -1058,14 +1058,16 @@ class StoicWatcher(object):
         #Temperature in the circuit box
             if LineIn[1:pos] == "2T":
                 return self.key_parse_2T_BoxTemp(LineIn)
-            elif LineIn[1:pos] == "3TPH":
-                return self.key_parse_3TPH_FARS(LineIn)
+            # Release 1. FARS not yet ready
+            #elif LineIn[1:pos] == "3TPH":
+            #    return self.key_parse_3TPH_FARS(LineIn)
             elif LineIn[1:pos] == "4R":
                 return self.key_parse_4R_Rain(LineIn)
-            elif LineIn[1:pos] == "6WGS":
-                return self.key_parse_6WGS_5WGD_wind_gust(LineIn)
-            elif LineIn[1:pos] == "6WMS":
-                return self.key_parse_6WMS_5WMD_wind_mean(LineIn)
+            # Release 1. No wind. Concrete not yet set.
+            #elif LineIn[1:pos] == "6WGS":
+            #    return self.key_parse_6WGS_5WGD_wind_gust(LineIn)
+            #elif LineIn[1:pos] == "6WMS":
+            #    return self.key_parse_6WMS_5WMD_wind_mean(LineIn)
             else:
             # TODO fix this
                 return None
