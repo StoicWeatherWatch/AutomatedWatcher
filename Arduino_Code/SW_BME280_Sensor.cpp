@@ -1,7 +1,7 @@
 /*
  * SW_BME280_Sensor.cpp
  *
- *  Created on: 2018-01-21
+ *  Created on: 2018-02-06
  *      Author: StoicWeather
  */
 
@@ -88,7 +88,7 @@ bool SW_BME280_Sensor::RetrieveDataAndSend()
 	Serial.println(F(";"));
 
 	// TEST Lines
-	Serial.print("#");
+	/*Serial.print("#");
 	Serial.print(SensorNumber,DEC);
 	Serial.print("TPH,");
 	for(int i = 0; i < BME280_DATA_LEN; i++)
@@ -100,16 +100,9 @@ bool SW_BME280_Sensor::RetrieveDataAndSend()
 				Serial.print(F(","));
 			}
 		}
-	Serial.println(F(";"));
+	Serial.println(F(";"));*/
 // END TEST
 
-	return true;
-}
-
-bool SW_BME280_Sensor::SendRawDataSerial()
-{
-
-	// TODO Fix this
 	return true;
 }
 
@@ -159,7 +152,7 @@ bool SW_BME280_Sensor::SendRawDataSerial()
 		for(int i = 0; i < BME280_CAL2_BLK_LEN; i++)
 		{
 			I2CBuss.read(SensorAddress, (byte)BME280_CAL2_BLK_REG+i, (byte)1, CalData+i);
-			Serial.print(F("*"));
+			Serial.print(F("!"));
 			Serial.print(CALIBRATION_DATA_KEYWORD_BLK2);
 			Serial.print(i);
 			Serial.print(F(","));
@@ -214,7 +207,7 @@ bool SW_BME280_Sensor::SendRawDataSerial()
 		for(int i = 0; i < BME280_CAL1_BLK_LEN; i++)
 		{
 
-			Serial.print(F("*"));
+			Serial.print(F("!"));
 			Serial.print(CALIBRATION_DATA_KEYWORD_BLK1);
 			Serial.print(i);
 			Serial.print(F(","));

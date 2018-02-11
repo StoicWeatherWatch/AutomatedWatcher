@@ -1,7 +1,7 @@
 /*
  * SW_Ard_Analog.h
  *
- *  Created on: 2018-01-31
+ *  Created on: 2018-02-10
  *      Author: StoicWeather
  *
  *      Super class for reading out a single analog pin
@@ -9,6 +9,9 @@
 
 #ifndef SW_ARD_ANALOG_H_
 #define SW_ARD_ANALOG_H_
+
+//#define RUN_SIMULATOR
+//#define SIM_VALUE 0
 
 #include "Arduino.h"
 
@@ -20,10 +23,9 @@
 class SW_Ard_Analog
 {
 public:
-	byte SensorNumber;
+	byte SensorNumberAnalog;
 	byte AAQ0Pin;
 	SW_Ard_Analog(byte AAQ0PinIn, byte SensorNumberIn);
-	virtual bool AcquireDataAndSend();
 	int Read_Pin();
 };
 

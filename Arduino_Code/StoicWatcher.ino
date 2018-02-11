@@ -1,7 +1,7 @@
 /*
 	Stoic Watcher
-	v0.0.8
-	2018-02-01
+	v0.1.0
+	2018-02-10
  */
 
 
@@ -18,7 +18,9 @@
  */
 
 // TODO Housekeeping, report uptime and chip temperature
-// TODO eleminate *3TPH,000000,000000,0000,^; and report an error instead
+
+// TODO Every five seconds will trigger - thus skip certain slower things when long stuff is running
+
 
 
 
@@ -32,9 +34,11 @@ SW_MCP9808_Sensor T2_CircuitBox_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T2_ADDR
 
 SW_Rain_Readout R4_Rain_Readout = SW_Rain_Readout((byte)RAIN_DAQ0_D_PIN, (byte)RAIN_PIN_RANGE, (byte)RAINCOUNT_RESET_D_PIN, (byte)TIPPINGBUCKET_R4_RAIN_SUNM);
 
-SW_Wind_Dir_Analog W5_WindDir_Readout =  SW_Wind_Dir_Analog((byte)WIND_DIR_ADC_A_PIN, (byte)NUMBER_OF_WIND_DIR_RECORDS, (byte)DAVISANNA_WD5_WIND_DIR_SUNM);
+SW_Wind_Dir_Mean W5_WindDir_Mean_Readout =  SW_Wind_Dir_Mean((byte)WIND_DIR_ADC_A_PIN, (byte)NUMBER_OF_WIND_DIR_RECORDS, (byte)DAVISANNA_WD5_WIND_DIR_SUNM);
 
-SW_MCP2318_GPIO_Sensor W6_WindSpeed_Sensor = SW_MCP2318_GPIO_Sensor((byte)MCP23018_W6_ADDRESS, I2CBus, (byte)NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP, (byte)DAVISANNA_WS6_WIND_SPEED_SUNM);
+SW_Wind_Speed_Mean W6_WindSpeed_Mean_Sensor = SW_Wind_Speed_Mean((byte)MCP23018_W6_ADDRESS, I2CBus, (byte)NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP, (byte)DAVISANNA_WS6_WIND_SPEED_SUNM);
+
+SW_Wind_Gust WG6_WindGust_Multiple = SW_Wind_Gust((byte)MCP23018_W6_ADDRESS, I2CBus, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, (byte)DAVISANNA_WS6_WIND_SPEED_SUNM, (byte)WIND_DIR_ADC_A_PIN, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, (byte)DAVISANNA_WD5_WIND_DIR_SUNM);
 
 void setup()
 {
@@ -45,8 +49,8 @@ void setup()
 	{
 		// wait for serial port to connect.
 	}
-
-	Serial.println(F("#StoicWatcher Starting v0.0.8;"));
+	Serial.println(F(""));
+	Serial.println(F("#StoicWatcher Starting v0.1.0;"));
 	Serial.println(F("!startup;"));
 
 
@@ -59,15 +63,26 @@ void setup()
 
 	T2_CircuitBox_Sensor.InitializeSensor();
 
-	W6_WindSpeed_Sensor.InitializeSensor();
+	// TODO Need to reset the wind speed counter on startup (hardware)
+	W6_WindSpeed_Mean_Sensor.InitializeSensor();
+
+	// Done above
+	//WG6_WindGust_Multiple.InitializeSensor();
 
 	// Rain Sensor
 	// Set the rain reset high to reset the rain count
 	// TODO reevaluate the use of rain reset
-	pinMode(RAINCOUNT_RESET_D_PIN, OUTPUT);
-	digitalWrite(RAINCOUNT_RESET_D_PIN, HIGH);
+
+	// Master Reset
+	Serial.println(F("# Master Reset;"));
+	pinMode(MASTER_RESET_D_PIN, OUTPUT);
+	digitalWrite(MASTER_RESET_D_PIN, HIGH);
 	delay(10);
-	digitalWrite(RAINCOUNT_RESET_D_PIN, LOW);
+	digitalWrite(MASTER_RESET_D_PIN, LOW);
+	Serial.println(F("# Master Reset Complete;"));
+
+	// Rain reset?
+	//TODO Handle Rain Reset
 
 	R4_Rain_Readout.setup();
 
@@ -88,25 +103,31 @@ void setup()
 
 void loop()
 {
+	/* Time:
+	 * Each action in the primary lifecycle gets 100 ms. Each further item in the 1 second and 5 second lifecycles gets 100 ms.
+	 * Taking the mean of the wind direction takes about 147 ms (Not good)
+	 *
+	 * RAM:
+	 * 527 bytes are available in wind dir mean
+	 * */
+
+
+
+
 	if(SW_CK_InterruptOccurred())
 	{
+
+		// Time test
+
+		//unsigned long time = millis();
+
 		// First clock housekeeping
 		SW_CK_ClockIntruptProcessing();
 
 		// Every second for wind directions
 		if(SW_CK_EverySecond())
 		{
-			//Serial.println(F("#1 second;"));
-			W5_WindDir_Readout.AcquireDataOnly();
-			// Every 30 seconds for wind
-			if(SW_CK_GetSecondCount() == 0)
-			{
-				// TODO this prints 3 or 4 times. should run once.
-				Serial.println(F("#30 second;"));
-				// TODO add sending via serial
-
-			}
-
+			W5_WindDir_Mean_Readout.AcquireDirectionDataOnly();
 		}
 
 
@@ -132,6 +153,7 @@ void loop()
 			// 2
 			TPH3_FARS_Sensor.RetrieveDataAndSend();
 
+
 			break;
 		case 3 :
 			// 3 Early
@@ -143,6 +165,9 @@ void loop()
 			// 4 Early
 
 			// 4
+
+			WG6_WindGust_Multiple.AcquireWindGustDirection();
+			//WG6_WindGust_Multiple.AcquireAnalogDataAndSend();
 
 			break;
 		case 5 :
@@ -168,11 +193,15 @@ void loop()
 			}
 
 			// Currently 40 counts or every 90 seconds
-			if(SW_CK_GetCKLongCount() == 0)
+			// Using 4 not zero so it does not line up with the wind dir mean
+			// TODO be more sophisticated about this
+			if(SW_CK_GetCKLongCount() == 4)
 			{
 				T2_CircuitBox_Sensor.AcquireData();
 				T2_CircuitBox_Sensor.SendRawDataSerial();
 			}
+
+
 
 			break;
 
@@ -185,7 +214,8 @@ void loop()
 				break;
 		case 8 :
 				// 8 Early
-				W6_WindSpeed_Sensor.AcquireGustDataAndSend();
+				WG6_WindGust_Multiple.AcquireWindGustSpeed();
+				WG6_WindGust_Multiple.SendWindGustData();
 
 				// 8
 
@@ -201,7 +231,8 @@ void loop()
 			// Every 30 seconds for wind
 			if(SW_CK_GetSecondCount() == 0)
 			{
-				W5_WindDir_Readout.SendQueue();
+				// TODO fix Wind Dir
+				//W5_WindDir_Mean_Readout.SendDirectionQueue();
 
 			}
 
@@ -210,12 +241,22 @@ void loop()
 		// Wind Speed readout.
 		if(SW_CK_EveryFifthSecond())
 		{
-			W6_WindSpeed_Sensor.AcquireData();
-			W6_WindSpeed_Sensor.SendAllRawDataSerial();
+			W6_WindSpeed_Mean_Sensor.AcquireData();
+
+			W6_WindSpeed_Mean_Sensor.SendMostRecentRawMean();
+			W5_WindDir_Mean_Readout.SendMeanAndBinBlock();
+// TODO Wind mean direction prints before speed starts to. Why? Maybe zero speed? Might be fixed. Changed speed records from 30 to 24
+
 		}
 
 
+		// Time test
 
+		/*Serial.flush();
+			unsigned long Endtime = millis();
+			Serial.print(F("# Time for this cycle "));
+			Serial.print(Endtime-time);
+			Serial.println(F(";"));*/
 
 
 

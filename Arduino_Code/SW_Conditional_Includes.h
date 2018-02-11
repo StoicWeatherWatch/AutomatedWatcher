@@ -1,7 +1,7 @@
 /*
  * SW_Conditional_Includes.h
  *
- *  Created on: 2018-00-01
+ *  Created on: 2018-02-08
  *      Author: StoicWeather
  */
 
@@ -25,12 +25,16 @@
 #include "SW_BME280_Sensor.h"
 #include "SW_MCP9808_Sensor.h"
 #include "SW_MCP2318_GPIO_Sensor.h"
+#include "SW_Wind_Speed_Mean.h"
 
 #include "SW_Ard_Readout.h"
 #include "SW_Rain_Readout.h"
 
 #include "SW_Ard_Analog.h"
 #include "SW_Wind_Dir_Analog.h"
+#include "SW_Wind_Dir_Mean.h"
+
+#include "SW_Wind_Gust.h"
 
 
 #define SERIAL_BAUDRATE 9600
@@ -52,16 +56,20 @@
 
 
 // Pins
-#define RAINCOUNT_RESET_D_PIN 13
-#define RAIN_DAQ0_D_PIN    9
-#define WIND_DIR_ADC_A_PIN 1
+#define RAINCOUNT_RESET_D_PIN  13
+#define MASTER_RESET_D_PIN      8
+#define RAIN_DAQ0_D_PIN         9
+#define WIND_DIR_ADC_A_PIN      1
 
 // Pin Ranges - number of pins starting with DAQ0
 #define RAIN_PIN_RANGE     4
 
 // Presets
+// Currently dir every second and speed every 5
 #define NUMBER_OF_WIND_DIR_RECORDS 120 // Must be even!
-#define NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP   30
+#define NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP   24  // Should match the above as related to the life cycle.
+// 2.25 seconds gives 54 in 121.5 seconds
+#define NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP   54
 
 
 

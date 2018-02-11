@@ -14,6 +14,7 @@
 // Uses print not println
 bool SerialHexBytePrint(byte data);
 bool SerialHexByteAndAHalfPrint(int data);
+void SerialHexFourAndAHalfBytefPrint(long data);
 
 
 #endif /* SW_HELPER_FUNCTIONS_H_ */

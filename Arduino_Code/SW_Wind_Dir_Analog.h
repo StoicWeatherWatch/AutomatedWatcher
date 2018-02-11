@@ -1,7 +1,7 @@
 /*
  * SW_Wind_Dir_Analog.h
  *
- *  Created on: 2018-01-31
+ *  Created on: 2018-02-08
  *      Author: StoicWeather
  */
 
@@ -10,7 +10,15 @@
 
 #include "SW_Ard_Analog.h"
 
-#define RUN_TIME_TEST
+// Tests to see how llong it takes to serial write certain things.
+//#define RUN_TIME_TEST
+
+
+// Make certain it is called the correct number of times
+#define CALL_COUNT_VALIDATION
+
+#define NUMBER_OF_GUST_RECORDS  4
+
 
 /*
  * Storage format of DirectionQueue is LSB A [7:0] | MSB A [7:4] MSB B [3:0] | LSB B [7:0]
@@ -20,18 +28,19 @@ class SW_Wind_Dir_Analog: public SW_Ard_Analog
 {
 public:
 	byte *DirectionQueue;
-	int CurrentQueueLoc;
-	byte QueueLength; // Bytes
-	bool HaveFullQueue;
+	int CurrentDirectionQueueLoc;
+	byte DirectionQueueLength; // data points
+	bool HaveFullDirectionQueue;
 
-	SW_Wind_Dir_Analog(byte AAQ0PinIn, byte NumberOfRecordsIn, byte SensorNumberIn);
-	bool AcquireDataAndSend();
-	bool AcquireDataOnly();
-	int GetMostRecent();
-	int GetReadingAt(byte TargetQueueLoc);
-	bool RecordReading(int AAQread);
-	bool SendAverage();
-	bool SendQueue();
+	SW_Wind_Dir_Analog(byte AAQ0PinIn, byte NumberOfRecordsIn, byte SensorNumberAnalogIn);
+	bool AcquireDirectionDataOnly(); // Used in Wind Gust
+	int GetMostRecentDirection();  // Is this ever called?
+	int GetDirectionReadingAt(byte TargetQueueLoc); // Used in Wind Gust
+	bool RecordDirectionReading(int AAQread); // Used in Wind mean
+
+
+
+
 };
 
 #endif /* SW_WIND_DIR_ANALOG_H_ */

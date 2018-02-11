@@ -1,17 +1,14 @@
 /*
  * SW_Clock.cpp
  *
- *  Created on: 2018-01-21
+ *  Created on: 2018-02-06
  *      Author: StoicWeather
  */
 
 #include "SW_Clock.h"
 
-#if(ARDUINO >= 100)
 #include <Arduino.h>
-#else
-#include <WProgram.h>
-#endif
+
 
 // TODO consider returning pointers from get functions. It would save memory.
 // TODO change get functions to match byte or int not just int.
@@ -78,8 +75,11 @@ void SW_CK_ClockIntruptProcessing()
 {
 	SW_CK_CKInterrupted = false;
 
+
 	SW_CK_CKShortCountTo9++;
 	SW_CK_CKShortCountTo4++;
+
+
 
 	if(SW_CK_CKShortCountTo9 >= SW_CK_SHORT_COUNT_PERIOD)
 	{
@@ -122,13 +122,16 @@ void SW_CK_ClockIntruptProcessing()
 		SW_CK_FiveSecondCount++;
 		SW_CK_CKShortCountTo4 = 0;
 
+
+
+
 		// Makes certain Every second returns true only once
 		SW_CK_EverySecondNotCalled = true;
 
 		if(SW_CK_FiveSecondCount >= 5)
 				{
 			SW_CK_FiveSecondCount = 0;
-			SW_CK_EverySecondNotCalled = true;
+			SW_CK_EveryFifthSecondNotCalled = true;
 
 				}
 
@@ -194,7 +197,6 @@ bool SW_CK_EveryFifthSecond()
 {
 	if(SW_CK_EveryFifthSecondNotCalled)
 	{
-
 	SW_CK_EveryFifthSecondNotCalled = false;
 	return true;
 	}
@@ -209,14 +211,14 @@ bool SW_CK_EveryFifthSecond()
 bool SW_CK_EverySecond()
 {
 	if(SW_CK_EverySecondNotCalled)
-		{
-	SW_CK_EveryFifthSecondNotCalled = false;
+	{
+		SW_CK_EverySecondNotCalled = false;
 		return true;
-		}
-		else
-		{
+	}
+	else
+	{
 		return false;
-		}
+	}
 
 
 }
