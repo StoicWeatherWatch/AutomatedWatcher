@@ -1,7 +1,7 @@
 /*
  * SW_Ard_Analog.h
  *
- *  Created on: 2018-02-08
+ *  Created on: 2018-02-10
  *      Author: StoicWeather
  *
  *      Super class for reading out a single analog pin
@@ -10,8 +10,8 @@
 #ifndef SW_ARD_ANALOG_H_
 #define SW_ARD_ANALOG_H_
 
-#define RUN_SIMULATOR
-#define SIM_VALUE 0
+//#define RUN_SIMULATOR
+//#define SIM_VALUE 0
 
 #include "Arduino.h"
 

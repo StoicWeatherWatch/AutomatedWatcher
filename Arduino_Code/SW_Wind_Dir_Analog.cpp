@@ -1,7 +1,7 @@
 /*
  * SW_Wind_Dir_Analog.cpp
  *
- *  Created on: 2018-02-08
+ *  Created on: 2018-02-10
  *      Author: StoicWeather
  */
 
