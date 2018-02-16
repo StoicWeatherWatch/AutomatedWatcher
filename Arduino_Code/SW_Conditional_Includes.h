@@ -1,7 +1,7 @@
 /*
  * SW_Conditional_Includes.h
  *
- *  Created on: 2018-02-11
+ *  Created on: 2018-02-08
  *      Author: StoicWeather
  */
 
@@ -45,7 +45,7 @@
 #define MCP9808_T2_ADDRESS  0x18
 // Address 32 or 0x20 in HEX
 #define MCP23018_W6_ADDRESS 0x20
-#define MCP9808_T7_ADDRESS  0x19
+
 
 // Sensor Numbers
 #define MCP9808_T2_TEMPINBOX_SNUM 		2
@@ -53,7 +53,7 @@
 #define TIPPINGBUCKET_R4_RAIN_SUNM 		4
 #define DAVISANNA_WD5_WIND_DIR_SUNM 		5
 #define DAVISANNA_WS6_WIND_SPEED_SUNM 	6
-#define MCP9808_T7_FARSTEMP_SNUM 		 7
+
 
 // Pins
 #define RAINCOUNT_RESET_D_PIN  13

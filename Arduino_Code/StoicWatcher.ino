@@ -40,8 +40,6 @@ SW_Wind_Speed_Mean W6_WindSpeed_Mean_Sensor = SW_Wind_Speed_Mean((byte)MCP23018_
 
 SW_Wind_Gust WG6_WindGust_Multiple = SW_Wind_Gust((byte)MCP23018_W6_ADDRESS, I2CBus, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, (byte)DAVISANNA_WS6_WIND_SPEED_SUNM, (byte)WIND_DIR_ADC_A_PIN, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, (byte)DAVISANNA_WD5_WIND_DIR_SUNM);
 
-SW_MCP9808_Sensor T7_FARS_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T7_ADDRESS,I2CBus,(byte)MCP9808_T7_FARSTEMP_SNUM);
-
 void setup()
 {
 
@@ -64,7 +62,6 @@ void setup()
 	TPH3_FARS_Sensor.InitializeSensor();
 
 	T2_CircuitBox_Sensor.InitializeSensor();
-	T7_FARS_Sensor.InitializeSensor();
 
 	// TODO Need to reset the wind speed counter on startup (hardware)
 	W6_WindSpeed_Mean_Sensor.InitializeSensor();
@@ -146,7 +143,7 @@ void loop()
 		case 1 :
 			// 1 Early
 			TPH3_FARS_Sensor.AcquireData();
-			T7_FARS_Sensor.AcquireData();
+
 			// 1
 
 			break;
@@ -155,7 +152,7 @@ void loop()
 
 			// 2
 			TPH3_FARS_Sensor.RetrieveDataAndSend();
-			T7_FARS_Sensor.SendRawDataSerial();
+
 
 			break;
 		case 3 :
