@@ -26,6 +26,7 @@
 #include "SW_MCP9808_Sensor.h"
 #include "SW_MCP2318_GPIO_Sensor.h"
 #include "SW_Wind_Speed_Mean.h"
+#include "SW_SI1133_Sensor.h"
 
 #include "SW_Ard_Readout.h"
 #include "SW_Rain_Readout.h"
@@ -45,6 +46,7 @@
 #define MCP9808_T2_ADDRESS  0x18
 // Address 32 or 0x20 in HEX
 #define MCP23018_W6_ADDRESS 0x20
+#define SI1133_EM10_ADDRESS 0x55
 
 
 // Sensor Numbers
@@ -53,6 +55,7 @@
 #define TIPPINGBUCKET_R4_RAIN_SUNM 		4
 #define DAVISANNA_WD5_WIND_DIR_SUNM 		5
 #define DAVISANNA_WS6_WIND_SPEED_SUNM 	6
+#define SI1133_EM10_UVOPT_SUNM           10
 
 
 // Pins
