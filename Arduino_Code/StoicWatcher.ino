@@ -1,7 +1,7 @@
 /*
 	Stoic Watcher
-	v0.1.0
-	2018-02-10
+	v0.1.2
+	2018-02-13
  */
 
 
@@ -40,6 +40,9 @@ SW_Wind_Speed_Mean W6_WindSpeed_Mean_Sensor = SW_Wind_Speed_Mean((byte)MCP23018_
 
 SW_Wind_Gust WG6_WindGust_Multiple = SW_Wind_Gust((byte)MCP23018_W6_ADDRESS, I2CBus, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, (byte)DAVISANNA_WS6_WIND_SPEED_SUNM, (byte)WIND_DIR_ADC_A_PIN, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, (byte)DAVISANNA_WD5_WIND_DIR_SUNM);
 
+SW_SI1133_Sensor EM10_UV_Opt_Sensor = SW_SI1133_Sensor((byte)SI1133_EM10_ADDRESS, I2CBus, (byte)SI1133_EM10_UVOPT_SUNM);
+
+
 void setup()
 {
 
@@ -49,15 +52,18 @@ void setup()
 	{
 		// wait for serial port to connect.
 	}
+	delay(10);
 	Serial.println(F(""));
-	Serial.println(F("#StoicWatcher Starting v0.1.0;"));
+	delay(10);
+	Serial.println(F("#StoicWatcher Starting v0.1.1;"));
 	Serial.println(F("!startup;"));
+	delay(5);
 
 
 	I2CBus.begin();
 	I2CBus.setSpeed(0);
 	I2CBus.timeOut(5000);
-	//I2CBus.scan();
+	I2CBus.scan();
 
 	TPH3_FARS_Sensor.InitializeSensor();
 
@@ -65,6 +71,8 @@ void setup()
 
 	// TODO Need to reset the wind speed counter on startup (hardware)
 	W6_WindSpeed_Mean_Sensor.InitializeSensor();
+
+	EM10_UV_Opt_Sensor.VerifyChip();
 
 	// Done above
 	//WG6_WindGust_Multiple.InitializeSensor();
