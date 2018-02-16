@@ -3,6 +3,7 @@
 #
 #    See the file LICENSE.txt for your full rights.
 #
+# StoicWS 2018-02-11
 
 """User extensions module
 
@@ -17,5 +18,6 @@ import locale
 # Other options are possible. See:
 # http://docs.python.org/2/library/locale.html#locale.setlocale
 #locale.setlocale(locale.LC_ALL, '')
+
 # My code. Ugly but it works
 locale.setlocale(locale.LC_ALL, 'en_US.utf8')
