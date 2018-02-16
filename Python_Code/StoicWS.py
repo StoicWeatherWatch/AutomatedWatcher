@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.1.0
+# Version 0.1.1
 # 2018-02-10
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
@@ -91,7 +91,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.1.0'
+DRIVER_VERSION = '0.1.1'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -357,6 +357,8 @@ class StoicWatcher(object):
                     time.sleep(5)
             else:
                 break
+            
+            # TODO Handle it when it trys to talk to somethign that is not an Arduino
         
         # python -m serial.tools.list_ports
         # Above will list ports
