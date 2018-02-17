@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.1.2
+# Version 0.1.3
 # 2018-02-16
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
@@ -42,7 +42,7 @@ All other line starts ignored, including #
 Units used are weewx.METRICWX
 
 CHIP from NEXTTHING sticks an arduino on a USB hub at ttyACM1
-DEFAULT_PORT = "/dev/ttyACM1"
+DEFAULT_PORT = "/dev/ttyACM0"
 
 DEFAULT_BAUDRATE = 9600
 
@@ -305,7 +305,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
 
 class StoicWatcher(object):
     
-    DEFAULT_PORT = "/dev/ttyACM1"
+    DEFAULT_PORT = "/dev/ttyACM0"
     DEFAULT_BAUDRATE = 9600
     
     def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial=0):
@@ -1095,9 +1095,8 @@ class StoicWatcher(object):
         #Temperature in the circuit box
             if LineIn[1:pos] == "2T":
                 return self.key_parse_2T_BoxTemp(LineIn)
-            # Release 1. FARS not yet ready
-            #elif LineIn[1:pos] == "3TPH":
-            #    return self.key_parse_3TPH_FARS(LineIn)
+            elif LineIn[1:pos] == "3TPH":
+                return self.key_parse_3TPH_FARS(LineIn)
             elif LineIn[1:pos] == "4R":
                 return self.key_parse_4R_Rain(LineIn)
             # Release 1. No wind. Concrete not yet set.

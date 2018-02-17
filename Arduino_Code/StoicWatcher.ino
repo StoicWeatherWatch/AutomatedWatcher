@@ -21,7 +21,7 @@
 
 // TODO Every five seconds will trigger - thus skip certain slower things when long stuff is running
 
-
+// Get the reset lines right
 
 
 #include "SW_Conditional_Includes.h"
@@ -71,9 +71,12 @@ void setup()
 	TPH3_FARS_Sensor.InitializeSensor();
 
 	T2_CircuitBox_Sensor.InitializeSensor();
+	T7_FARS_Sensor.InitializeSensor();
 
+	/* Switch this back on for wind
 	// TODO Need to reset the wind speed counter on startup (hardware)
 	W6_WindSpeed_Mean_Sensor.InitializeSensor();
+	*/
 
 	//EM10_UV_Opt_Sensor.VerifyChip();
 
@@ -95,7 +98,9 @@ void setup()
 	// Rain reset?
 	//TODO Handle Rain Reset
 
+
 	R4_Rain_Readout.setup();
+
 
 	SW_CK_ClockSetup();
 
@@ -179,12 +184,17 @@ void loop()
 
 			// 4
 
+
+			/* Switch this back on for wind
 			WG6_WindGust_Multiple.AcquireWindGustDirection();
+			*/
+
 			//WG6_WindGust_Multiple.AcquireAnalogDataAndSend();
 
 			break;
 		case 5 :
 			// 5 Early
+
 
 			// 5
 
@@ -220,15 +230,19 @@ void loop()
 
 		case 7 :
 				// 7 Early
+
 				R4_Rain_Readout.AcquireDataAndSend();
+
 
 				// 7
 
 				break;
 		case 8 :
 				// 8 Early
+			/* Switch this back on for wind
 				WG6_WindGust_Multiple.AcquireWindGustSpeed();
 				WG6_WindGust_Multiple.SendWindGustData();
+				*/
 
 				// 8
 
@@ -254,10 +268,12 @@ void loop()
 		// Wind Speed readout.
 		if(SW_CK_EveryFifthSecond())
 		{
+			/* Switch this back on for wind
 			W6_WindSpeed_Mean_Sensor.AcquireData();
 
 			W6_WindSpeed_Mean_Sensor.SendMostRecentRawMean();
 			W5_WindDir_Mean_Readout.SendMeanAndBinBlock();
+			*/
 // TODO Wind mean direction prints before speed starts to. Why? Maybe zero speed? Might be fixed. Changed speed records from 30 to 24
 
 		}
