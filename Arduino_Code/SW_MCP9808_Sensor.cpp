@@ -17,7 +17,9 @@ SW_MCP9808_Sensor::SW_MCP9808_Sensor(byte AddressIn, I2C I2CBussIn, byte SensorN
 bool SW_MCP9808_Sensor::InitializeSensor()
 {
 
-	Serial.println(F("#Initializing MCP9808;"));
+	Serial.print(F("#Initializing MCP9808 Sensor "));
+	Serial.print((int)SensorNumber);
+	Serial.println(" ;");
 
 #ifdef VERIFY_CHIPS
 	if(!VerifyChip())
@@ -139,6 +141,10 @@ byte SW_MCP9808_Sensor::GetRawTempreature_LowBits()
 
 		//Serial.println(status);
 		//Serial.println(DataIn,HEX);
+
+		Serial.print(F("#VerifyChip MCP9808 Sensor "));
+		Serial.print((int)SensorNumber);
+		Serial.println(" ;");
 
 		if(DataIn == (int)MCP9808_MANID_VALUE)
 		{

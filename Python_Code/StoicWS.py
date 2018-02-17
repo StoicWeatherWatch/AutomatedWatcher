@@ -2,7 +2,7 @@
 #
 # Stoic WS
 # Version 0.1.1
-# 2018-02-11
+# 2018-02-10
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -21,7 +21,7 @@ Items on the same line
 
 Supported Keys:                                    Mapped DB name
 2T Temperature in Box  -                           extraTemp1
-3TPH Temperature, pressure, humidity in FARS -     extraTemp2, pressure, outHumidity
+3TPH Temperature, pressure, humidity in FARS -     outTemp, pressure, outHumidity
    This is BME280ID "BME280-1"
 4R Rain tipping bucket - rain
    Reported since last report - a difference
@@ -31,7 +31,7 @@ Supported Keys:                                    Mapped DB name
 5WGD Wind gust direction. Reported as 4 readings which can be averaged.
 6WGS wind speed gust. Reported as current, min, max. From 54 records. At 2.25 seconds 121.5 seconds
       6WGS and 5WGD are expected on the same line. 
-7T fars temp sensor                                outTemp
+
 
 Alert format
 !Key,Value;
@@ -357,6 +357,8 @@ class StoicWatcher(object):
                     time.sleep(5)
             else:
                 break
+            
+            # TODO Handle it when it trys to talk to somethign that is not an Arduino
         
         # python -m serial.tools.list_ports
         # Above will list ports
@@ -432,37 +434,7 @@ class StoicWatcher(object):
         
         return data
     
-    def key_parse_7T_FARSTemp(self, LineIn):
-        """
-        Parse key 7T the temperature in the FARS
-        Should provide one value in 2 byte HEX eg
-        1A5D
-        
-        entered as outTemp
-        Units C
-        Sensor is an MCP9808 on the I2C bus
-        Input format *7T,xxxx; or *7T,xxxx,^;  xxxx is two hex bytes read from the sensor.
-        """
-        # TODO add ! on arduino side if not detected. On this side respond by not recording data. 
-        # TODO add check of sensors to 90 min house keeping?
-        
-        # Pull the data from the text string that came in.
-        posStart = LineIn.find(",")
-        # Does the line have a checksum indicator
-        if(LineIn.find("^") == -1):
-            posEnd = LineIn.find(";")
-        else:
-            posEnd = LineIn[posStart+1:].find(",") + posStart + 1
-            # TODO never tested with ^ 
-        
-        Temp = self.sensor_parse_MCP9808_Temp(LineIn[posStart+1:posEnd])
-        
-        loginf("key_parse_7T_FARSTemp temp %f" % Temp)
-            
-        data = dict()
-        data["outTemp"] = Temp
-        
-        return data      
+    
     
     def sensor_parse_BME280_Pressure(self, DataHex, BME280ID, TFine):
         """
@@ -716,7 +688,7 @@ class StoicWatcher(object):
         
         if(TFine == None):
             data = dict()
-            data["extraTemp2"] = None
+            data["outTemp"] = None
             data["pressure"] = None
             data["outHumidity"] = None
             return data
@@ -728,7 +700,7 @@ class StoicWatcher(object):
         Humidity = self.sensor_parse_BME280_Humidity(LineIn[HposStart+1:HposEnd+1],BME280ID, TFine)
         
         data = dict()
-        data["extraTemp2"] = Temperature
+        data["outTemp"] = Temperature
         data["pressure"] = Pressure
         data["outHumidity"] = Humidity
         return data
@@ -1100,7 +1072,7 @@ class StoicWatcher(object):
             #    return self.key_parse_6WMS_5WMD_wind_mean(LineIn)
             elif LineIn[1:pos] == "7T":
                return self.key_parse_7T_FARSTemp(LineIn)
-            # Hi git
+
             else:
             # TODO fix this
                 return None
