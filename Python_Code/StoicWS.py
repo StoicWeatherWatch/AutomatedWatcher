@@ -1100,6 +1100,7 @@ class StoicWatcher(object):
             #    return self.key_parse_6WMS_5WMD_wind_mean(LineIn)
             elif LineIn[1:pos] == "7T":
                return self.key_parse_7T_FARSTemp(LineIn)
+            # Hi git
             else:
             # TODO fix this
                 return None
