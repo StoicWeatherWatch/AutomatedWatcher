@@ -46,6 +46,7 @@
 #define MCP9808_T2_ADDRESS  0x18
 // Address 32 or 0x20 in HEX
 #define MCP23018_W6_ADDRESS 0x20
+#define MCP9808_T7_ADDRESS  0x19
 #define SI1133_EM10_ADDRESS 0x55
 
 

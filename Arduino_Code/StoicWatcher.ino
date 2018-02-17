@@ -1,7 +1,7 @@
 /*
 	Stoic Watcher
-	v0.1.2
-	2018-02-13
+	v0.1.3
+	2018-02-16
  */
 
 
@@ -154,6 +154,7 @@ void loop()
 		case 1 :
 			// 1 Early
 			TPH3_FARS_Sensor.AcquireData();
+			T7_FARS_Sensor.AcquireData();
 
 			// 1
 
@@ -163,6 +164,7 @@ void loop()
 
 			// 2
 			TPH3_FARS_Sensor.RetrieveDataAndSend();
+			T7_FARS_Sensor.SendRawDataSerial();
 
 
 			break;
