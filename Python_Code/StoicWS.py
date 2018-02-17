@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.1.0
-# 2018-02-10
+# Version 0.1.3
+# 2018-02-16
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -21,7 +21,7 @@ Items on the same line
 
 Supported Keys:                                    Mapped DB name
 2T Temperature in Box  -                           extraTemp1
-3TPH Temperature, pressure, humidity in FARS -     outTemp, pressure, outHumidity
+3TPH Temperature, pressure, humidity in FARS -     extraTemp2, pressure, outHumidity
    This is BME280ID "BME280-1"
 4R Rain tipping bucket - rain
    Reported since last report - a difference
@@ -31,6 +31,7 @@ Supported Keys:                                    Mapped DB name
 5WGD Wind gust direction. Reported as 4 readings which can be averaged.
 6WGS wind speed gust. Reported as current, min, max. From 54 records. At 2.25 seconds 121.5 seconds
       6WGS and 5WGD are expected on the same line. 
+7T fars temp sensor                                outTemp
 
 
 Alert format
@@ -41,7 +42,7 @@ All other line starts ignored, including #
 Units used are weewx.METRICWX
 
 CHIP from NEXTTHING sticks an arduino on a USB hub at ttyACM1
-DEFAULT_PORT = "/dev/ttyACM1"
+DEFAULT_PORT = "/dev/ttyACM0"
 
 DEFAULT_BAUDRATE = 9600
 
@@ -91,7 +92,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.1.0'
+DRIVER_VERSION = '0.1.2'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -304,7 +305,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
 
 class StoicWatcher(object):
     
-    DEFAULT_PORT = "/dev/ttyACM1"
+    DEFAULT_PORT = "/dev/ttyACM0"
     DEFAULT_BAUDRATE = 9600
     
     def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial=0):
@@ -357,6 +358,8 @@ class StoicWatcher(object):
                     time.sleep(5)
             else:
                 break
+            
+            # TODO Handle it when it trys to talk to somethign that is not an Arduino
         
         # python -m serial.tools.list_ports
         # Above will list ports
@@ -431,6 +434,40 @@ class StoicWatcher(object):
         data["extraTemp1"] = Temp
         
         return data
+    
+    
+    
+    def key_parse_7T_FARSTemp(self, LineIn):
+        """
+        Parse key 7T the temperature in the FARS
+        Should provide one value in 2 byte HEX eg
+        1A5D
+        
+        entered as outTemp
+        Units C
+        Sensor is an MCP9808 on the I2C bus
+        Input format *7T,xxxx; or *7T,xxxx,^;  xxxx is two hex bytes read from the sensor.
+        """
+        # TODO add ! on arduino side if not detected. On this side respond by not recording data. 
+        # TODO add check of sensors to 90 min house keeping?
+        
+        # Pull the data from the text string that came in.
+        posStart = LineIn.find(",")
+        # Does the line have a checksum indicator
+        if(LineIn.find("^") == -1):
+            posEnd = LineIn.find(";")
+        else:
+            posEnd = LineIn[posStart+1:].find(",") + posStart + 1
+            # TODO never tested with ^ 
+        
+        Temp = self.sensor_parse_MCP9808_Temp(LineIn[posStart+1:posEnd])
+        
+        loginf("key_parse_7T_FARSTemp temp %f" % Temp)
+            
+        data = dict()
+        data["outTemp"] = Temp
+        
+        return data      
     
     
     
@@ -686,7 +723,7 @@ class StoicWatcher(object):
         
         if(TFine == None):
             data = dict()
-            data["outTemp"] = None
+            data["extraTemp2"] = None
             data["pressure"] = None
             data["outHumidity"] = None
             return data
@@ -698,7 +735,7 @@ class StoicWatcher(object):
         Humidity = self.sensor_parse_BME280_Humidity(LineIn[HposStart+1:HposEnd+1],BME280ID, TFine)
         
         data = dict()
-        data["outTemp"] = Temperature
+        data["extraTemp2"] = Temperature
         data["pressure"] = Pressure
         data["outHumidity"] = Humidity
         return data
@@ -1058,9 +1095,8 @@ class StoicWatcher(object):
         #Temperature in the circuit box
             if LineIn[1:pos] == "2T":
                 return self.key_parse_2T_BoxTemp(LineIn)
-            # Release 1. FARS not yet ready
-            #elif LineIn[1:pos] == "3TPH":
-            #    return self.key_parse_3TPH_FARS(LineIn)
+            elif LineIn[1:pos] == "3TPH":
+                return self.key_parse_3TPH_FARS(LineIn)
             elif LineIn[1:pos] == "4R":
                 return self.key_parse_4R_Rain(LineIn)
             # Release 1. No wind. Concrete not yet set.
@@ -1068,6 +1104,9 @@ class StoicWatcher(object):
             #    return self.key_parse_6WGS_5WGD_wind_gust(LineIn)
             #elif LineIn[1:pos] == "6WMS":
             #    return self.key_parse_6WMS_5WMD_wind_mean(LineIn)
+            elif LineIn[1:pos] == "7T":
+               return self.key_parse_7T_FARSTemp(LineIn)
+
             else:
             # TODO fix this
                 return None
