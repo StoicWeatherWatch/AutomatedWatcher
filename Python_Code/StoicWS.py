@@ -738,7 +738,7 @@ class StoicWatcher(object):
         
         data = dict()
         data["extraTemp2"] = Temperature
-        data["pressure"] = Pressure
+        #data["pressure"] = Pressure # FARS is causing issues
         data["outHumidity"] = Humidity
         return data
     
