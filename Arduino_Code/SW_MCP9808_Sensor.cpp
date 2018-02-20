@@ -1,58 +1,56 @@
 /*
- * SW_MCP9808_Sensor.h
+ * SW_Rain_Readout.cpp
  *
- *  Created on: 2018-01-21
+ *  Created on: 2018-01-27
  *      Author: StoicWeather
- *
- *      For maximum temperature resolution this sensor takes 250 ms to reach conversion. Res +0.0625°C
  */
 
-#ifndef SW_MCP9808_SENSOR_H_
-#define SW_MCP9808_SENSOR_H_
+#include "SW_Rain_Readout.h"
 
-#include "SWSensor.h"
-#include "SW_Helper_Functions.h"
-
-#define MCP9808_CHIPID_REG    0x07
-#define MCP9808_MANID_REG     0x06
-#define MCP9808_RES_REG       0x08
-#define MCP9808_CONFIG_REG    0x01
-#define MCP9808_TEMP_REG      0x05
-
-#define MCP9808_CHIPID_VALUE  0x0400
-#define MCP9808_MANID_VALUE   0x0054
-
-#define MCP9808_MAXRES_CMD    0x03
-//0000 0000 0000 0000
-#define MCP9808_CONFIG_MSB_CMD    0x00
-#define MCP9808_CONFIG_LSB_CMD    0x00
-
-
-
-/*
- *
- */
-class SW_MCP9808_Sensor: public SW_Sensor
+SW_Rain_Readout::SW_Rain_Readout(byte DAQ0PinIN, byte DAQPinCountIN,byte ResetPinIN,byte SensorNumberIN)
+ :SW_Ard_Readout(DAQ0PinIN, DAQPinCountIN, ResetPinIN, SensorNumberIN)
 {
-	protected:
-	byte TemperatureRaw[2];
 
-	public:
+	FirstReadout = true;
+	LastDataReading = (byte)0;
 
-	SW_MCP9808_Sensor(byte AddressIn, I2C I2CBussIn, byte SensorNumberIN);
-	bool InitializeSensor();
-	bool AcquireData();
-	bool SendRawDataSerial();
 
-	byte GetRawTempreature_HighBits();
-	byte GetRawTempreature_LowBits();
 
-#ifdef VERIFY_CHIPS
-	bool VerifyChip();
-#endif /*VERIFY_CHIPS*/
-#ifdef PERFORM_DATA_PROCESSING
-	float ProcessTemp();
-#endif /*PERFORM_DATA_PROCESSING*/
-};
+}
 
-#endif /* SW_MCP9808_SENSOR_H_ */
+bool SW_Rain_Readout::AcquireDataAndSend()
+{
+
+	byte DataIn = SW_Ard_Readout::Read_Pins();
+
+	if(!FirstReadout)
+	{
+		Serial.print("*");
+		Serial.print(SensorNumber,DEC);
+		Serial.print("R,");
+		SerialHexBytePrint(DataIn);
+		//Serial.print(DataIn,HEX);
+		Serial.print(",");
+		SerialHexBytePrint(LastDataReading);
+		//Serial.print(LastDataReading,HEX);
+		Serial.println(";");
+
+		// TODO Add additional previous readings to add robustness against a missed line in serial
+
+		// TEST lines
+		//Serial.println(DataIn,HEX);
+		//Serial.println(LastDataReading,HEX);
+
+	}
+
+	//Serial.println(DataIn,HEX);
+	//Serial.println(LastDataReading,HEX);
+	LastDataReading = DataIn;
+	//Serial.println(DataIn,HEX);
+	//Serial.println(LastDataReading,HEX);
+	FirstReadout = false;
+
+	return true;
+
+
+}
