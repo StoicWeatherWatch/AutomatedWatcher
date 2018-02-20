@@ -398,7 +398,7 @@ class StoicWatcher(object):
             Temp = float(DataRaw & int("0FFF",16)) * (2**-4)
             
         else: # 1 and thus negative
-            Temp = 256.0 - (float(DataRaw & int("0FFF",16)) * (2**-4))
+            Temp = (float(DataRaw & int("0FFF",16)) * (2**-4)) - 256.0
             
         return Temp
             
