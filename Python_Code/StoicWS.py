@@ -2,7 +2,7 @@
 #
 # Stoic WS
 # Version 0.1.3
-# 2018-02-16
+# 2018-02-19
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -75,6 +75,8 @@ STOIC Stoic Thing Observes Information on Climate
 # TODO eleminate *3TPH,000000,000000,0000,^; and report an error instead
 
 # TODO crashes on disconnect of I2C sensor both the CHIP and probabily the arduino
+
+# TODO trim digits to save less in DB file - no need for meaningless sigfigs
 
 
 # TODO DO I need this? Python 2.7 should have with_statement
