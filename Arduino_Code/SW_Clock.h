@@ -16,9 +16,10 @@
 #endif
 
 
-
 #ifndef SW_CLOCK_H_
 #define SW_CLOCK_H_
+
+#define SW_CLOCK_INTERNAL_TIMER_ACTIVE
 
 #include "SW_Helper_Functions.h"
 
