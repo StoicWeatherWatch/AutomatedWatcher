@@ -27,6 +27,7 @@
 #include "SW_MCP2318_GPIO_Sensor.h"
 #include "SW_Wind_Speed_Mean.h"
 #include "SW_SI1133_Sensor.h"
+#include "SW_DS24828_1W_Sensor.h"
 
 #include "SW_Ard_Readout.h"
 #include "SW_Rain_Readout.h"
@@ -48,6 +49,7 @@
 #define MCP23018_W6_ADDRESS 0x20
 #define MCP9808_T7_ADDRESS  0x19
 #define SI1133_EM10_ADDRESS 0x55
+#define DS24828_1W_T20_ADDRESS  0x1F
 
 
 // Sensor Numbers
@@ -58,6 +60,7 @@
 #define DAVISANNA_WS6_WIND_SPEED_SUNM 	6
 #define MCP9808_T7_FARSTEMP_SNUM 		 7
 #define SI1133_EM10_UVOPT_SUNM           10
+#define DS24828_1W_T20_SNUM             20
 
 
 // Pins

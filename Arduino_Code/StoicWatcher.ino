@@ -1,6 +1,6 @@
 /*
 	Stoic Watcher
-	v0.1.3
+	v0.1.4
 	2018-02-16
  */
 
@@ -21,6 +21,8 @@
 
 // TODO Every five seconds will trigger - thus skip certain slower things when long stuff is running
 
+
+
 // Get the reset lines right
 
 
@@ -40,10 +42,11 @@ SW_Wind_Speed_Mean W6_WindSpeed_Mean_Sensor = SW_Wind_Speed_Mean((byte)MCP23018_
 
 SW_Wind_Gust WG6_WindGust_Multiple = SW_Wind_Gust((byte)MCP23018_W6_ADDRESS, I2CBus, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, (byte)DAVISANNA_WS6_WIND_SPEED_SUNM, (byte)WIND_DIR_ADC_A_PIN, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, (byte)DAVISANNA_WD5_WIND_DIR_SUNM);
 
-
 SW_MCP9808_Sensor T7_FARS_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T7_ADDRESS,I2CBus,(byte)MCP9808_T7_FARSTEMP_SNUM);
 
 //SW_SI1133_Sensor EM10_UV_Opt_Sensor = SW_SI1133_Sensor((byte)SI1133_EM10_ADDRESS, I2CBus, (byte)SI1133_EM10_UVOPT_SUNM);
+
+SW_DS24828_1W_Sensor T20_1Wire_Temp_Sensor = SW_DS24828_1W_Sensor((byte)DS24828_1W_T20_ADDRESS, I2CBus, (byte)DS24828_1W_T20_SNUM);
 
 
 void setup()
@@ -58,7 +61,7 @@ void setup()
 	delay(10);
 	Serial.println(F(""));
 	delay(10);
-	Serial.println(F("#StoicWatcher Starting v0.1.1;"));
+	Serial.println(F("#StoicWatcher Starting v0.1.4;"));
 	Serial.println(F("!startup;"));
 	delay(5);
 
@@ -66,6 +69,7 @@ void setup()
 	I2CBus.begin();
 	I2CBus.setSpeed(0);
 	I2CBus.timeOut(5000);
+
 	//I2CBus.scan();
 
 	TPH3_FARS_Sensor.InitializeSensor();
@@ -86,6 +90,8 @@ void setup()
 	// Rain Sensor
 	// Set the rain reset high to reset the rain count
 	// TODO reevaluate the use of rain reset
+
+	T20_1Wire_Temp_Sensor.InitializeSensor();
 
 	// Master Reset
 	Serial.println(F("# Master Reset;"));
@@ -129,7 +135,6 @@ void loop()
 
 
 
-
 	if(SW_CK_InterruptOccurred())
 	{
 
@@ -153,6 +158,7 @@ void loop()
 		case 0 :
 			// 0 Early
 
+
 			// 0
 
 			break;
@@ -160,6 +166,8 @@ void loop()
 			// 1 Early
 			TPH3_FARS_Sensor.AcquireData();
 			T7_FARS_Sensor.AcquireData();
+
+
 
 			// 1
 
@@ -202,16 +210,22 @@ void loop()
 		case 6 :
 			// 6 Early
 
+
 			// 6
 			switch(SW_CK_GetCKMedCount())
 			{
 			case 0 :
+				T20_1Wire_Temp_Sensor.TellDS18B20ToGetTemp_1W(0);
+
 				break;
 			case 1 :
+				T20_1Wire_Temp_Sensor.TellDS18B20ToGetTemp_1W(1);
 				break;
 			case 2 :
+				T20_1Wire_Temp_Sensor.ReadAndSendRawTempDA18B20_1W(0);
 				break;
 			case 3 :
+				T20_1Wire_Temp_Sensor.ReadAndSendRawTempDA18B20_1W(1);
 				break;
 			}
 
