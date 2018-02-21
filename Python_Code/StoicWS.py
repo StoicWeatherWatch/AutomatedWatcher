@@ -77,6 +77,7 @@ STOIC Stoic Thing Observes Information on Climate
 # TODO crashes on disconnect of I2C sensor both the CHIP and probabily the arduino
 
 # TODO trim digits to save less in DB file - no need for meaningless sigfigs
+# TODO 85 C is the reset value for DS18B20. This value should be ignored. 0x0550
 
 
 # TODO DO I need this? Python 2.7 should have with_statement
