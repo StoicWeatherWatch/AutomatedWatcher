@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.1.3
-# 2018-02-19
+# Version 0.1.4
+# 2018-02-21
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -32,6 +32,7 @@ Supported Keys:                                    Mapped DB name
 6WGS wind speed gust. Reported as current, min, max. From 54 records. At 2.25 seconds 121.5 seconds
       6WGS and 5WGD are expected on the same line. 
 7T fars temp sensor                                outTemp
+2XT 1 Wire Temp Sensors  x {0..7}
 
 
 Alert format
@@ -190,13 +191,8 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         stoic_Cal_dict["wind_direction_number_of_bins"] = int(stn_dict.get('wind_direction_number_of_bins'))
         stoic_Cal_dict["wind_direction_half_bin_size"] = int(stn_dict.get('wind_direction_half_bin_size'))
         stoic_Cal_dict["wind_direction_max_ADC"] = int(stn_dict.get('wind_direction_max_ADC'))
-        
 
-        
 
-        
-
-        
         stoic_Cal_dict["BME280_1_CAL_T1"] = BoschHEXHEX2UnsignedLong(stn_dict.get("cal-BME280-1.2.1"),stn_dict.get("cal-BME280-1.2.0"))
 
         #  Data sheet T2 signed 
@@ -239,6 +235,15 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         #  Data sheet H6 signed byte E7
         sign = -1 if (long(stn_dict.get("cal-BME280-1.1.6"),16) >> 7 == 1) else 1
         stoic_Cal_dict["BME280_1_CAL_H6"] = long(sign) * (long(stn_dict.get("cal-BME280-1.1.6"),16) & 0b01111111)
+        
+        stoic_Cal_dict["Temp1W-schema-0"] = stn_dict.get('Temp1W-schema-0')
+        stoic_Cal_dict["Temp1W-schema-1"] = stn_dict.get('Temp1W-schema-1')
+        stoic_Cal_dict["Temp1W-schema-2"] = stn_dict.get('Temp1W-schema-2')
+        stoic_Cal_dict["Temp1W-schema-3"] = stn_dict.get('Temp1W-schema-3')
+        stoic_Cal_dict["Temp1W-schema-4"] = stn_dict.get('Temp1W-schema-4')
+        stoic_Cal_dict["Temp1W-schema-5"] = stn_dict.get('Temp1W-schema-5')
+        stoic_Cal_dict["Temp1W-schema-6"] = stn_dict.get('Temp1W-schema-6')
+        stoic_Cal_dict["Temp1W-schema-7"] = stn_dict.get('Temp1W-schema-7')
  
 
         
@@ -381,6 +386,20 @@ class StoicWatcher(object):
             logdbg("StoicWS said: %s" % LineIn)
             
         return LineIn
+    
+    def result_check_temp(self,Temperature):
+        """
+        Sets limits on Temperature. C is assumed
+        
+        This should not be used on diagnostic sensors in boxes and containers since it may kill real values.
+        """
+        
+        if Temperature > 50:
+            return False
+        if Temperature < -25:
+            return False
+        
+        return True
     
     def sensor_parse_MCP9808_Temp(self, DataHex):
         """
@@ -1082,7 +1101,84 @@ class StoicWatcher(object):
         
         return data
     
+    def sensor_parse_DS18B20_1Wire(self,DataHex):
+        """
+        Handles 1 Wire data from DS18B20. 
+        Data format 014D
+        Bit 15 - 11 inclusive are sign bits
+        Bit 10 2^6
+        Bit  7 2^3
+        Bit  02^-4
+        twos compliment
+        """
         
+        DataRaw = int(DataHex,16)
+        
+        # Check sign
+        if ( (DataRaw >> 12) & int("1",16) ) == 1:
+            # Negative
+            Temp = (float(DataRaw & int("07FF",16)) * (2**-4)) - 128.0
+        else:
+            #positive
+            Temp = float(DataRaw & int("07FF",16)) * (2**-4)
+            
+        return Temp
+            
+        
+    
+    def temp_1Wire_line_validation(self, LineIn):
+        
+        pos = LineIn.find(",")
+        
+        if LineIn[0:2] != "*2":
+            logdbg("StoicWS temp_1Wire_line_validation no *2")
+            return False
+        if LineIn[3:pos] != "T":
+            logdbg("StoicWS temp_1Wire_line_validation no T,")
+            return False
+        
+        if LineIn.find("^") == -1:
+            posEnd = LineIn.find(";")
+        else:
+            posEnd = LineIn.find("^")
+        
+        if (posEnd - pos) != 5:
+            logdbg("StoicWS temp_1Wire_line_validation data not correct length")
+            return False
+        
+        return True
+        
+
+    
+    def key_parse_2xT_1WireTemp(self, LineIn):
+        """
+        Handle the 1 Wire temp sensors 2xT where x {0...7}
+        *21T,014D;
+        """
+        
+        if not temp_1Wire_line_validation(LineIn):
+            return NONE
+        
+        pos = LineIn.find(",")
+        
+        if LineIn.find("^") == -1:
+            posEnd = LineIn.find(";")
+        else:
+            posEnd = LineIn.find("^")
+        
+        Temp = sensor_parse_DS18B20_1Wire(self,LineIn[pos+1:posEnd])
+
+        if not result_check_temp(Temp):
+            return NONE
+        
+        
+        data = dict()
+        data[stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]] ] = Temp
+             
+        loginf("key_parse_2xT_1WireTemp LineIn: %s key %s value %f " %(LineIn, stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]], data[stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]] ]))
+        
+        return data
+    
         
     
     def parse_raw_data(self, LineIn):
@@ -1109,7 +1205,8 @@ class StoicWatcher(object):
             #    return self.key_parse_6WMS_5WMD_wind_mean(LineIn)
             elif LineIn[1:pos] == "7T":
                return self.key_parse_7T_FARSTemp(LineIn)
-
+            elif ( LineIn[1:2] == "2" ) and ( LineIn[3:pos] == "T" ):
+                return self.key_parse_2xT_1WireTemp(LineIn)
             else:
             # TODO fix this
                 return None
