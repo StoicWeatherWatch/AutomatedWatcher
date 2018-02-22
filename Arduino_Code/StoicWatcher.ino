@@ -1,7 +1,7 @@
 /*
 	Stoic Watcher
 	v0.1.4
-	2018-02-16
+	2018-02-21
  */
 
 
@@ -215,17 +215,16 @@ void loop()
 			switch(SW_CK_GetCKMedCount())
 			{
 			case 0 :
-				T20_1Wire_Temp_Sensor.TellDS18B20ToGetTemp_1W(0);
+				T20_1Wire_Temp_Sensor.Cmd1W_TellDS18B20OnCurrentCHToGetTemp_1W();
 
 				break;
 			case 1 :
-				T20_1Wire_Temp_Sensor.TellDS18B20ToGetTemp_1W(1);
+				T20_1Wire_Temp_Sensor.ReadAndSendRawTempDA18B20OnCurrentCH_1W();
+				T20_1Wire_Temp_Sensor.SelectNextChannel();
 				break;
 			case 2 :
-				T20_1Wire_Temp_Sensor.ReadAndSendRawTempDA18B20_1W(0);
 				break;
 			case 3 :
-				T20_1Wire_Temp_Sensor.ReadAndSendRawTempDA18B20_1W(1);
 				break;
 			}
 
