@@ -1,6 +1,6 @@
 /*
 	Stoic Watcher
-	v0.1.4
+	v0.1.5
 	2018-02-21
  */
 
@@ -61,7 +61,7 @@ void setup()
 	delay(10);
 	Serial.println(F(""));
 	delay(10);
-	Serial.println(F("#StoicWatcher Starting v0.1.4;"));
+	Serial.println(F("#StoicWatcher Starting v0.1.5;"));
 	Serial.println(F("!startup;"));
 	delay(5);
 
@@ -185,6 +185,21 @@ void loop()
 			// 3 Early
 
 			// 3
+			switch(SW_CK_GetCKMedCount())
+						{
+						case 0 :
+							T20_1Wire_Temp_Sensor.Cmd1W_TellDS18B20OnCurrentCHToGetTemp_1W();
+
+							break;
+						case 1 :
+							T20_1Wire_Temp_Sensor.ReadAndSendRawTempDA18B20OnCurrentCH_1W();
+							T20_1Wire_Temp_Sensor.SelectNextChannel();
+							break;
+						case 2 :
+							break;
+						case 3 :
+							break;
+						}
 
 			break;
 		case 4 :
@@ -215,12 +230,10 @@ void loop()
 			switch(SW_CK_GetCKMedCount())
 			{
 			case 0 :
-				T20_1Wire_Temp_Sensor.Cmd1W_TellDS18B20OnCurrentCHToGetTemp_1W();
 
 				break;
 			case 1 :
-				T20_1Wire_Temp_Sensor.ReadAndSendRawTempDA18B20OnCurrentCH_1W();
-				T20_1Wire_Temp_Sensor.SelectNextChannel();
+
 				break;
 			case 2 :
 				break;

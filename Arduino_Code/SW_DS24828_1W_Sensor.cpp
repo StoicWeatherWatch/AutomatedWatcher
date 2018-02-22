@@ -29,9 +29,9 @@ bool SW_DS24828_1W_Sensor::InitializeSensor()
 	status = I2CBuss.read(SensorAddress, (byte)1);
 
 	byte ResetValue = I2CBuss.receive();
-	Serial.print(F("#DS24828 ResetValue "));
+	/*Serial.print(F("#DS24828 ResetValue "));
 	SerialHexBytePrint(ResetValue);
-	Serial.println(F(";"));
+	Serial.println(F(";"));*/
 	if((ResetValue & DS24828_DRST_VARIFICATION_MASK_VALUE) == DS24828_DRST_VARIFICATION_VALUE)
 	{
 		Serial.println(F("#DS24828 Reset Successful;"));
@@ -47,12 +47,13 @@ bool SW_DS24828_1W_Sensor::InitializeSensor()
 	VerifyChip();
 #endif /*VERIFY_CHIPS*/
 
+	// Send Configuration to DS2482-800
 	I2CBuss.write(SensorAddress, (byte)DS24828_WCFG_REG, (byte)DS24828_WCFG_CMD);
 	I2CBuss.read(SensorAddress, (byte)DS24828_WCFG_REG, (byte)1);
 	byte WCFGValue = I2CBuss.receive();
-	Serial.print(F("#DS24828 WCFGValue "));
+	/*Serial.print(F("#DS24828 WCFGValue "));
 	SerialHexBytePrint(WCFGValue);
-	Serial.println(F(";"));
+	Serial.println(F(";"));*/
 	if((WCFGValue & 0x0F) == (DS24828_WCFG_CMD & 0x0F))
 	{
 		Serial.println(F("#DS24828 WCFG Successful;"));
@@ -64,8 +65,7 @@ bool SW_DS24828_1W_Sensor::InitializeSensor()
 
 	}
 
-	Serial.println(F("#DS24828 calling ResetAll1WDevices;"));
-	ResetAll1WDevices();
+	//Serial.println(F("#DS24828 calling ResetAll1WDevices;"));
 	if(!ResetAll1WDevices())
 	{
 		return false;
@@ -203,12 +203,12 @@ bool SW_DS24828_1W_Sensor::SelectChannel(int Channel)
 	I2CBuss.write(SensorAddress, (byte)DS24828_CHSL_REG, ChCMD);
 	I2CBuss.read(SensorAddress, (byte)1);
 	byte CHSLValue = I2CBuss.receive();
-	Serial.print(F("#DS24828 CHSLValue "));
+	/*Serial.print(F("#DS24828 CHSLValue "));
 	SerialHexBytePrint(CHSLValue);
-	Serial.println(F(";"));
+	Serial.println(F(";"));*/
 	if(CHSLValue == ChVari)
 	{
-		Serial.println(F("#DS24828 CHSL Successful;"));
+		//Serial.println(F("#DS24828 CH Select CHSL Successful;"));
 
 		ActiveChannel = Channel;
 	}
@@ -233,6 +233,7 @@ bool SW_DS24828_1W_Sensor::SelectNextChannel()
 	}
 
 #ifndef DS24828_CH_2_ACTIVE
+	// TODO Remove this
 	if(ActiveChannel == 2)
 		{
 			ActiveChannel = 3;
@@ -243,7 +244,7 @@ bool SW_DS24828_1W_Sensor::SelectNextChannel()
 
 }
 
-byte* SW_DS24828_1W_Sensor::ReadBlock1W(byte* Block, byte NumberOfBytes)
+byte* SW_DS24828_1W_Sensor::ReadBlockFrom_1W(byte* Block, byte NumberOfBytes)
 /*A ROM selection or ignore ROM command must come before this. Or a command to read ROM if only one chip on the channel.*/
 {
 
@@ -267,7 +268,12 @@ byte* SW_DS24828_1W_Sensor::ReadBlock1W(byte* Block, byte NumberOfBytes)
 bool SW_DS24828_1W_Sensor::Cmd1W_ResetCurrentCh()
 {
 	I2CBuss.write(SensorAddress, (byte)DS24828_1WRS_REG);
+#ifndef VERIFY_CHIPS
+	WaitFor1WSDone();
+#endif /*not VERIFY_CHIPS*/
+#ifdef VERIFY_CHIPS
 	byte OneWireStatus = WaitFor1WSDone();
+#endif /*VERIFY_CHIPS*/
 
 	/*Serial.print(F("# DS24828 Cmd1W_ResetCurrentCh OneWireStatus "));
 					Serial.print(OneWireStatus);
@@ -277,7 +283,7 @@ bool SW_DS24828_1W_Sensor::Cmd1W_ResetCurrentCh()
 	// PPS Presence pulse detect
 	if(((OneWireStatus & 0x02) == 0x02) && ((OneWireStatus & 0x04) != 0x04))
 	{
-		Serial.println(F("#DS24828 Cmd1W_ResetCurrentCh PPS Found 1W Device on current Channel;"));
+		//Serial.println(F("#DS24828 Cmd1W_ResetCurrentCh PPS Found 1W Device on current Channel;"));
 	}
 	else
 	{
@@ -291,7 +297,7 @@ bool SW_DS24828_1W_Sensor::Cmd1W_ResetCurrentCh()
 
 }
 
-bool SW_DS24828_1W_Sensor::TellDS18B20ToGetTemp_1W(int Channel)
+/*bool SW_DS24828_1W_Sensor::TellDS18B20ToGetTemp_1W(int Channel)
 {
 	if(!SelectChannel(Channel))
 	{
@@ -311,7 +317,8 @@ bool SW_DS24828_1W_Sensor::TellDS18B20ToGetTemp_1W(int Channel)
 
 	return true;
 
-}
+}*/
+
 void SW_DS24828_1W_Sensor::Cmd1W_TellDS18B20OnCurrentCHToGetTemp_1W()
 {
 #ifdef DS24828_DIAGNOSTICS_ON
@@ -341,7 +348,7 @@ void SW_DS24828_1W_Sensor::Cmd1W_TellDS18B20OnCurrentCHToGetTemp_1W()
 
 }
 
-int SW_DS24828_1W_Sensor::ReadRawTempDA18B20_1W(int Channel)
+/*int SW_DS24828_1W_Sensor::ReadRawTempDA18B20_1W(int Channel)
 {
 	if(!SelectChannel(Channel))
 	{
@@ -394,8 +401,9 @@ int SW_DS24828_1W_Sensor::ReadRawTempDA18B20_1W(int Channel)
 
 
 } //ReadRawTempDA18B20_1W
+*/
 
-void SW_DS24828_1W_Sensor::ReadAndSendRawTempDA18B20_1W(int Channel)
+/*void SW_DS24828_1W_Sensor::ReadAndSendRawTempDA18B20_1W(int Channel)
 {
 	int VERYRawData = ReadRawTempDA18B20_1W(Channel);
 
@@ -406,7 +414,7 @@ void SW_DS24828_1W_Sensor::ReadAndSendRawTempDA18B20_1W(int Channel)
 	SerialHexBytePrint((byte)(VERYRawData));
 	Serial.println(F(";"));
 
-}
+}*/
 
 int SW_DS24828_1W_Sensor::ReadRawTempOnCurrentCHDS18B20_1W()
 {
@@ -424,7 +432,7 @@ int SW_DS24828_1W_Sensor::ReadRawTempOnCurrentCHDS18B20_1W()
 
 	byte* TempBlock = (byte*) calloc(2,sizeof(byte));
 
-	TempBlock = ReadBlock1W(TempBlock, 2);
+	TempBlock = ReadBlockFrom_1W(TempBlock, 2);
 
 
 	int TempRaw = ( (int)TempBlock[0] + (((int)TempBlock[1]) << 8) );
@@ -451,6 +459,7 @@ void SW_DS24828_1W_Sensor::ReadAndSendRawTempDA18B20OnCurrentCH_1W()
 	Serial.println(F(";"));
 
 }
+
 
 #ifdef VERIFY_CHIPS
 // VerifyChip assumes a DRST has just happened
@@ -553,7 +562,7 @@ bool SW_DS24828_1W_Sensor::VerifyChip()
 
 } // VerifyChip()
 
-void SW_DS24828_1W_Sensor::ReadROM()
+/*void SW_DS24828_1W_Sensor::ReadROM()
 {
 	// ROM code is 64 bits, 8 bytes
 	byte OneWireStatus;
@@ -571,7 +580,7 @@ void SW_DS24828_1W_Sensor::ReadROM()
 	}
 
 
-}
+}*/
 
 void SW_DS24828_1W_Sensor::Cmd1W_ReadROMCurrentCh()
 {
@@ -585,7 +594,7 @@ void SW_DS24828_1W_Sensor::Cmd1W_ReadROMCurrentCh()
 
 
 	byte* ROMBlock = (byte*) calloc(8,sizeof(byte));
-	ReadBlock1W(ROMBlock, 8);
+	ReadBlockFrom_1W(ROMBlock, 8);
 
 	for(int i =0; i<8;i++)
 	{
@@ -624,7 +633,7 @@ void SW_DS24828_1W_Sensor::Cmd1W_ReadScratchCurrentCh()
 
 
 	byte* ScratchBlock = (byte*) calloc(9,sizeof(byte));
-	ReadBlock1W(ScratchBlock, 9);
+	ReadBlockFrom_1W(ScratchBlock, 9);
 
 	for(int i =0; i<9;i++)
 	{

@@ -111,21 +111,21 @@ public:
 
 	bool Cmd1W_ResetCurrentCh();
 
-	byte* ReadBlock1W(byte* Block, byte NumberOfBytes);
+	byte* ReadBlockFrom_1W(byte* Block, byte NumberOfBytes);
 
 	byte WaitFor1WSDone();
 
-	bool TellDS18B20ToGetTemp_1W(int Channel);
+	//bool TellDS18B20ToGetTemp_1W(int Channel);
 	void Cmd1W_TellDS18B20OnCurrentCHToGetTemp_1W();
-	int ReadRawTempDA18B20_1W(int Channel);
-	void ReadAndSendRawTempDA18B20_1W(int Channel);
+	//int ReadRawTempDA18B20_1W(int Channel);
+	//void ReadAndSendRawTempDA18B20_1W(int Channel);
 	int ReadRawTempOnCurrentCHDS18B20_1W();
 	void ReadAndSendRawTempDA18B20OnCurrentCH_1W();
 
 
 #ifdef VERIFY_CHIPS
 	bool VerifyChip();
-	void ReadROM();
+	//void ReadROM();
 	void Cmd1W_ReadROMCurrentCh();
 	void Cmd1W_ReadScratchCurrentCh();
 	void Cmd1W_ResetAndReadScratchCurrentCh();
