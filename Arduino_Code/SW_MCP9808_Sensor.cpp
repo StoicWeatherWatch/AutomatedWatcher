@@ -19,7 +19,7 @@ bool SW_MCP9808_Sensor::InitializeSensor()
 
 	Serial.print(F("#Initializing MCP9808 Sensor "));
 	Serial.print((int)SensorNumber);
-	Serial.println(" ;");
+	Serial.println(F(" ;"));
 
 #ifdef VERIFY_CHIPS
 	if(!VerifyChip())

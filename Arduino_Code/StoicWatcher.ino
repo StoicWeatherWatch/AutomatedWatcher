@@ -1,6 +1,6 @@
 /*
 	Stoic Watcher
-	v0.1.5
+	v0.1.6
 	2018-02-21
  */
 
@@ -20,6 +20,8 @@
 // TODO Housekeeping, report uptime and chip temperature
 
 // TODO Every five seconds will trigger - thus skip certain slower things when long stuff is running
+
+
 
 
 
@@ -48,6 +50,8 @@ SW_MCP9808_Sensor T7_FARS_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T7_ADDRESS,I2
 
 SW_DS24828_1W_Sensor T20_1Wire_Temp_Sensor = SW_DS24828_1W_Sensor((byte)DS24828_1W_T20_ADDRESS, I2CBus, (byte)DS24828_1W_T20_SNUM);
 
+SW_AS3935_Lightning_Sensor EM11_Lightning_Sensor = SW_AS3935_Lightning_Sensor((byte)AS3935_EM11_ADDRESS, I2CBus, (byte)AS3935_EM11_LIGHTNING_SNUM, (byte)LIGHTNING_IRQ_D_PIN);
+
 
 void setup()
 {
@@ -61,7 +65,7 @@ void setup()
 	delay(10);
 	Serial.println(F(""));
 	delay(10);
-	Serial.println(F("#StoicWatcher Starting v0.1.5;"));
+	Serial.println(F("#StoicWatcher Starting v0.1.6;"));
 	Serial.println(F("!startup;"));
 	delay(5);
 
@@ -92,6 +96,8 @@ void setup()
 	// TODO reevaluate the use of rain reset
 
 	T20_1Wire_Temp_Sensor.InitializeSensor();
+
+	EM11_Lightning_Sensor.InitializeSensor();
 
 	// Master Reset
 	Serial.println(F("# Master Reset;"));
@@ -214,12 +220,15 @@ void loop()
 
 			//WG6_WindGust_Multiple.AcquireAnalogDataAndSend();
 
+			EM11_Lightning_Sensor.CheckIRQ();
+
 			break;
 		case 5 :
 			// 5 Early
 
 
 			// 5
+			EM11_Lightning_Sensor.IfIRQGetDataAndSend();
 
 			break;
 		case 6 :

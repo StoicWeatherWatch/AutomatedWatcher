@@ -116,7 +116,7 @@ public:
 	byte WaitFor1WSDone();
 
 	//bool TellDS18B20ToGetTemp_1W(int Channel);
-	void Cmd1W_TellDS18B20OnCurrentCHToGetTemp_1W();
+	void Cmd1W_TellDS18B20OnCurrentCHToGetTemp_1W(); // This process takes 750 ms. Do not read temp before
 	//int ReadRawTempDA18B20_1W(int Channel);
 	//void ReadAndSendRawTempDA18B20_1W(int Channel);
 	int ReadRawTempOnCurrentCHDS18B20_1W();
