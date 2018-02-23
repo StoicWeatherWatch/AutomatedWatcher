@@ -54,6 +54,9 @@ STOIC Stoic Thing Observes Information on Climate
 
 """
 
+# Schema to add 
+# lightningDistance INTEGER
+
 
 # TODO First readout after !Startup; is not reported. Used as baseline for wind etc.
 
@@ -1166,7 +1169,7 @@ class StoicWatcher(object):
         else:
             posEnd = LineIn.find("^")
         
-        Temp = sensor_parse_DS18B20_1Wire(self,LineIn[pos+1:posEnd])
+        Temp = sensor_parse_DS18B20_1Wire(LineIn[pos+1:posEnd])
 
         if not result_check_temp(Temp):
             return NONE
@@ -1178,6 +1181,63 @@ class StoicWatcher(object):
         loginf("key_parse_2xT_1WireTemp LineIn: %s key %s value %f " %(LineIn, stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]], data[stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]] ]))
         
         return data
+    
+    def sensor_parse_AS3935_Lightning(self, DataHex):
+        """
+        AS3935 Provides distance in km.
+        Units km
+        """
+        # This is left here as a monument to not being able to do binary
+        # Hex look up table for distance
+        #DistanceLUT = dict()
+        #data["28"] = int(40)
+        #data["25"] = int(37)
+        #data["22"] = int(34)
+        #data["1F"] = int(31)
+        #data["1B"] = int(27)
+        #data["18"] = int(24)
+        #data["14"] = int(20)
+        #data["11"] = int(17)
+        #data["0E"] = int(14)
+        #data["0C"] = int(12)
+        #data["0A"] = int(10)
+        #data["08"] = int(8)
+        #data[""] = int()
+        #data[""] = int()
+        
+        Distance = int(DataHex,16)
+        
+        if DataHex == "3F":
+            loginf("sensor_parse_AS3935_Lightning Out of range")
+            return None
+        if DataHex == "01":
+            loginf("sensor_parse_AS3935_Lightning Directly Overhead")
+            Distance = int(0)
+            
+        return Distance
+        
+        
+        
+    
+    def key_parse_11EM_Lightning(self, LineIn):
+        """
+        Handles the data from an AS3935 lightning detector.
+        *11EM,3F;
+        
+        """
+        pos = LineIn.find(",")
+        posEnd = LineIn.find(";")
+        
+        Distance = sensor_parse_AS3935_Lightning(LineIn[pos+1:posEnd])
+        
+        loginf("sensor_parse_AS3935_Lightning Distance %d" %Distance)
+        
+        data = dict()
+        data["lightningDistance"] = Distance
+        
+        return data
+        
+        
     
         
     
@@ -1207,6 +1267,8 @@ class StoicWatcher(object):
                return self.key_parse_7T_FARSTemp(LineIn)
             elif ( LineIn[1:2] == "2" ) and ( LineIn[3:pos] == "T" ):
                 return self.key_parse_2xT_1WireTemp(LineIn)
+            elif LineIn[1:pos] == "11EM":
+               return self.key_parse_11EM_Lightning(LineIn)
             else:
             # TODO fix this
                 return None
