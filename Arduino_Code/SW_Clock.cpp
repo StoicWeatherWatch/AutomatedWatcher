@@ -57,7 +57,7 @@ bool SW_CK_ClockSetup()
 {
 	attachInterrupt(digitalPinToInterrupt(SW_CK_CLOCK_PIN), SW_CK_ClockInterrupt,RISING);
 
-	Serial.println("#Clock Interrupt Starting;");
+	Serial.println(F("#Clock Interrupt Starting;"));
 
 #ifndef SW_CLOCK_INTERNAL_TIMER_ACTIVE
 	while(!SW_CK_CKInterrupted)
@@ -68,11 +68,13 @@ bool SW_CK_ClockSetup()
 #endif /*SW_CLOCK_INTERNAL_TIMER_ACTIVE*/
 #ifdef SW_CLOCK_INTERNAL_TIMER_ACTIVE
 
+	Serial.println(F("# USING INTERNAL TIMER!!!!!;"));
+
 SW_Ck_Internal_Timer_Initialize();
 
 #endif /*SW_CLOCK_INTERNAL_TIMER_ACTIVE*/
 
-	Serial.println("#Clock Interrupt Functional;");
+	Serial.println(F("#Clock Interrupt Functional;"));
 	SW_CK_CKInterrupted = false;
 
 	return true;

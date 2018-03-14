@@ -1,6 +1,6 @@
 /*
 	Stoic Watcher
-	v0.1.6
+	v0.1.7
 	2018-02-21
  */
 
@@ -46,7 +46,7 @@ SW_Wind_Gust WG6_WindGust_Multiple = SW_Wind_Gust((byte)MCP23018_W6_ADDRESS, I2C
 
 SW_MCP9808_Sensor T7_FARS_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T7_ADDRESS,I2CBus,(byte)MCP9808_T7_FARSTEMP_SNUM);
 
-//SW_SI1133_Sensor EM10_UV_Opt_Sensor = SW_SI1133_Sensor((byte)SI1133_EM10_ADDRESS, I2CBus, (byte)SI1133_EM10_UVOPT_SUNM);
+SW_SI1133_Sensor EM10_UV_Opt_Sensor = SW_SI1133_Sensor((byte)SI1133_EM10_ADDRESS, I2CBus, (byte)SI1133_EM10_UVOPT_SUNM);
 
 //Not Yet
 //SW_DS24828_1W_Sensor T20_1Wire_Temp_Sensor = SW_DS24828_1W_Sensor((byte)DS24828_1W_T20_ADDRESS, I2CBus, (byte)DS24828_1W_T20_SNUM);
@@ -66,7 +66,7 @@ void setup()
 	delay(10);
 	Serial.println(F(""));
 	delay(10);
-	Serial.println(F("#StoicWatcher Starting v0.1.6;"));
+	Serial.println(F("#StoicWatcher Starting v0.1.7;"));
 	Serial.println(F("!startup;"));
 	delay(5);
 
@@ -75,7 +75,7 @@ void setup()
 	I2CBus.setSpeed(0);
 	I2CBus.timeOut(5000);
 
-	//I2CBus.scan();
+	I2CBus.scan();
 
 	TPH3_FARS_Sensor.InitializeSensor();
 
@@ -87,7 +87,7 @@ void setup()
 	W6_WindSpeed_Mean_Sensor.InitializeSensor();
 	*/
 
-	//EM10_UV_Opt_Sensor.VerifyChip();
+	EM10_UV_Opt_Sensor.InitializeSensor();
 
 	// Done above
 	//WG6_WindGust_Multiple.InitializeSensor();
