@@ -800,8 +800,6 @@ class StoicWatcher(object):
             return 0.0
         # TODO does this work (float)0
         
-        # TODO FIx this
-        ConversionFactor = 1.0
                  
         Rain = float(CurrentRainRaw-LastRainRaw) * self.stoic_Cal_dict["rain_mm_Per_Tip"]
         
