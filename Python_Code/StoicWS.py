@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.1.4
+# Version 0.1.5
 # 2018-02-21
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
@@ -434,7 +434,7 @@ class StoicWatcher(object):
         Should provide one value in 2 byte HEX eg
         1A5D
         
-        entered as extraTemp1
+        entered as extraTempBox
         Units C
         Sesnor is an MCP9808 on the I2C bus
         Input format *2T,xxxx; or *2T,xxxx,^;  xxxx is two hex bytes read from the sensor.
@@ -456,7 +456,7 @@ class StoicWatcher(object):
         loginf("key_parse_2T_BoxTemp temp %f" % Temp)
             
         data = dict()
-        data["extraTemp1"] = Temp
+        data["extraTempBox"] = Temp
         
         return data
     
@@ -748,9 +748,9 @@ class StoicWatcher(object):
         
         if(TFine == None):
             data = dict()
-            data["extraTemp2"] = None
-            data["pressure"] = None
-            data["outHumidity"] = None
+            data["extraTempFARS"] = None
+            data["pressureFARS"] = None
+            data["HumidityFARS"] = None
             return data
         
         Temperature = self.sensor_parse_BME280_Temperature(TFine)
@@ -760,9 +760,9 @@ class StoicWatcher(object):
         Humidity = self.sensor_parse_BME280_Humidity(LineIn[HposStart+1:HposEnd+1],BME280ID, TFine)
         
         data = dict()
-        data["extraTemp2"] = Temperature
-        #data["pressure"] = Pressure # FARS is causing issues
-        data["outHumidity"] = Humidity
+        data["extraTempFARS"] = Temperature
+        #data["pressureFARS"] = Pressure # FARS is causing issues
+        data["HumidityFARS"] = Humidity
         return data
     
     def sensor_parse_TippingBuckedt_Rain(self,DataHexCurrent,DataHexLast):
