@@ -7,6 +7,8 @@ This is a list containing the schema of the archive database.
 It is only used for initialization, afterwhich 
 the schema is obtained dynamically from the database.  
 
+barometer is pressure adjusted to sea level pressure and for tempreture. 
+
 """
 
 schema = [('dateTime',              'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
@@ -50,5 +52,5 @@ schema = [('dateTime',              'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
           ('soilTempIR',            'REAL'),
           ('soilMoist1',            'REAL'),
           ('soilMoist2',            'REAL'),
-          ('LightningStrikes',      'REAL'),
+          ('LightningStrikes',      'INTEGER'),
           ('LightningMeanDistance', 'REAL')]
