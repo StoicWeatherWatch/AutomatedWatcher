@@ -39,7 +39,8 @@ weewx.units.obs_group_dict['extraTempFARS'] = 'group_temperature'
 weewx.units.obs_group_dict['extraTempUV'] = 'group_temperature'
 weewx.units.obs_group_dict['soilTemp5'] = 'group_temperature'
 weewx.units.obs_group_dict['soilTempIR'] = 'group_temperature'
-weewx.units.obs_group_dict['HumidityHouse'] = 'group_percent'
+weewx.units.obs_group_dict['HumidityHouse1'] = 'group_percent'
+weewx.units.obs_group_dict['HumidityHouse2'] = 'group_percent'
 weewx.units.obs_group_dict['HumidityFARS'] = 'group_percent'
 weewx.units.obs_group_dict['HumidityPRS'] = 'group_percent'
 weewx.units.obs_group_dict['rainSmallTip'] = 'group_rain'
@@ -78,10 +79,11 @@ weewx.units.default_unit_label_dict['relative_light'] = ' Relative Light Intensi
 
 
 # New unit group to count events. Lightning strikes or at least intruppts on the lightning detector
-weewx.units.USUnits['group_count'] = 'count'
-weewx.units.MetricUnits['group_count'] = 'count'
-weewx.units.MetricWXUnits['group_count'] = 'count'
+# weewx.units.USUnits['group_count'] = 'count'
+# weewx.units.MetricUnits['group_count'] = 'count'
+# weewx.units.MetricWXUnits['group_count'] = 'count'
+# 
+# weewx.units.default_unit_format_dict['count'] = '%d'
+# 
+# weewx.units.default_unit_label_dict['count'] = ' '
 
-weewx.units.default_unit_format_dict['count'] = '%d'
-
-weewx.units.default_unit_label_dict['count'] = ' '

@@ -1153,7 +1153,7 @@ class StoicWatcher(object):
     
     def key_parse_2xT_1WireTemp(self, LineIn):
         """
-        Handle the 1 Wire temp sensors 2xT where x {0...7}
+        Handle the 1 Wire temp sensors 2xT where x = {0...7}
         *21T,014D;
         """
         

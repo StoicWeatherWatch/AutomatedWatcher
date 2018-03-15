@@ -2,6 +2,8 @@
 """The stocic database schema
     18-03-14
     v1
+    
+    user.SW_Schema.schema
 
 This is a list containing the schema of the archive database. 
 It is only used for initialization, afterwhich 
@@ -22,9 +24,11 @@ schema = [('dateTime',              'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
           ('TempHouse2',            'REAL'),
           ('TempFARS',              'REAL'),
           ('TempPRS',               'REAL'),
-          ('HumidityHouse',         'REAL'),
+          ('HumidityHouse1',        'REAL'),
+          ('HumidityHouse2',        'REAL'),
           ('HumidityFARS',          'REAL'),
           ('HumidityPRS',           'REAL'),
+          ('HumidityExtra',         'REAL'),
           ('windSpeed',             'REAL'),
           ('windDir',               'REAL'),
           ('windGust',              'REAL'),
@@ -44,6 +48,7 @@ schema = [('dateTime',              'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
           ('extraTemp1',            'REAL'),
           ('extraTemp2',            'REAL'),
           ('extraTemp3',            'REAL'),
+          ('extraTemp4',            'REAL'),
           ('soilTemp1',             'REAL'),
           ('soilTemp2',             'REAL'),
           ('soilTemp3',             'REAL'),
