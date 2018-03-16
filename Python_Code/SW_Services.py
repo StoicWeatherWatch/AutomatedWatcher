@@ -58,6 +58,11 @@ class SW_Std_Calculate(StdWXCalculate):
     
     
 class SW_Calculate(WXCalculate):
+    """
+    Add derived quantities to a record.
+    
+    Much of the work is done in super which is in wxservices.py aka weewx.wxservices.WXCalculate
+    """
     
     def __init__(self, config_dict, alt_vt, lat_f, long_f, db_binder=None):
         # Aditional quantities that this service knows how to calculate 

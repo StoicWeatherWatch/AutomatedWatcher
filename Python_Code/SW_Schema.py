@@ -13,6 +13,8 @@ barometer is pressure adjusted to sea level pressure and for tempreture.
 
 """
 
+# TODO add quality checks to weewx.conf for new names
+
 schema = [('dateTime',              'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
           ('usUnits',               'INTEGER NOT NULL'),
           ('interval',              'INTEGER NOT NULL'),

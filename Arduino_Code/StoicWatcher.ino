@@ -1,7 +1,7 @@
 /*
 	Stoic Watcher
-	v0.1.7
-	2018-02-21
+	v0.1.8
+	2018-03-16
  */
 
 
@@ -48,8 +48,8 @@ SW_MCP9808_Sensor T7_FARS_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T7_ADDRESS,I2
 
 SW_SI1133_Sensor EM10_UV_Opt_Sensor = SW_SI1133_Sensor((byte)SI1133_EM10_ADDRESS, I2CBus, (byte)SI1133_EM10_UVOPT_SUNM);
 
-//Not Yet
-//SW_DS24828_1W_Sensor T20_1Wire_Temp_Sensor = SW_DS24828_1W_Sensor((byte)DS24828_1W_T20_ADDRESS, I2CBus, (byte)DS24828_1W_T20_SNUM);
+
+SW_DS24828_1W_Sensor T20_1Wire_Temp_Sensor = SW_DS24828_1W_Sensor((byte)DS24828_1W_T20_ADDRESS, I2CBus, (byte)DS24828_1W_T20_SNUM);
 //Not Yet
 //SW_AS3935_Lightning_Sensor EM11_Lightning_Sensor = SW_AS3935_Lightning_Sensor((byte)AS3935_EM11_ADDRESS, I2CBus, (byte)AS3935_EM11_LIGHTNING_SNUM, (byte)LIGHTNING_IRQ_D_PIN);
 
@@ -66,7 +66,7 @@ void setup()
 	delay(10);
 	Serial.println(F(""));
 	delay(10);
-	Serial.println(F("#StoicWatcher Starting v0.1.7;"));
+	Serial.println(F("#StoicWatcher Starting v0.1.8;"));
 	Serial.println(F("!startup;"));
 	delay(5);
 
@@ -95,8 +95,8 @@ void setup()
 	// Rain Sensor
 	// Set the rain reset high to reset the rain count
 	// TODO reevaluate the use of rain reset
-	//Not Yet
-	//T20_1Wire_Temp_Sensor.InitializeSensor();
+
+	T20_1Wire_Temp_Sensor.InitializeSensor();
 	//Not Yet
 	//EM11_Lightning_Sensor.InitializeSensor();
 
@@ -168,6 +168,8 @@ void loop()
 
 			// 0
 
+
+
 			break;
 		case 1 :
 			// 1 Early
@@ -195,14 +197,14 @@ void loop()
 			switch(SW_CK_GetCKMedCount())
 						{
 						case 0 :
-							//Not Yet
-							//T20_1Wire_Temp_Sensor.Cmd1W_TellDS18B20OnCurrentCHToGetTemp_1W();
+
+							T20_1Wire_Temp_Sensor.Cmd1W_TellDS18B20OnCurrentCHToGetTemp_1W();
 
 							break;
 						case 1 :
-							//Not Yet
-							//T20_1Wire_Temp_Sensor.ReadAndSendRawTempDA18B20OnCurrentCH_1W();
-							//T20_1Wire_Temp_Sensor.SelectNextChannel();
+
+							T20_1Wire_Temp_Sensor.ReadAndSendRawTempDA18B20OnCurrentCH_1W();
+							T20_1Wire_Temp_Sensor.SelectNextChannel();
 							break;
 						case 2 :
 							break;
@@ -225,6 +227,8 @@ void loop()
 
 			//Not Yet
 			//EM11_Lightning_Sensor.CheckIRQ();
+
+
 
 			break;
 		case 5 :

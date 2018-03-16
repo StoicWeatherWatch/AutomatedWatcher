@@ -250,7 +250,7 @@ bool SW_Ck_Internal_Timer_Check_Time()
 {
 	SW_Ck_Internal_Timer_tineNow = millis();
 
-	if((SW_Ck_Internal_Timer_tineNow - SW_Ck_Internal_Timer_timeLast) >= 250)
+	if((SW_Ck_Internal_Timer_tineNow - SW_Ck_Internal_Timer_timeLast) >= SW_CLOCK_INTERNAL_TIMER_PERIOD)
 	{
 		SW_Ck_Internal_Timer_timeLast = millis();
 		return true;
