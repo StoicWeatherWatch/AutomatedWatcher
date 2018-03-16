@@ -30,7 +30,7 @@ bool SW_SI1133_Sensor::InitializeSensor()
 
 	if(DataIn != (byte)SI1133_RESPONSE0_ON_RESET_VALUE)
 	{
-		Serial.print(F("#SI1133 Reset FAILED;"));
+		Serial.println(F("#SI1133 Reset FAILED;"));
 		return false;
 	}
 
