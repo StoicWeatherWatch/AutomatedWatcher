@@ -169,25 +169,25 @@ bool SW_DS24828_1W_Sensor::SelectChannel(int Channel)
 		break;
 #endif /*DS24828_CH_3_ACTIVE*/
 #ifdef DS24828_CH_4_ACTIVE
-	case :
+	case 4:
 		ChCMD = DS24828_CHSL_4_CMD;
 		ChVari = DS24828_CHSL_4_VARIFICATION_VALUE;
 		break;
 #endif /*DS24828_CH_4_ACTIVE*/
 #ifdef DS24828_CH_5_ACTIVE
-	case :
+	case 5:
 		ChCMD = DS24828_CHSL_5_CMD;
 		ChVari = DS24828_CHSL_5_VARIFICATION_VALUE;
 		break;
 #endif /*DS24828_CH_5_ACTIVE*/
 #ifdef DS24828_CH_6_ACTIVE
-	case :
+	case 6:
 		ChCMD = DS24828_CHSL_6_CMD;
 		ChVari = DS24828_CHSL_6_VARIFICATION_VALUE;
 		break;
 #endif /*DS24828_CH_6_ACTIVE*/
 #ifdef DS24828_CH_7_ACTIVE
-	case :
+	case 7:
 		ChCMD = DS24828_CHSL_7_CMD;
 		ChVari = DS24828_CHSL_7_VARIFICATION_VALUE;
 		break;
