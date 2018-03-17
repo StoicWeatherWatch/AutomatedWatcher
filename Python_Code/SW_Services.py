@@ -45,7 +45,10 @@ class SW_Std_Calculate(StdWXCalculate):
         #super(SW_Std_Calculate, self).__init__(engine, config_dict)
         
         # Explicit call to super super
-        weewx.engine.StdService.__init__(engine, config_dict)
+        # This one does not seem to work
+        #weewx.engine.StdService.__init__(engine, config_dict)
+        # Another try
+        super(StdWXCalculate, self).__init__(engine, config_dict)
         
         self.calc = SW_Calculate(config_dict, 
                                 engine.stn_info.altitude_vt, 
@@ -62,23 +65,47 @@ class SW_Calculate(WXCalculate):
     Add derived quantities to a record.
     
     Much of the work is done in super which is in wxservices.py aka weewx.wxservices.WXCalculate
+    
     """
     
+    # these are the quantities that this service knows how to calculate
+    _dispatch_list = [
+#        'windchill',
+#        'heatindex',
+#        'dewpoint',
+#        'inDewpoint',
+#        'maxSolarRad',
+#        'cloudbase',
+#        'humidex',
+#        'appTemp',
+#        'beaufort',
+#        'ET',
+#        'windrun',
+        'barometerPRS',
+        'barometerHouse',
+        'dewpointFARS',
+        'dewpointPRS',
+        'outTemp',
+        'inTemp',
+        'outHumidity',
+        'rain',
+        'rainRate',
+        'barometer']
+
+    
     def __init__(self, config_dict, alt_vt, lat_f, long_f, db_binder=None):
-        # Aditional quantities that this service knows how to calculate 
-        _dispatch_list.list.extend([
-            'barometerPRS',
-            'barometerHouse',
-            'dewpointFARS',
-            'dewpointPRS'])
+        
+
         
         super(SW_Calculate, self).__init__(config_dict, alt_vt, lat_f, long_f, db_binder)
         
         # get any configuration settings
-        svc_dict = config_dict.get('StdWXCalculate', {'Calculations':{}})
-        # if there is no Calculations section, then make an empty one
-        if not 'Calculations' in svc_dict:
-            svc_dict['Calculations'] = dict()
+        self.SourceDest_dict = config_dict.get('SW_Std_Calculate', {'CopySources':{}})
+        # if there is no CopySources section, then make an empty one
+        if not 'CopySources' in self.SourceDest_dict:
+            self.SourceDest_dict['CopySources'] = dict()
+            
+        
         
         # Super handles everything else. Hopefully.
         
@@ -87,16 +114,19 @@ class SW_Calculate(WXCalculate):
     def calc_barometerPRS(self, data, data_type):  # @UnusedVariable
         data['barometerPRS'] = None
         if 'pressurePRS' in data and 'TempPRS' in data:
-            data['barometerPRS'] = weewx.wxformulas.sealevel_pressure_US(
-                data['pressurePRS'], self.altitude_ft, data['TempPRS'])
+            if (data.get('pressurePRS') is not None) and (data.get('TempPRS') is not None):
+                data['barometerPRS'] = weewx.wxformulas.sealevel_pressure_US(
+                    data['pressurePRS'], self.altitude_ft, data['TempPRS'])
             
     def calc_barometerHouse(self, data, data_type):  # @UnusedVariable
         data['barometerHouse'] = None
         if 'pressureHouse' in data and 'TempHouse1' in data:
-            data['barometerHouse'] = weewx.wxformulas.sealevel_pressure_US(
-                data['pressureHouse'], self.altitude_ft, data['TempHouse1'])
+            if (data.get('pressureHouse') is not None) and (data.get('TempHouse1') is not None):
+                data['barometerHouse'] = weewx.wxformulas.sealevel_pressure_US(
+                    data['pressureHouse'], self.altitude_ft, data['TempHouse1'])
             
-    def calc_dewpointFARS(self, data, data_type):  # @UnusedVariable
+    def calc_dewpointFARS(self, data, data_type):
+        #syslog.syslog(syslog.LOG_INFO, "SW_Calculate: calc_dewpointFARS Running")
         if 'TempFARS' in data and 'HumidityFARS' in data:
             data['dewpointFARS'] = weewx.wxformulas.dewpointF(
                 data['TempFARS'], data['HumidityFARS'])
@@ -110,6 +140,58 @@ class SW_Calculate(WXCalculate):
         else:
             data['dewpointPRS'] = None
             
-    
+    def calc_rainRate(self, data, data_type):  
+        """
+        We don't have a recorded vaiable called rain and this will run before it is calculated. Use whichever sourch is specified in 
+        weewx.conf - SW_Std_Calculate - CopySources to give rain
         
+        """
+        #data['rain'] spits an exception on None get does not
+        
+        # first we check to see if we have any rain data...
+        if self.SourceDest_dict['CopySources'].get('rainRate') in data:
+            if data.get(self.SourceDest_dict['CopySources'].get('rainRate')) is not None:
+        
+                if (data.get('rain') == None) or ('rain' not in data):
+                    if self.SourceDest_dict['CopySources'].get('rainRate') is not None:
+                        data['rain'] = data[self.SourceDest_dict['CopySources'].get('rainRate')] 
+                else:
+                    syslog.syslog(syslog.LOG_INFO, "SW_Calculate: self.SourceDest_dict['CopySources'].get('rainRate') is None - ERROR")
+                
+            # Only try it if we have rain data
+            super(SW_Calculate, self).calc_rainRate(data, data_type)
+        
+    def calc_barometer(self, data, data_type):
+        # Set to None in case fo failuer
+        data['barometer'] = None
+        if (self.SourceDest_dict['CopySources'].get('barometer') in data) and (data.get(self.SourceDest_dict['CopySources'].get('barometer')) is not None):
+            data['barometer'] = data[self.SourceDest_dict['CopySources'].get('barometer')]
+        else:
+            # it is assumed that the source can be caluclated
+            getattr(self, 'calc_' + self.SourceDest_dict['CopySources'].get('barometer'))(data, data_type)
+            # And try onece more 
+            if (self.SourceDest_dict['CopySources'].get('barometer') in data) and (data.get(self.SourceDest_dict['CopySources'].get('barometer')) is not None):
+                data['barometer'] = data[self.SourceDest_dict['CopySources'].get('barometer')]
+                
+    
+    def calc_outTemp(self, data, data_type):
+        if self.SourceDest_dict['CopySources'].get('outTemp') is not None:
+            if self.SourceDest_dict['CopySources'].get('outTemp') in data:
+                data['outTemp'] = data[self.SourceDest_dict['CopySources'].get('outTemp')]
+    
+    def calc_inTemp(self, data, data_type):
+        if self.SourceDest_dict['CopySources'].get('inTemp') is not None:
+            if self.SourceDest_dict['CopySources'].get('inTemp') in data:
+                data['inTemp'] = data[self.SourceDest_dict['CopySources'].get('inTemp')]
+                
+    def calc_outHumidity(self, data, data_type):
+        if self.SourceDest_dict['CopySources'].get('outHumidity') is not None:
+            if self.SourceDest_dict['CopySources'].get('outHumidity') in data:
+                data['outTemp'] = data[self.SourceDest_dict['CopySources'].get('outHumidity')]
+
+    def calc_rain(self, data, data_type):
+        if self.SourceDest_dict['CopySources'].get('rain') is not None:
+            if self.SourceDest_dict['CopySources'].get('rain') in data:
+                data['outTemp'] = data[self.SourceDest_dict['CopySources'].get('rain')]
+
         

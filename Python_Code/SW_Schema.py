@@ -1,6 +1,6 @@
 
 """The stocic database schema
-    18-03-14
+    18-03-17
     v1
     
     user.SW_Schema.schema
@@ -65,4 +65,15 @@ schema = [('dateTime',              'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
           ('soilMoist2',            'REAL'),
           ('LightningStrikes',      'INTEGER'),
           ('LightningDistance',     'REAL'),
-          ('ExtraData',             'REAL')]
+          ('ExtraData',             'REAL'),
+          ('rainRate',                     'REAL'),
+          ('barometer',                    'REAL'),
+          ('outTemp',                      'REAL'),
+          ('inTemp',                       'REAL'),
+          ('outHumidity',                  'REAL'),
+          ('rain',                         'REAL')]
+
+# To use ExtraData add it to a group under extensions
+
+# Cheetahgenerator usess 'barometer' and 'outTemp' 
+# To avoid issues 'rainRate', 'barometer','outTemp','outHumidity','rain', 'inTemp' are retained. SW_Services will calculate them

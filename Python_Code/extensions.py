@@ -1,5 +1,5 @@
 
-# StoicWS 2018-03-14
+# StoicWS 2018-03-17
 
 """User extensions module
 
@@ -42,12 +42,13 @@ weewx.units.obs_group_dict['HumidityPRS'] = 'group_percent'
 weewx.units.obs_group_dict['rainSmallTip'] = 'group_rain'
 weewx.units.obs_group_dict['rainLargeTip'] = 'group_rain'
 weewx.units.obs_group_dict['rainOptical'] = 'group_rain'
+weewx.units.obs_group_dict['rainManual'] = 'group_rain'
 weewx.units.obs_group_dict['IsRainingOptical'] = 'group_binary'
 weewx.units.obs_group_dict['UVindex'] = 'group_uv'
 weewx.units.obs_group_dict['OpticalRelativeLUX'] = 'group_relative_light'
 weewx.units.obs_group_dict['IRRelativeLUX'] = 'group_relative_light'
 weewx.units.obs_group_dict['LightningStrikes'] = 'group_count'
-weewx.units.obs_group_dict['LightningMeanDistance'] = 'group_distance'
+weewx.units.obs_group_dict['LightningDistance'] = 'group_distance'
 
 
 
