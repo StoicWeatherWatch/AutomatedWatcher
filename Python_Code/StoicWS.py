@@ -490,7 +490,7 @@ class StoicWatcher(object):
         loginf("key_parse_7T_FARSTemp temp %f" % Temp)
             
         data = dict()
-        data["outTemp"] = Temp
+        data["TempFARS"] = Temp
         
         return data      
     
@@ -761,7 +761,7 @@ class StoicWatcher(object):
         
         data = dict()
         data["extraTempFARS"] = Temperature
-        #data["pressureFARS"] = Pressure # FARS is causing issues
+        data["pressureFARS"] = Pressure # FARS is causing issues
         data["HumidityFARS"] = Humidity
         return data
     
@@ -836,7 +836,7 @@ class StoicWatcher(object):
             Rain = self.sensor_parse_TippingBuckedt_Rain(LineIn[posStartCurrent+1:posEndCurrent+1],LineIn[posStartLast+1:posEndLast])
             
             data = dict()
-            data["rain"] = Rain
+            data["rainSmallTip"] = Rain
             
         except:
             loginf("RAIN LOST Total failure in rain. Rain data may have been lost., LineIn: %s" %LineIn)
@@ -1231,9 +1231,92 @@ class StoicWatcher(object):
         loginf("sensor_parse_AS3935_Lightning Distance %d" %Distance)
         
         data = dict()
-        data["lightningDistance"] = Distance
+        data["LightningDistance"] = Distance
         
         return data
+    
+    def sensor_parse_ChipCap2_Temp(self, DataHex):
+        """
+        Parse the two hex bytes output from a ChipCap2 tempriture sensor.
+        Returns tempriture C
+        
+        (Temp_High [7:0] x 64 + Temp_Low [7:2]/ 4)/ 214 x 165 - 40
+        """
+        DataRaw = int(DataHex,16)
+        
+        # Bottom Two bits are garbage
+        DataRaw = DataRaw & int("FFFC",16)
+        
+        Temp = ((DataRaw >> 8) * 64) + ((DataRaw & int("FC",16)) >> 2)
+        Temp = Temp / 214
+        Temp = Temp * 165
+        Temp = Temp - 40
+
+        return Temp
+    
+    def sensor_parse_ChipCap2_Humid(self, DataHex):
+        """
+        Parse the two hex bytes output from an ChipCap2 TH sensor.
+        Returns RH
+        
+        (RH_High [5:0] x 256 + RH_Low [7:0])/ 214 x 100
+        """
+        DataRaw = int(DataHex,16)
+        
+        # Top two bits are garbage
+        DataRaw = DataRaw & int("3FFF",16)
+        
+        RelativeHumidity = ((DataRaw >> 8) * 256) + (DataRaw & int("FF",16))
+        RelativeHumidity = RelativeHumidity / 214
+        RelativeHumidity = RelativeHumidity * 100
+            
+        return RelativeHumidity
+    
+    
+    
+     def temp_Hu_8TH_line_validation(self, LineIn):
+        
+        pos = LineIn.find(",")
+        
+        if LineIn.find("^") == -1:
+            posEnd = LineIn.find(";")
+        else:
+            posEnd = LineIn.find("^")
+        
+        if (posEnd - pos) != 9:
+            logdbg("StoicWS temp_Hu_8TH_line_validation data not correct length")
+            return False
+        
+        return True
+    
+    def key_parse_8TH(self, LineIn):
+        """
+        *8TH,16C05D98; 
+        Handles the tempreture and humidity sensor in the PRS
+        ChipCap2 type sensor
+        """
+        
+        if not temp_Hu_8TH_line_validation(LineIn):
+            return NONE
+        
+        pos = LineIn.find(",")
+        
+        if LineIn.find("^") == -1:
+            posEnd = LineIn.find(";")
+        else:
+            posEnd = LineIn.find("^")
+            
+        Temperature = self.sensor_parse_ChipCap2_Temp(LineIn[pos+1:pos+1+4])
+        
+            
+        Humidity = self.sensor_parse_ChipCap2_Humid(LineIn[pos+1+4+1:posEnd])
+        
+        data = dict()
+        data["TempPRS"] = Temperature
+        #data["pressureFARS"] = Pressure # FARS is causing issues
+        data["HumidityPRS"] = Humidity
+        return data
+            
         
         
     
@@ -1268,8 +1351,13 @@ class StoicWatcher(object):
             elif LineIn[1:pos] == "11EM":
                return self.key_parse_11EM_Lightning(LineIn)
             else:
-            # TODO fix this
-                return None
+                try:
+                    return getattr(self, 'key_parse_' + LineIn[1:pos])(LineIn)
+                except (AttributeError), e:
+                    loginf("AttributeError - parse_raw_data - Cannot find function to handle, LineIn: %s" %LineIn)
+                    logerr("AttributeError - parse_raw_data - Cannot find function to handle, LineIn: %s" %LineIn)
+                    loginf(traceback.format_exc())
+                    return None
         except (ValueError), e:
             loginf("ValueError - parse_raw_data - Failed to get a proper hex number?, LineIn: %s" %LineIn)
             logerr("ValueError - parse_raw_data - Failed to get a proper hex number?, LineIn: %s" %LineIn)
