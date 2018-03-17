@@ -46,6 +46,10 @@ SW_Wind_Gust WG6_WindGust_Multiple = SW_Wind_Gust((byte)MCP23018_W6_ADDRESS, I2C
 
 SW_MCP9808_Sensor T7_FARS_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T7_ADDRESS,I2CBus,(byte)MCP9808_T7_FARSTEMP_SNUM);
 
+SW_MLX90614_Sensor T29_IRSoil_Sensor = SW_MLX90614_Sensor((byte)MLX90614_T29_ADDRESS,I2CBus,(byte)MLX90614_T29_IRTEMP_SNUM);
+
+SW_ChipCap2_Sensor TH8_PRS_Sensor = SW_ChipCap2_Sensor((byte)CHIPCAP2_TH8_ADDRESS,I2CBus,(byte)CHIPCAP2_TH8_PRSTH_SNUM);
+
 SW_SI1133_Sensor EM10_UV_Opt_Sensor = SW_SI1133_Sensor((byte)SI1133_EM10_ADDRESS, I2CBus, (byte)SI1133_EM10_UVOPT_SUNM);
 
 
@@ -56,6 +60,13 @@ SW_DS24828_1W_Sensor T20_1Wire_Temp_Sensor = SW_DS24828_1W_Sensor((byte)DS24828_
 
 void setup()
 {
+	I2CBus.begin();
+	I2CBus.setSpeed(0);
+	I2CBus.timeOut(5000);
+
+	//There is a 10 ms time limit to start this so it must be done early.
+	TH8_PRS_Sensor.InitializeSensor();
+
 
 	// TODO consider 7 data bits (all you need for ASSCI...) https://www.arduino.cc/reference/en/language/functions/communication/serial/begin/
 	Serial.begin(SERIAL_BAUDRATE);
@@ -71,11 +82,9 @@ void setup()
 	delay(5);
 
 
-	I2CBus.begin();
-	I2CBus.setSpeed(0);
-	I2CBus.timeOut(5000);
 
-	I2CBus.scan();
+
+	//I2CBus.scan();
 
 	TPH3_FARS_Sensor.InitializeSensor();
 
@@ -99,6 +108,10 @@ void setup()
 	T20_1Wire_Temp_Sensor.InitializeSensor();
 	//Not Yet
 	//EM11_Lightning_Sensor.InitializeSensor();
+
+	T29_IRSoil_Sensor.InitializeSensor();
+
+	TH8_PRS_Sensor.ReportInitialization();
 
 	// Master Reset
 	Serial.println(F("# Master Reset;"));
@@ -142,6 +155,8 @@ void loop()
 
 
 
+
+
 	if(SW_CK_InterruptOccurred())
 	{
 
@@ -176,6 +191,8 @@ void loop()
 			TPH3_FARS_Sensor.AcquireData();
 			T7_FARS_Sensor.AcquireData();
 
+			TH8_PRS_Sensor.SendMeasurmentRequest();
+
 
 
 			// 1
@@ -187,6 +204,8 @@ void loop()
 			// 2
 			TPH3_FARS_Sensor.RetrieveDataAndSend();
 			T7_FARS_Sensor.SendRawDataSerial();
+
+			TH8_PRS_Sensor.PerformDataFetch();
 
 
 			break;
@@ -233,6 +252,12 @@ void loop()
 			break;
 		case 5 :
 			// 5 Early
+
+
+
+			T29_IRSoil_Sensor.GetTO1DataAndSend();
+
+
 
 
 			// 5
