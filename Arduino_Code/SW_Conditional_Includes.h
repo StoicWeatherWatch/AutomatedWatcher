@@ -31,6 +31,7 @@
 #include "SW_AS3935_Lightning_Sensor.h"
 #include "SW_ChipCap2_Sensor.h"
 #include "SW_MLX90614_Sensor.h"
+#include "SW_BMP280_Sensor.h"
 
 #include "SW_Ard_Readout.h"
 #include "SW_Rain_Readout.h"
@@ -56,6 +57,7 @@
 #define AS3935_EM11_ADDRESS     0x03
 #define MLX90614_T29_ADDRESS    0x5A
 #define CHIPCAP2_TH8_ADDRESS    0x28
+#define BMP280_TP9_ADDRESS      0x76
 
 
 // Sensor Numbers
@@ -66,6 +68,7 @@
 #define DAVISANNA_WS6_WIND_SPEED_SUNM 	6
 #define MCP9808_T7_FARSTEMP_SNUM 		7
 #define CHIPCAP2_TH8_PRSTH_SNUM 		    8
+#define BMP280_TP9_PRSTP_SNUM            9
 #define SI1133_EM10_UVOPT_SUNM          10
 #define AS3935_EM11_LIGHTNING_SNUM      11
 #define DS24828_1W_T20_SNUM             20

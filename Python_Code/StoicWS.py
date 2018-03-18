@@ -239,6 +239,31 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         sign = -1 if (long(stn_dict.get("cal-BME280-1.1.6"),16) >> 7 == 1) else 1
         stoic_Cal_dict["BME280_1_CAL_H6"] = long(sign) * (long(stn_dict.get("cal-BME280-1.1.6"),16) & 0b01111111)
         
+        # BMP280 in PRS
+        stoic_Cal_dict["BMP280_2_CAL_T1"] = BoschHEXHEX2UnsignedLong(stn_dict.get("cal-BMP280-2.2.1"),stn_dict.get("cal-BMP280-2.2.0"))
+        #  Data sheet T2 signed 
+        stoic_Cal_dict["BMP280_2_CAL_T2"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.3"),stn_dict.get("cal-BMP280-2.2.2"))
+        #  Data sheet T3 Signed
+        stoic_Cal_dict["BMP280_2_CAL_T3"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.5"),stn_dict.get("cal-BMP280-2.2.4"))
+        #  Data sheet P1 Unsigned
+        stoic_Cal_dict["BMP280_2_CAL_P1"] = BoschHEXHEX2UnsignedLong(stn_dict.get("cal-BMP280-2.2.7"),stn_dict.get("cal-BMP280-2.2.6"))
+        #  Data sheet P2 signed
+        stoic_Cal_dict["BMP280_2_CAL_P2"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.9"),stn_dict.get("cal-BMP280-2.2.8"))
+        #  Data sheet P3 signed
+        stoic_Cal_dict["BMP280_2_CAL_P3"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.11"),stn_dict.get("cal-BMP280-2.2.10"))
+        #  Data sheet P4 signed
+        stoic_Cal_dict["BMP280_2_CAL_P4"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.13"),stn_dict.get("cal-BMP280-2.2.12"))
+        #  Data sheet P5 signed
+        stoic_Cal_dict["BMP280_2_CAL_P5"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.15"),stn_dict.get("cal-BMP280-2.2.14"))
+        #  Data sheet P6 signed
+        stoic_Cal_dict["BMP280_2_CAL_P6"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.17"),stn_dict.get("cal-BMP280-2.2.16"))
+        #  Data sheet P7 signed
+        stoic_Cal_dict["BMP280_2_CAL_P7"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.19"),stn_dict.get("cal-BMP280-2.2.18"))
+        #  Data sheet P8 signed 
+        stoic_Cal_dict["BMP280_2_CAL_P8"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.21"),stn_dict.get("cal-BMP280-2.2.20"))
+        #  Data sheet P9 signed
+        stoic_Cal_dict["BMP280_2_CAL_P9"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.23"),stn_dict.get("cal-BMP280-2.2.22"))
+        
         stoic_Cal_dict["Temp1W-schema-0"] = stn_dict.get('Temp1W-schema-0')
         stoic_Cal_dict["Temp1W-schema-1"] = stn_dict.get('Temp1W-schema-1')
         stoic_Cal_dict["Temp1W-schema-2"] = stn_dict.get('Temp1W-schema-2')
@@ -765,7 +790,70 @@ class StoicWatcher(object):
         data["HumidityFARS"] = Humidity
         return data
     
-    def sensor_parse_TippingBuckedt_Rain(self,DataHexCurrent,DataHexLast):
+    def BMP280_line_validation(self,LineIn):
+        """
+        *9TP,PPPPPP,TTTTTT,^;
+        *9TP,5EC2E0,7E40D0,^;
+        
+        For now simply test for all zeros
+        
+        """
+        
+        if LineIn.find("*9TP,000000,000000") != -1:
+            loginf("BMP280_line_validation failed: %s" %LineIn)
+            return False
+
+        return True
+    
+    def key_parse_9TP(self,LineIn):
+        """
+        Data from BMP280 in PRS
+        Line in follows 
+        *9TP,PPPPPP,TTTTTT,^(Check bits may go here some day);
+        *9TP,5EC2E0,7E40D0,^;
+        """
+        
+        BMP280ID = "BMP280_2"
+        
+        if not self.BMP280_line_validation(LineIn):
+            return None
+        
+        
+        # Pressure
+        PposStart = LineIn.find(",")
+        PposEnd = PposStart + LineIn[PposStart+1:].find(",")
+            
+        # Temperature
+        TposStart = PposEnd+1
+        TposEnd = TposStart + LineIn[TposStart+1:].find(",")
+        
+        
+        # Check sums are inserted as ,^cksum; otherwise data ends with ;
+        if(LineIn.find("^") == -1):
+            HposEnd = HposStart + LineIn[HposStart+1:].find(";")
+        else:
+            HposEnd = HposStart + LineIn[HposStart+1:].find(",")
+            
+        TFine = self.sensor_parse_BME280_TFine(LineIn[TposStart+1:TposEnd+1],BMP280ID)
+        
+        if(TFine == None):
+            data = dict()
+            data["pressurePRS"] = None
+            return data
+        
+        Temperature = self.sensor_parse_BME280_Temperature(TFine)
+        
+        Pressure = self.sensor_parse_BME280_Pressure(LineIn[PposStart+1:PposEnd+1],BMP280ID, TFine)
+        
+        loginf("9TP Temprature: %f" %Temperature)
+        
+        data = dict()
+        data["pressurePRS"] = Pressure 
+        return data
+        
+        
+    
+    def sensor_parse_TippingBucket_Rain(self,DataHexCurrent,DataHexLast):
         """
         Handles output from a tipping bucket rain gauge. Output is the difference between 
         current reat and last read.
@@ -833,7 +921,7 @@ class StoicWatcher(object):
         # TODO raise exception if first 4 bits are not 0000
         # TODO reduce to half byte printed?
         
-            Rain = self.sensor_parse_TippingBuckedt_Rain(LineIn[posStartCurrent+1:posEndCurrent+1],LineIn[posStartLast+1:posEndLast])
+            Rain = self.sensor_parse_TippingBucket_Rain(LineIn[posStartCurrent+1:posEndCurrent+1],LineIn[posStartLast+1:posEndLast])
             
             data = dict()
             data["rainSmallTip"] = Rain
