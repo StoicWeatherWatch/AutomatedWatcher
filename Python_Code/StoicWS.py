@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.1.6
+# Version 0.1.7
 # 2018-03-17
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
@@ -99,7 +99,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.1.6'
+DRIVER_VERSION = '0.1.7'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -168,6 +168,8 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         stoic_Cal_dict["serial_port_default"] = stn_dict.get('serial_port_default')
         stoic_Cal_dict["serial_port_Prefix"] = stn_dict.get('serial_port_Prefix')
         stoic_Cal_dict["serial_port_Lowest"] = int(stn_dict.get('serial_port_Lowest'))
+        
+        stoic_Cal_dict["round_values_down_to"] = int(stn_dict.get('round_values_down_to'))
         
         # Rain
         stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip'))
@@ -415,6 +417,10 @@ class StoicWatcher(object):
             
         return LineIn
     
+    def trim_Data_Reasonable_Places(self,valueIn):
+        return round(valueIn, self.stoic_Cal_dict["round_values_down_to"])
+        
+    
     def result_check_temp(self,Temperature):
         """
         Sets limits on Temperature. C is assumed
@@ -479,6 +485,8 @@ class StoicWatcher(object):
         Temp = self.sensor_parse_MCP9808_Temp(LineIn[posStart+1:posEnd])
         
         loginf("key_parse_2T_BoxTemp temp %f" % Temp)
+        
+        Temp = self.trim_Data_Reasonable_Places(Temp)
             
         data = dict()
         data["extraTempBox"] = Temp
@@ -511,6 +519,8 @@ class StoicWatcher(object):
             # TODO never tested with ^ 
         
         Temp = self.sensor_parse_MCP9808_Temp(LineIn[posStart+1:posEnd])
+        
+        Temp = self.trim_Data_Reasonable_Places(Temp)
         
         loginf("key_parse_7T_FARSTemp temp %f" % Temp)
             
@@ -784,6 +794,10 @@ class StoicWatcher(object):
             
         Humidity = self.sensor_parse_BME280_Humidity(LineIn[HposStart+1:HposEnd+1],BME280ID, TFine)
         
+        Temperature = self.trim_Data_Reasonable_Places(Temperature)
+        Pressure = self.trim_Data_Reasonable_Places(Pressure)
+        Humidity = self.trim_Data_Reasonable_Places(Humidity)
+        
         data = dict()
         data["extraTempFARS"] = Temperature
         data["pressureFARS"] = Pressure # FARS is causing issues
@@ -844,6 +858,9 @@ class StoicWatcher(object):
         Temperature = self.sensor_parse_BME280_Temperature(TFine)
         
         Pressure = self.sensor_parse_BME280_Pressure(LineIn[PposStart+1:PposEnd+1],BMP280ID, TFine)
+        
+        Temperature = self.trim_Data_Reasonable_Places(Temperature)
+        Pressure = self.trim_Data_Reasonable_Places(Pressure)
         
         loginf("9TP Temprature: %f" %Temperature)
         
@@ -957,6 +974,7 @@ class StoicWatcher(object):
             
         WindDirectionDeg = (float(WindADCRaw) - self.stoic_Cal_dict[Offset]) / self.stoic_Cal_dict[slope]
         
+        
         #loginf("sensor_parse_wind_direction_from_ADC WindADCRaw Model WindDirectionDeg %d %s, %f" % (WindADCRaw, Model, WindDirectionDeg))
         
         return WindDirectionDeg
@@ -973,6 +991,7 @@ class StoicWatcher(object):
         
         
         WindDirection = self.sensor_parse_wind_direction_from_ADC(DirectionRaw)
+        
        
         
         return WindDirection
@@ -987,6 +1006,7 @@ class StoicWatcher(object):
         GustSpeedRaw = int(LineIn_6WGS,16)
         
         GustSpeed = float(GustSpeedRaw) * self.stoic_Cal_dict["wind_mps_per_click_per_2_25_s"]
+        
         
         return GustSpeed
         
@@ -1041,6 +1061,8 @@ class StoicWatcher(object):
             loginf("GustDirection is a tad off %f" % GustDirection)
         
         
+        GustDirection = self.trim_Data_Reasonable_Places(GustDirection)
+        GustSpeed = self.trim_Data_Reasonable_Places(GustSpeed)
         
         data = dict()
         data["windGustDir"] = GustDirection
@@ -1177,6 +1199,9 @@ class StoicWatcher(object):
             MeanDirection = 360
         if MeanSpeed == 0:
             MeanDirection = 0
+            
+        MeanDirection = self.trim_Data_Reasonable_Places(MeanDirection)
+        MeanSpeed = self.trim_Data_Reasonable_Places(MeanSpeed)
         
         
         
@@ -1259,6 +1284,8 @@ class StoicWatcher(object):
 
         if not result_check_temp(Temp):
             return NONE
+        
+        Temp = self.trim_Data_Reasonable_Places(Temp)
         
         
         data = dict()
@@ -1399,9 +1426,11 @@ class StoicWatcher(object):
             
         Humidity = self.sensor_parse_ChipCap2_Humid(LineIn[pos+1+4+1:posEnd])
         
+        Temperature = self.trim_Data_Reasonable_Places(Temperature)
+        Humidity = self.trim_Data_Reasonable_Places(Humidity)
+        
         data = dict()
         data["TempPRS"] = Temperature
-        #data["pressureFARS"] = Pressure # FARS is causing issues
         data["HumidityPRS"] = Humidity
         return data
             

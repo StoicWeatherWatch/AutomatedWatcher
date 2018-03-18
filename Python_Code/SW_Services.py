@@ -154,7 +154,7 @@ class SW_Calculate(WXCalculate):
         
                 if (data.get('rain') == None) or ('rain' not in data):
                     if self.SourceDest_dict['CopySources'].get('rainRate') is not None:
-                        data['rain'] = data[self.SourceDest_dict['CopySources'].get('rainRate')] 
+                        self.calc_rain(data, data_type)
                 else:
                     syslog.syslog(syslog.LOG_INFO, "SW_Calculate: self.SourceDest_dict['CopySources'].get('rainRate') is None - ERROR")
                 
@@ -178,6 +178,8 @@ class SW_Calculate(WXCalculate):
         if self.SourceDest_dict['CopySources'].get('outTemp') is not None:
             if self.SourceDest_dict['CopySources'].get('outTemp') in data:
                 data['outTemp'] = data[self.SourceDest_dict['CopySources'].get('outTemp')]
+                syslog.syslog(syslog.LOG_INFO, "SW_Calculate: calc_outTemp %s %f %f" %(self.SourceDest_dict['CopySources'].get('outTemp'),data[self.SourceDest_dict['CopySources'].get('outTemp')],data['outTemp']))
+        
     
     def calc_inTemp(self, data, data_type):
         if self.SourceDest_dict['CopySources'].get('inTemp') is not None:
@@ -187,11 +189,13 @@ class SW_Calculate(WXCalculate):
     def calc_outHumidity(self, data, data_type):
         if self.SourceDest_dict['CopySources'].get('outHumidity') is not None:
             if self.SourceDest_dict['CopySources'].get('outHumidity') in data:
-                data['outTemp'] = data[self.SourceDest_dict['CopySources'].get('outHumidity')]
+                data['outHumidity'] = data[self.SourceDest_dict['CopySources'].get('outHumidity')]
+                
 
     def calc_rain(self, data, data_type):
-        if self.SourceDest_dict['CopySources'].get('rain') is not None:
-            if self.SourceDest_dict['CopySources'].get('rain') in data:
-                data['outTemp'] = data[self.SourceDest_dict['CopySources'].get('rain')]
+        if data.get('rain') is not None:
+            if self.SourceDest_dict['CopySources'].get('rain') is not None:
+                if self.SourceDest_dict['CopySources'].get('rain') in data:
+                    data['rain'] = data[self.SourceDest_dict['CopySources'].get('rain')]
 
         
