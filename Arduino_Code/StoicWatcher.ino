@@ -51,8 +51,8 @@ SW_MLX90614_Sensor T29_IRSoil_Sensor = SW_MLX90614_Sensor((byte)MLX90614_T29_ADD
 SW_ChipCap2_Sensor TH8_PRS_Sensor = SW_ChipCap2_Sensor((byte)CHIPCAP2_TH8_ADDRESS,I2CBus,(byte)CHIPCAP2_TH8_PRSTH_SNUM);
 
 SW_BMP280_Sensor TP9_PRS_Sensor = SW_BMP280_Sensor((byte)BMP280_TP9_ADDRESS,I2CBus,(byte)BMP280_TP9_PRSTP_SNUM);
-
-SW_SI1133_Sensor EM10_UV_Opt_Sensor = SW_SI1133_Sensor((byte)SI1133_EM10_ADDRESS, I2CBus, (byte)SI1133_EM10_UVOPT_SUNM);
+//Not Yet
+//SW_SI1133_Sensor EM10_UV_Opt_Sensor = SW_SI1133_Sensor((byte)SI1133_EM10_ADDRESS, I2CBus, (byte)SI1133_EM10_UVOPT_SUNM);
 
 SW_DS24828_1W_Sensor T20_1Wire_Temp_Sensor = SW_DS24828_1W_Sensor((byte)DS24828_1W_T20_ADDRESS, I2CBus, (byte)DS24828_1W_T20_SNUM);
 //Not Yet
@@ -96,8 +96,8 @@ void setup()
 	// TODO Need to reset the wind speed counter on startup (hardware)
 	W6_WindSpeed_Mean_Sensor.InitializeSensor();
 	*/
-
-	EM10_UV_Opt_Sensor.InitializeSensor();
+//Not yet
+	//EM10_UV_Opt_Sensor.InitializeSensor();
 
 	// Done above
 	//WG6_WindGust_Multiple.InitializeSensor();
