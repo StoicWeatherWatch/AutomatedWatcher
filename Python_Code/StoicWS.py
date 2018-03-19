@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.1.8
+# Version 0.1.9
 # 2018-03-17
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
@@ -99,7 +99,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.1.7'
+DRIVER_VERSION = '0.1.9'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
