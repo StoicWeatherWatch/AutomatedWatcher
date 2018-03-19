@@ -6,6 +6,8 @@ Used to subcalss and override certain services.
 WXCalculate in wxservices.py is overridden to add support for derived values in SW_Schema
 StdWXCalculate is overriden to support the above
 
+WXCalculate converts everything to US units. Bewear 
+
 """
 
 # TODO things that the super class calculates have been left out of the new schema. Does this cause errors?
