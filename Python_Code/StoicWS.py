@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.1.7
+# Version 0.1.8
 # 2018-03-17
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
@@ -345,6 +345,19 @@ class StoicWatcher(object):
     
     DEFAULT_PORT = "/dev/ttyACM0"
     DEFAULT_BAUDRATE = 9600
+    
+    _ListOfDisabledSensors = ["20T",
+                              "21T",
+                              "22T",
+                              "23T",
+                              "24T",
+                              "25T",
+                              "26T",
+                              "27T",
+                              "28T",
+                              "29T",
+                              "8TH",
+                              "9TP"]
     
     def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial=0):
     #def __init__(self, port, baudrate, debug_serial=0):
@@ -1270,7 +1283,7 @@ class StoicWatcher(object):
         *21T,014D;
         """
         
-        if not temp_1Wire_line_validation(LineIn):
+        if not self.temp_1Wire_line_validation(LineIn):
             return NONE
         
         pos = LineIn.find(",")
@@ -1543,6 +1556,20 @@ class StoicWatcher(object):
             if(LineIn.find(",") == -1):
                 raise weewx.WeeWxIOError("Line lacks seporator , %s" % LineIn)
     
+
+    def check_for_disabled_sensors(self, LineIn):
+        """
+        Checks the current line against _ListOfDisabledSensors
+        False if disabled
+        """
+        pos = LineIn.find(",")
+
+        if LineIn[1:pos] in self._ListOfDisabledSensors:
+            return False
+        else:
+            return True
+        
+    
     
     def get_raw_data_with_retry(self, max_tries=10, maxTrysBeforeCloseAndOpenPort=8, retry_wait=3):
         for ntries in range(0, max_tries):
@@ -1584,6 +1611,10 @@ class StoicWatcher(object):
                 loginf('StoicWS: %s' % LineIn)
             #else:
                 # Not a valid line, validate_string should eleminate these but simply ignored here
+                
+            if not self.check_for_disabled_sensors(LineIn):
+                loginf('StoicWS Sensor Diaabled: %s' % LineIn)
+                DataLine = False
         
         ParsedData = self.parse_raw_data(LineIn)
         
