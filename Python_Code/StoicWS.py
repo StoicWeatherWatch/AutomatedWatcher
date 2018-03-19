@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.1.3
-# 2018-02-16
+# Version 0.1.8
+# 2018-03-17
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -32,6 +32,7 @@ Supported Keys:                                    Mapped DB name
 6WGS wind speed gust. Reported as current, min, max. From 54 records. At 2.25 seconds 121.5 seconds
       6WGS and 5WGD are expected on the same line. 
 7T fars temp sensor                                outTemp
+2XT 1 Wire Temp Sensors  x {0..7}
 
 
 Alert format
@@ -52,6 +53,9 @@ rain_mm_Per_Tip - Tipping bucket conversion factor 0.2794
 STOIC Stoic Thing Observes Information on Climate 
 
 """
+
+# Schema to add 
+# lightningDistance INTEGER
 
 
 # TODO First readout after !Startup; is not reported. Used as baseline for wind etc.
@@ -76,6 +80,9 @@ STOIC Stoic Thing Observes Information on Climate
 
 # TODO crashes on disconnect of I2C sensor both the CHIP and probabily the arduino
 
+# TODO trim digits to save less in DB file - no need for meaningless sigfigs
+# TODO 85 C is the reset value for DS18B20. This value should be ignored. 0x0550
+
 
 # TODO DO I need this? Python 2.7 should have with_statement
 from __future__ import with_statement
@@ -92,7 +99,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.1.2'
+DRIVER_VERSION = '0.1.7'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -162,6 +169,8 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         stoic_Cal_dict["serial_port_Prefix"] = stn_dict.get('serial_port_Prefix')
         stoic_Cal_dict["serial_port_Lowest"] = int(stn_dict.get('serial_port_Lowest'))
         
+        stoic_Cal_dict["round_values_down_to"] = int(stn_dict.get('round_values_down_to'))
+        
         # Rain
         stoic_Cal_dict["rain_mm_Per_Tip"] = float(stn_dict.get('rain_mm_Per_Tip'))
         
@@ -187,13 +196,8 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         stoic_Cal_dict["wind_direction_number_of_bins"] = int(stn_dict.get('wind_direction_number_of_bins'))
         stoic_Cal_dict["wind_direction_half_bin_size"] = int(stn_dict.get('wind_direction_half_bin_size'))
         stoic_Cal_dict["wind_direction_max_ADC"] = int(stn_dict.get('wind_direction_max_ADC'))
-        
 
-        
 
-        
-
-        
         stoic_Cal_dict["BME280_1_CAL_T1"] = BoschHEXHEX2UnsignedLong(stn_dict.get("cal-BME280-1.2.1"),stn_dict.get("cal-BME280-1.2.0"))
 
         #  Data sheet T2 signed 
@@ -236,6 +240,40 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         #  Data sheet H6 signed byte E7
         sign = -1 if (long(stn_dict.get("cal-BME280-1.1.6"),16) >> 7 == 1) else 1
         stoic_Cal_dict["BME280_1_CAL_H6"] = long(sign) * (long(stn_dict.get("cal-BME280-1.1.6"),16) & 0b01111111)
+        
+        # BMP280 in PRS
+        stoic_Cal_dict["BMP280_2_CAL_T1"] = BoschHEXHEX2UnsignedLong(stn_dict.get("cal-BMP280-2.2.1"),stn_dict.get("cal-BMP280-2.2.0"))
+        #  Data sheet T2 signed 
+        stoic_Cal_dict["BMP280_2_CAL_T2"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.3"),stn_dict.get("cal-BMP280-2.2.2"))
+        #  Data sheet T3 Signed
+        stoic_Cal_dict["BMP280_2_CAL_T3"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.5"),stn_dict.get("cal-BMP280-2.2.4"))
+        #  Data sheet P1 Unsigned
+        stoic_Cal_dict["BMP280_2_CAL_P1"] = BoschHEXHEX2UnsignedLong(stn_dict.get("cal-BMP280-2.2.7"),stn_dict.get("cal-BMP280-2.2.6"))
+        #  Data sheet P2 signed
+        stoic_Cal_dict["BMP280_2_CAL_P2"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.9"),stn_dict.get("cal-BMP280-2.2.8"))
+        #  Data sheet P3 signed
+        stoic_Cal_dict["BMP280_2_CAL_P3"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.11"),stn_dict.get("cal-BMP280-2.2.10"))
+        #  Data sheet P4 signed
+        stoic_Cal_dict["BMP280_2_CAL_P4"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.13"),stn_dict.get("cal-BMP280-2.2.12"))
+        #  Data sheet P5 signed
+        stoic_Cal_dict["BMP280_2_CAL_P5"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.15"),stn_dict.get("cal-BMP280-2.2.14"))
+        #  Data sheet P6 signed
+        stoic_Cal_dict["BMP280_2_CAL_P6"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.17"),stn_dict.get("cal-BMP280-2.2.16"))
+        #  Data sheet P7 signed
+        stoic_Cal_dict["BMP280_2_CAL_P7"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.19"),stn_dict.get("cal-BMP280-2.2.18"))
+        #  Data sheet P8 signed 
+        stoic_Cal_dict["BMP280_2_CAL_P8"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.21"),stn_dict.get("cal-BMP280-2.2.20"))
+        #  Data sheet P9 signed
+        stoic_Cal_dict["BMP280_2_CAL_P9"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BMP280-2.2.23"),stn_dict.get("cal-BMP280-2.2.22"))
+        
+        stoic_Cal_dict["Temp1W-schema-0"] = stn_dict.get('Temp1W-schema-0')
+        stoic_Cal_dict["Temp1W-schema-1"] = stn_dict.get('Temp1W-schema-1')
+        stoic_Cal_dict["Temp1W-schema-2"] = stn_dict.get('Temp1W-schema-2')
+        stoic_Cal_dict["Temp1W-schema-3"] = stn_dict.get('Temp1W-schema-3')
+        stoic_Cal_dict["Temp1W-schema-4"] = stn_dict.get('Temp1W-schema-4')
+        stoic_Cal_dict["Temp1W-schema-5"] = stn_dict.get('Temp1W-schema-5')
+        stoic_Cal_dict["Temp1W-schema-6"] = stn_dict.get('Temp1W-schema-6')
+        stoic_Cal_dict["Temp1W-schema-7"] = stn_dict.get('Temp1W-schema-7')
  
 
         
@@ -308,6 +346,19 @@ class StoicWatcher(object):
     DEFAULT_PORT = "/dev/ttyACM0"
     DEFAULT_BAUDRATE = 9600
     
+    _ListOfDisabledSensors = ["20T",
+                              "21T",
+                              "22T",
+                              "23T",
+                              "24T",
+                              "25T",
+                              "26T",
+                              "27T",
+                              "28T",
+                              "29T",
+                              "8TH",
+                              "9TP"]
+    
     def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial=0):
     #def __init__(self, port, baudrate, debug_serial=0):
         self._debug_serial = debug_serial
@@ -379,6 +430,24 @@ class StoicWatcher(object):
             
         return LineIn
     
+    def trim_Data_Reasonable_Places(self,valueIn):
+        return round(valueIn, self.stoic_Cal_dict["round_values_down_to"])
+        
+    
+    def result_check_temp(self,Temperature):
+        """
+        Sets limits on Temperature. C is assumed
+        
+        This should not be used on diagnostic sensors in boxes and containers since it may kill real values.
+        """
+        
+        if Temperature > 50:
+            return False
+        if Temperature < -25:
+            return False
+        
+        return True
+    
     def sensor_parse_MCP9808_Temp(self, DataHex):
         """
         Parse the two hex bytes output from an MCP9808 tempriture sensor.
@@ -396,7 +465,7 @@ class StoicWatcher(object):
             Temp = float(DataRaw & int("0FFF",16)) * (2**-4)
             
         else: # 1 and thus negative
-            Temp = 256.0 - (float(DataRaw & int("0FFF",16)) * (2**-4))
+            Temp = (float(DataRaw & int("0FFF",16)) * (2**-4)) - 256.0
             
         return Temp
             
@@ -409,7 +478,7 @@ class StoicWatcher(object):
         Should provide one value in 2 byte HEX eg
         1A5D
         
-        entered as extraTemp1
+        entered as extraTempBox
         Units C
         Sesnor is an MCP9808 on the I2C bus
         Input format *2T,xxxx; or *2T,xxxx,^;  xxxx is two hex bytes read from the sensor.
@@ -429,9 +498,11 @@ class StoicWatcher(object):
         Temp = self.sensor_parse_MCP9808_Temp(LineIn[posStart+1:posEnd])
         
         loginf("key_parse_2T_BoxTemp temp %f" % Temp)
+        
+        Temp = self.trim_Data_Reasonable_Places(Temp)
             
         data = dict()
-        data["extraTemp1"] = Temp
+        data["extraTempBox"] = Temp
         
         return data
     
@@ -462,10 +533,12 @@ class StoicWatcher(object):
         
         Temp = self.sensor_parse_MCP9808_Temp(LineIn[posStart+1:posEnd])
         
+        Temp = self.trim_Data_Reasonable_Places(Temp)
+        
         loginf("key_parse_7T_FARSTemp temp %f" % Temp)
             
         data = dict()
-        data["outTemp"] = Temp
+        data["TempFARS"] = Temp
         
         return data      
     
@@ -723,9 +796,9 @@ class StoicWatcher(object):
         
         if(TFine == None):
             data = dict()
-            data["extraTemp2"] = None
-            data["pressure"] = None
-            data["outHumidity"] = None
+            data["extraTempFARS"] = None
+            data["pressureFARS"] = None
+            data["HumidityFARS"] = None
             return data
         
         Temperature = self.sensor_parse_BME280_Temperature(TFine)
@@ -734,13 +807,83 @@ class StoicWatcher(object):
             
         Humidity = self.sensor_parse_BME280_Humidity(LineIn[HposStart+1:HposEnd+1],BME280ID, TFine)
         
+        Temperature = self.trim_Data_Reasonable_Places(Temperature)
+        Pressure = self.trim_Data_Reasonable_Places(Pressure)
+        Humidity = self.trim_Data_Reasonable_Places(Humidity)
+        
         data = dict()
-        data["extraTemp2"] = Temperature
-        data["pressure"] = Pressure
-        data["outHumidity"] = Humidity
+        data["extraTempFARS"] = Temperature
+        data["pressureFARS"] = Pressure # FARS is causing issues
+        data["HumidityFARS"] = Humidity
         return data
     
-    def sensor_parse_TippingBuckedt_Rain(self,DataHexCurrent,DataHexLast):
+    def BMP280_line_validation(self,LineIn):
+        """
+        *9TP,PPPPPP,TTTTTT,^;
+        *9TP,5EC2E0,7E40D0,^;
+        
+        For now simply test for all zeros
+        
+        """
+        
+        if LineIn.find("*9TP,000000,000000") != -1:
+            loginf("BMP280_line_validation failed: %s" %LineIn)
+            return False
+
+        return True
+    
+    def key_parse_9TP(self,LineIn):
+        """
+        Data from BMP280 in PRS
+        Line in follows 
+        *9TP,PPPPPP,TTTTTT,^(Check bits may go here some day);
+        *9TP,5EC2E0,7E40D0,^;
+        """
+        
+        BMP280ID = "BMP280_2"
+        
+        if not self.BMP280_line_validation(LineIn):
+            return None
+        
+        
+        # Pressure
+        PposStart = LineIn.find(",")
+        PposEnd = PposStart + LineIn[PposStart+1:].find(",")
+            
+        # Temperature
+        TposStart = PposEnd+1
+        TposEnd = TposStart + LineIn[TposStart+1:].find(",")
+        
+        
+        # Check sums are inserted as ,^cksum; otherwise data ends with ;
+        if(LineIn.find("^") == -1):
+            HposEnd = HposStart + LineIn[HposStart+1:].find(";")
+        else:
+            HposEnd = HposStart + LineIn[HposStart+1:].find(",")
+            
+        TFine = self.sensor_parse_BME280_TFine(LineIn[TposStart+1:TposEnd+1],BMP280ID)
+        
+        if(TFine == None):
+            data = dict()
+            data["pressurePRS"] = None
+            return data
+        
+        Temperature = self.sensor_parse_BME280_Temperature(TFine)
+        
+        Pressure = self.sensor_parse_BME280_Pressure(LineIn[PposStart+1:PposEnd+1],BMP280ID, TFine)
+        
+        Temperature = self.trim_Data_Reasonable_Places(Temperature)
+        Pressure = self.trim_Data_Reasonable_Places(Pressure)
+        
+        loginf("9TP Temprature: %f" %Temperature)
+        
+        data = dict()
+        data["pressurePRS"] = Pressure 
+        return data
+        
+        
+    
+    def sensor_parse_TippingBucket_Rain(self,DataHexCurrent,DataHexLast):
         """
         Handles output from a tipping bucket rain gauge. Output is the difference between 
         current reat and last read.
@@ -775,8 +918,6 @@ class StoicWatcher(object):
             return 0.0
         # TODO does this work (float)0
         
-        # TODO FIx this
-        ConversionFactor = 1.0
                  
         Rain = float(CurrentRainRaw-LastRainRaw) * self.stoic_Cal_dict["rain_mm_Per_Tip"]
         
@@ -810,10 +951,10 @@ class StoicWatcher(object):
         # TODO raise exception if first 4 bits are not 0000
         # TODO reduce to half byte printed?
         
-            Rain = self.sensor_parse_TippingBuckedt_Rain(LineIn[posStartCurrent+1:posEndCurrent+1],LineIn[posStartLast+1:posEndLast])
+            Rain = self.sensor_parse_TippingBucket_Rain(LineIn[posStartCurrent+1:posEndCurrent+1],LineIn[posStartLast+1:posEndLast])
             
             data = dict()
-            data["rain"] = Rain
+            data["rainSmallTip"] = Rain
             
         except:
             loginf("RAIN LOST Total failure in rain. Rain data may have been lost., LineIn: %s" %LineIn)
@@ -846,6 +987,7 @@ class StoicWatcher(object):
             
         WindDirectionDeg = (float(WindADCRaw) - self.stoic_Cal_dict[Offset]) / self.stoic_Cal_dict[slope]
         
+        
         #loginf("sensor_parse_wind_direction_from_ADC WindADCRaw Model WindDirectionDeg %d %s, %f" % (WindADCRaw, Model, WindDirectionDeg))
         
         return WindDirectionDeg
@@ -862,6 +1004,7 @@ class StoicWatcher(object):
         
         
         WindDirection = self.sensor_parse_wind_direction_from_ADC(DirectionRaw)
+        
        
         
         return WindDirection
@@ -876,6 +1019,7 @@ class StoicWatcher(object):
         GustSpeedRaw = int(LineIn_6WGS,16)
         
         GustSpeed = float(GustSpeedRaw) * self.stoic_Cal_dict["wind_mps_per_click_per_2_25_s"]
+        
         
         return GustSpeed
         
@@ -930,6 +1074,8 @@ class StoicWatcher(object):
             loginf("GustDirection is a tad off %f" % GustDirection)
         
         
+        GustDirection = self.trim_Data_Reasonable_Places(GustDirection)
+        GustSpeed = self.trim_Data_Reasonable_Places(GustSpeed)
         
         data = dict()
         data["windGustDir"] = GustDirection
@@ -1066,6 +1212,9 @@ class StoicWatcher(object):
             MeanDirection = 360
         if MeanSpeed == 0:
             MeanDirection = 0
+            
+        MeanDirection = self.trim_Data_Reasonable_Places(MeanDirection)
+        MeanSpeed = self.trim_Data_Reasonable_Places(MeanSpeed)
         
         
         
@@ -1079,7 +1228,228 @@ class StoicWatcher(object):
         
         return data
     
+    def sensor_parse_DS18B20_1Wire(self,DataHex):
+        """
+        Handles 1 Wire data from DS18B20. 
+        Data format 014D
+        Bit 15 - 11 inclusive are sign bits
+        Bit 10 2^6
+        Bit  7 2^3
+        Bit  02^-4
+        twos compliment
+        """
         
+        DataRaw = int(DataHex,16)
+        
+        # Check sign
+        if ( (DataRaw >> 12) & int("1",16) ) == 1:
+            # Negative
+            Temp = (float(DataRaw & int("07FF",16)) * (2**-4)) - 128.0
+        else:
+            #positive
+            Temp = float(DataRaw & int("07FF",16)) * (2**-4)
+            
+        return Temp
+            
+        
+    
+    def temp_1Wire_line_validation(self, LineIn):
+        
+        pos = LineIn.find(",")
+        
+        if LineIn[0:2] != "*2":
+            logdbg("StoicWS temp_1Wire_line_validation no *2")
+            return False
+        if LineIn[3:pos] != "T":
+            logdbg("StoicWS temp_1Wire_line_validation no T,")
+            return False
+        
+        if LineIn.find("^") == -1:
+            posEnd = LineIn.find(";")
+        else:
+            posEnd = LineIn.find("^")
+        
+        if (posEnd - pos) != 5:
+            logdbg("StoicWS temp_1Wire_line_validation data not correct length")
+            return False
+        
+        return True
+        
+
+    
+    def key_parse_2xT_1WireTemp(self, LineIn):
+        """
+        Handle the 1 Wire temp sensors 2xT where x = {0...7}
+        *21T,014D;
+        """
+        
+        if not self.temp_1Wire_line_validation(LineIn):
+            return NONE
+        
+        pos = LineIn.find(",")
+        
+        if LineIn.find("^") == -1:
+            posEnd = LineIn.find(";")
+        else:
+            posEnd = LineIn.find("^")
+        
+        Temp = sensor_parse_DS18B20_1Wire(LineIn[pos+1:posEnd])
+
+        if not result_check_temp(Temp):
+            return NONE
+        
+        Temp = self.trim_Data_Reasonable_Places(Temp)
+        
+        
+        data = dict()
+        data[stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]] ] = Temp
+             
+        loginf("key_parse_2xT_1WireTemp LineIn: %s key %s value %f " %(LineIn, stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]], data[stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]] ]))
+        
+        return data
+    
+    def sensor_parse_AS3935_Lightning(self, DataHex):
+        """
+        AS3935 Provides distance in km.
+        Units km
+        """
+        # This is left here as a monument to not being able to do binary
+        # Hex look up table for distance
+        #DistanceLUT = dict()
+        #data["28"] = int(40)
+        #data["25"] = int(37)
+        #data["22"] = int(34)
+        #data["1F"] = int(31)
+        #data["1B"] = int(27)
+        #data["18"] = int(24)
+        #data["14"] = int(20)
+        #data["11"] = int(17)
+        #data["0E"] = int(14)
+        #data["0C"] = int(12)
+        #data["0A"] = int(10)
+        #data["08"] = int(8)
+        #data[""] = int()
+        #data[""] = int()
+        
+        Distance = int(DataHex,16)
+        
+        if DataHex == "3F":
+            loginf("sensor_parse_AS3935_Lightning Out of range")
+            return None
+        if DataHex == "01":
+            loginf("sensor_parse_AS3935_Lightning Directly Overhead")
+            Distance = int(0)
+            
+        return Distance
+        
+        
+        
+    
+    def key_parse_11EM_Lightning(self, LineIn):
+        """
+        Handles the data from an AS3935 lightning detector.
+        *11EM,3F;
+        
+        """
+        pos = LineIn.find(",")
+        posEnd = LineIn.find(";")
+        
+        Distance = sensor_parse_AS3935_Lightning(LineIn[pos+1:posEnd])
+        
+        loginf("sensor_parse_AS3935_Lightning Distance %d" %Distance)
+        
+        data = dict()
+        data["LightningDistance"] = Distance
+        
+        return data
+    
+    def sensor_parse_ChipCap2_Temp(self, DataHex):
+        """
+        Parse the two hex bytes output from a ChipCap2 tempriture sensor.
+        Returns tempriture C
+        
+        (Temp_High [7:0] x 64 + Temp_Low [7:2]/ 4)/ 214 x 165 - 40
+        """
+        DataRaw = int(DataHex,16)
+        
+        # Bottom Two bits are garbage
+        DataRaw = DataRaw & int("FFFC",16)
+        
+        Temp = ((DataRaw >> 8) * 64) + ((DataRaw & int("FC",16)) >> 2)
+        Temp = Temp / 214
+        Temp = Temp * 165
+        Temp = Temp - 40
+
+        return Temp
+    
+    def sensor_parse_ChipCap2_Humid(self, DataHex):
+        """
+        Parse the two hex bytes output from an ChipCap2 TH sensor.
+        Returns RH
+        
+        (RH_High [5:0] x 256 + RH_Low [7:0])/ 214 x 100
+        """
+        DataRaw = int(DataHex,16)
+        
+        # Top two bits are garbage
+        DataRaw = DataRaw & int("3FFF",16)
+        
+        RelativeHumidity = ((DataRaw >> 8) * 256) + (DataRaw & int("FF",16))
+        RelativeHumidity = RelativeHumidity / 214
+        RelativeHumidity = RelativeHumidity * 100
+            
+        return RelativeHumidity
+    
+    
+    
+    def temp_Hu_8TH_line_validation(self, LineIn):
+        
+        pos = LineIn.find(",")
+        
+        if LineIn.find("^") == -1:
+            posEnd = LineIn.find(";")
+        else:
+            posEnd = LineIn.find("^")
+        
+        if (posEnd - pos) != 9:
+            logdbg("StoicWS temp_Hu_8TH_line_validation data not correct length")
+            return False
+        
+        return True
+    
+    def key_parse_8TH(self, LineIn):
+        """
+        *8TH,16C05D98; 
+        Handles the tempreture and humidity sensor in the PRS
+        ChipCap2 type sensor
+        """
+        
+        if not temp_Hu_8TH_line_validation(LineIn):
+            return NONE
+        
+        pos = LineIn.find(",")
+        
+        if LineIn.find("^") == -1:
+            posEnd = LineIn.find(";")
+        else:
+            posEnd = LineIn.find("^")
+            
+        Temperature = self.sensor_parse_ChipCap2_Temp(LineIn[pos+1:pos+1+4])
+        
+            
+        Humidity = self.sensor_parse_ChipCap2_Humid(LineIn[pos+1+4+1:posEnd])
+        
+        Temperature = self.trim_Data_Reasonable_Places(Temperature)
+        Humidity = self.trim_Data_Reasonable_Places(Humidity)
+        
+        data = dict()
+        data["TempPRS"] = Temperature
+        data["HumidityPRS"] = Humidity
+        return data
+            
+        
+        
+    
         
     
     def parse_raw_data(self, LineIn):
@@ -1106,10 +1476,18 @@ class StoicWatcher(object):
             #    return self.key_parse_6WMS_5WMD_wind_mean(LineIn)
             elif LineIn[1:pos] == "7T":
                return self.key_parse_7T_FARSTemp(LineIn)
-
+            elif ( LineIn[1:2] == "2" ) and ( LineIn[3:pos] == "T" ):
+                return self.key_parse_2xT_1WireTemp(LineIn)
+            elif LineIn[1:pos] == "11EM":
+               return self.key_parse_11EM_Lightning(LineIn)
             else:
-            # TODO fix this
-                return None
+                try:
+                    return getattr(self, 'key_parse_' + LineIn[1:pos])(LineIn)
+                except (AttributeError), e:
+                    loginf("AttributeError - parse_raw_data - Cannot find function to handle, LineIn: %s" %LineIn)
+                    logerr("AttributeError - parse_raw_data - Cannot find function to handle, LineIn: %s" %LineIn)
+                    loginf(traceback.format_exc())
+                    return None
         except (ValueError), e:
             loginf("ValueError - parse_raw_data - Failed to get a proper hex number?, LineIn: %s" %LineIn)
             logerr("ValueError - parse_raw_data - Failed to get a proper hex number?, LineIn: %s" %LineIn)
@@ -1178,6 +1556,20 @@ class StoicWatcher(object):
             if(LineIn.find(",") == -1):
                 raise weewx.WeeWxIOError("Line lacks seporator , %s" % LineIn)
     
+
+    def check_for_disabled_sensors(self, LineIn):
+        """
+        Checks the current line against _ListOfDisabledSensors
+        False if disabled
+        """
+        pos = LineIn.find(",")
+
+        if LineIn[1:pos] in self._ListOfDisabledSensors:
+            return False
+        else:
+            return True
+        
+    
     
     def get_raw_data_with_retry(self, max_tries=10, maxTrysBeforeCloseAndOpenPort=8, retry_wait=3):
         for ntries in range(0, max_tries):
@@ -1219,6 +1611,10 @@ class StoicWatcher(object):
                 loginf('StoicWS: %s' % LineIn)
             #else:
                 # Not a valid line, validate_string should eleminate these but simply ignored here
+                
+            if not self.check_for_disabled_sensors(LineIn):
+                loginf('StoicWS Sensor Diaabled: %s' % LineIn)
+                DataLine = False
         
         ParsedData = self.parse_raw_data(LineIn)
         

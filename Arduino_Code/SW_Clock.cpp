@@ -44,21 +44,37 @@ byte SW_CK_CKShortCountTo4 = 0;
 bool SW_CK_EveryFifthSecondNotCalled = false;
 bool SW_CK_EverySecondNotCalled = false;
 
+#ifdef SW_CLOCK_INTERNAL_TIMER_ACTIVE
+
+unsigned long SW_Ck_Internal_Timer_timeLast = 0;
+unsigned long SW_Ck_Internal_Timer_tineNow = 0;
+
+#endif /*SW_CLOCK_INTERNAL_TIMER_ACTIVE*/
+
 
 
 bool SW_CK_ClockSetup()
 {
 	attachInterrupt(digitalPinToInterrupt(SW_CK_CLOCK_PIN), SW_CK_ClockInterrupt,RISING);
 
-	Serial.println("#Clock Interrupt Starting;");
+	Serial.println(F("#Clock Interrupt Starting;"));
 
+#ifndef SW_CLOCK_INTERNAL_TIMER_ACTIVE
 	while(!SW_CK_CKInterrupted)
 	{
 		// Wait for clock. Need to have something here. Empty did not work.
 		delay(100);
 	}
+#endif /*SW_CLOCK_INTERNAL_TIMER_ACTIVE*/
+#ifdef SW_CLOCK_INTERNAL_TIMER_ACTIVE
 
-	Serial.println("#Clock Interrupt Functional;");
+	Serial.println(F("# USING INTERNAL TIMER!!!!!;"));
+
+SW_Ck_Internal_Timer_Initialize();
+
+#endif /*SW_CLOCK_INTERNAL_TIMER_ACTIVE*/
+
+	Serial.println(F("#Clock Interrupt Functional;"));
 	SW_CK_CKInterrupted = false;
 
 	return true;
@@ -159,6 +175,11 @@ bool SW_CK_SendLongCountSerial()
 
 bool SW_CK_InterruptOccurred()
 {
+
+#ifdef SW_CLOCK_INTERNAL_TIMER_ACTIVE
+	return SW_Ck_Internal_Timer_Check_Time();
+#endif /*SW_CLOCK_INTERNAL_TIMER_ACTIVE*/
+
 	return SW_CK_CKInterrupted;
 }
 
@@ -222,4 +243,27 @@ bool SW_CK_EverySecond()
 
 
 }
+
+#ifdef SW_CLOCK_INTERNAL_TIMER_ACTIVE
+
+bool SW_Ck_Internal_Timer_Check_Time()
+{
+	SW_Ck_Internal_Timer_tineNow = millis();
+
+	if((SW_Ck_Internal_Timer_tineNow - SW_Ck_Internal_Timer_timeLast) >= SW_CLOCK_INTERNAL_TIMER_PERIOD)
+	{
+		SW_Ck_Internal_Timer_timeLast = millis();
+		return true;
+	}
+
+	return false;
+
+}
+
+void SW_Ck_Internal_Timer_Initialize()
+{
+	SW_Ck_Internal_Timer_timeLast = millis();
+}
+
+#endif /*SW_CLOCK_INTERNAL_TIMER_ACTIVE*/
 

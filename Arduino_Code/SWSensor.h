@@ -49,9 +49,6 @@ class SW_Sensor
 
 
 
-#ifdef VERIFY_CHIPS
-	virtual bool VerifyChip();
-#endif /*VERIFY_CHIPS*/
 
 
 };

@@ -19,7 +19,7 @@ bool SW_MCP9808_Sensor::InitializeSensor()
 
 	Serial.print(F("#Initializing MCP9808 Sensor "));
 	Serial.print((int)SensorNumber);
-	Serial.println(" ;");
+	Serial.println(F(" ;"));
 
 #ifdef VERIFY_CHIPS
 	if(!VerifyChip())
@@ -56,6 +56,7 @@ bool SW_MCP9808_Sensor::AcquireData()
 
 bool SW_MCP9808_Sensor::SendRawDataSerial()
 {
+	// TODO consider not sending if sensor not detected - result from read. Have not been doing to save RAM.
 	Serial.print(F("*"));
 	Serial.print(SensorNumber,DEC);
 	Serial.print(F("T,"));

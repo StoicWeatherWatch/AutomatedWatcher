@@ -16,9 +16,11 @@
 #endif
 
 
-
 #ifndef SW_CLOCK_H_
 #define SW_CLOCK_H_
+
+//#define SW_CLOCK_INTERNAL_TIMER_ACTIVE
+#define SW_CLOCK_INTERNAL_TIMER_PERIOD 250
 
 #include "SW_Helper_Functions.h"
 
@@ -60,6 +62,13 @@ bool SW_CK_EveryFifthSecond();
 bool SW_CK_EverySecond();
 
 bool SW_CK_SendLongCountSerial();
+
+#ifdef SW_CLOCK_INTERNAL_TIMER_ACTIVE
+
+bool SW_Ck_Internal_Timer_Check_Time();
+void SW_Ck_Internal_Timer_Initialize();
+
+#endif /*SW_CLOCK_INTERNAL_TIMER_ACTIVE*/
 
 
 #endif /* SW_CLOCK_H_ */

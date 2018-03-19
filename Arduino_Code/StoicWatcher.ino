@@ -1,7 +1,7 @@
 /*
 	Stoic Watcher
-	v0.1.3
-	2018-02-16
+	v0.2.0
+	2018-03-18
  */
 
 
@@ -20,6 +20,10 @@
 // TODO Housekeeping, report uptime and chip temperature
 
 // TODO Every five seconds will trigger - thus skip certain slower things when long stuff is running
+
+
+
+
 
 // Get the reset lines right
 
@@ -40,14 +44,30 @@ SW_Wind_Speed_Mean W6_WindSpeed_Mean_Sensor = SW_Wind_Speed_Mean((byte)MCP23018_
 
 SW_Wind_Gust WG6_WindGust_Multiple = SW_Wind_Gust((byte)MCP23018_W6_ADDRESS, I2CBus, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, (byte)DAVISANNA_WS6_WIND_SPEED_SUNM, (byte)WIND_DIR_ADC_A_PIN, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, (byte)DAVISANNA_WD5_WIND_DIR_SUNM);
 
-
 SW_MCP9808_Sensor T7_FARS_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T7_ADDRESS,I2CBus,(byte)MCP9808_T7_FARSTEMP_SNUM);
 
-//SW_SI1133_Sensor EM10_UV_Opt_Sensor = SW_SI1133_Sensor((byte)SI1133_EM10_ADDRESS, I2CBus, (byte)SI1133_EM10_UVOPT_SUNM);
+SW_MLX90614_Sensor T29_IRSoil_Sensor = SW_MLX90614_Sensor((byte)MLX90614_T29_ADDRESS,I2CBus,(byte)MLX90614_T29_IRTEMP_SNUM);
+
+SW_ChipCap2_Sensor TH8_PRS_Sensor = SW_ChipCap2_Sensor((byte)CHIPCAP2_TH8_ADDRESS,I2CBus,(byte)CHIPCAP2_TH8_PRSTH_SNUM);
+
+SW_BMP280_Sensor TP9_PRS_Sensor = SW_BMP280_Sensor((byte)BMP280_TP9_ADDRESS,I2CBus,(byte)BMP280_TP9_PRSTP_SNUM);
+
+SW_SI1133_Sensor EM10_UV_Opt_Sensor = SW_SI1133_Sensor((byte)SI1133_EM10_ADDRESS, I2CBus, (byte)SI1133_EM10_UVOPT_SUNM);
+
+SW_DS24828_1W_Sensor T20_1Wire_Temp_Sensor = SW_DS24828_1W_Sensor((byte)DS24828_1W_T20_ADDRESS, I2CBus, (byte)DS24828_1W_T20_SNUM);
+//Not Yet
+//SW_AS3935_Lightning_Sensor EM11_Lightning_Sensor = SW_AS3935_Lightning_Sensor((byte)AS3935_EM11_ADDRESS, I2CBus, (byte)AS3935_EM11_LIGHTNING_SNUM, (byte)LIGHTNING_IRQ_D_PIN);
 
 
 void setup()
 {
+	I2CBus.begin();
+	I2CBus.setSpeed(0);
+	I2CBus.timeOut(5000);
+
+	//There is a 10 ms time limit to start this so it must be done early.
+	TH8_PRS_Sensor.InitializeSensor();
+
 
 	// TODO consider 7 data bits (all you need for ASSCI...) https://www.arduino.cc/reference/en/language/functions/communication/serial/begin/
 	Serial.begin(SERIAL_BAUDRATE);
@@ -58,14 +78,13 @@ void setup()
 	delay(10);
 	Serial.println(F(""));
 	delay(10);
-	Serial.println(F("#StoicWatcher Starting v0.1.1;"));
+	Serial.println(F("#StoicWatcher Starting v0.1.9;"));
 	Serial.println(F("!startup;"));
 	delay(5);
 
 
-	I2CBus.begin();
-	I2CBus.setSpeed(0);
-	I2CBus.timeOut(5000);
+
+
 	//I2CBus.scan();
 
 	TPH3_FARS_Sensor.InitializeSensor();
@@ -78,7 +97,7 @@ void setup()
 	W6_WindSpeed_Mean_Sensor.InitializeSensor();
 	*/
 
-	//EM10_UV_Opt_Sensor.VerifyChip();
+	EM10_UV_Opt_Sensor.InitializeSensor();
 
 	// Done above
 	//WG6_WindGust_Multiple.InitializeSensor();
@@ -86,6 +105,15 @@ void setup()
 	// Rain Sensor
 	// Set the rain reset high to reset the rain count
 	// TODO reevaluate the use of rain reset
+
+	T20_1Wire_Temp_Sensor.InitializeSensor();
+	//Not Yet
+	//EM11_Lightning_Sensor.InitializeSensor();
+
+	T29_IRSoil_Sensor.InitializeSensor();
+
+	TH8_PRS_Sensor.ReportInitialization();
+	TP9_PRS_Sensor.InitializeSensor();
 
 	// Master Reset
 	Serial.println(F("# Master Reset;"));
@@ -113,6 +141,8 @@ void setup()
 	Serial.println(F(";"));
 	// END TEST
 
+	Serial.flush();
+	Serial.println(F("#Setup Done;"));
 
 
 }
@@ -126,6 +156,7 @@ void loop()
 	 * RAM:
 	 * 527 bytes are available in wind dir mean
 	 * */
+
 
 
 
@@ -153,13 +184,21 @@ void loop()
 		case 0 :
 			// 0 Early
 
+
 			// 0
+
+
 
 			break;
 		case 1 :
 			// 1 Early
 			TPH3_FARS_Sensor.AcquireData();
 			T7_FARS_Sensor.AcquireData();
+
+			TH8_PRS_Sensor.SendMeasurmentRequest();
+			TP9_PRS_Sensor.AcquireData();
+
+
 
 			// 1
 
@@ -171,12 +210,31 @@ void loop()
 			TPH3_FARS_Sensor.RetrieveDataAndSend();
 			T7_FARS_Sensor.SendRawDataSerial();
 
+			TH8_PRS_Sensor.PerformDataFetch();
+
 
 			break;
 		case 3 :
 			// 3 Early
 
 			// 3
+			switch(SW_CK_GetCKMedCount())
+						{
+						case 0 :
+
+							T20_1Wire_Temp_Sensor.Cmd1W_TellDS18B20OnCurrentCHToGetTemp_1W();
+
+							break;
+						case 1 :
+
+							T20_1Wire_Temp_Sensor.ReadAndSendRawTempDA18B20OnCurrentCH_1W();
+							T20_1Wire_Temp_Sensor.SelectNextChannel();
+							break;
+						case 2 :
+							break;
+						case 3 :
+							break;
+						}
 
 			break;
 		case 4 :
@@ -191,23 +249,42 @@ void loop()
 
 			//WG6_WindGust_Multiple.AcquireAnalogDataAndSend();
 
+			//Not Yet
+			//EM11_Lightning_Sensor.CheckIRQ();
+
+
+
 			break;
 		case 5 :
 			// 5 Early
 
 
+
+
+			T29_IRSoil_Sensor.GetTO1DataAndSend();
+
+
+
+
+
 			// 5
+			//Not Yet
+			//EM11_Lightning_Sensor.IfIRQGetDataAndSend();
 
 			break;
 		case 6 :
 			// 6 Early
+			TP9_PRS_Sensor.RetrieveDataAndSend();
+
 
 			// 6
 			switch(SW_CK_GetCKMedCount())
 			{
 			case 0 :
+
 				break;
 			case 1 :
+
 				break;
 			case 2 :
 				break;
