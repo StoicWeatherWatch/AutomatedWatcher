@@ -16,6 +16,8 @@
  *      This is mostly designed for a single 1 Wire dedvice on each channel.
  */
 
+// TODO Do not report temp if no device found
+
 #ifndef SW_DS24828_1W_SENSOR_H_
 #define SW_DS24828_1W_SENSOR_H_
 
