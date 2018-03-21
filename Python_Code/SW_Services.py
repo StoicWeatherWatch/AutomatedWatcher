@@ -180,7 +180,7 @@ class SW_Calculate(WXCalculate):
         if self.SourceDest_dict['CopySources'].get('outTemp') is not None:
             if self.SourceDest_dict['CopySources'].get('outTemp') in data:
                 data['outTemp'] = data[self.SourceDest_dict['CopySources'].get('outTemp')]
-                syslog.syslog(syslog.LOG_INFO, "SW_Calculate: calc_outTemp %s %f %f" %(self.SourceDest_dict['CopySources'].get('outTemp'),data[self.SourceDest_dict['CopySources'].get('outTemp')],data['outTemp']))
+                
         
     
     def calc_inTemp(self, data, data_type):

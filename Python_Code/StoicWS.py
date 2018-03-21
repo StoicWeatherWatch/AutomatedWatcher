@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.1.10
+# Version 0.1.11
 # 2018-03-20
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
@@ -94,7 +94,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.1.10'
+DRIVER_VERSION = '0.1.11'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -1367,11 +1367,11 @@ class StoicWatcher(object):
         (Temp_High [7:0] x 64 + Temp_Low [7:2]/ 4)/ 214 x 165 - 40
         """
         
-        loginf("sensor_parse_ChipCap2_Temp DataHex: %s" %DataHex)
+        logdbg("sensor_parse_ChipCap2_Temp DataHex: %s" %DataHex)
         
         DataRaw = int(DataHex,16)
         
-        loginf("sensor_parse_ChipCap2_Temp DataRaw: %d" %DataRaw)
+        logdbg("sensor_parse_ChipCap2_Temp DataRaw: %d" %DataRaw)
         
         # Bottom Two bits are garbage
         DataRaw = DataRaw & int("FFFC",16)
@@ -1391,11 +1391,11 @@ class StoicWatcher(object):
         (RH_High [5:0] x 256 + RH_Low [7:0])/ 214 x 100
         """
         
-        loginf("sensor_parse_ChipCap2_Humid DataHex: %s" %DataHex)
+        logdbg("sensor_parse_ChipCap2_Humid DataHex: %s" %DataHex)
         
         DataRaw = int(DataHex,16)
         
-        loginf("sensor_parse_ChipCap2_Humid DataRaw: %d" %DataRaw)
+        logdbg("sensor_parse_ChipCap2_Humid DataRaw: %d" %DataRaw)
         
         # Top two bits are garbage
         DataRaw = DataRaw & int("3FFF",16)
@@ -1497,7 +1497,7 @@ class StoicWatcher(object):
         IR Soil Temp
         """
         
-        loginf("29T LineIn: %s" %LineIn)
+        logdbg("29T LineIn: %s" %LineIn)
         
         
         if not self.IR_soil_temp_line_validation(LineIn):
