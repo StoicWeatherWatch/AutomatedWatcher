@@ -26,11 +26,11 @@ bool SerialHexBytePrint(byte data)
 // prints 12-bit data in hex with leading zeroes
 bool SerialHexByteAndAHalfPrint(int data)
 {
-	if(data > (byte)255)
+	if(data > (int)255)
 	{
 		Serial.print(data,HEX);
 	}
-	else if(data > (byte)15)
+	else if(data > (int)15)
 	{
 		Serial.print("0");
 		Serial.print(data,HEX);
@@ -46,21 +46,21 @@ bool SerialHexByteAndAHalfPrint(int data)
 
 void SerialHexFourAndAHalfBytefPrint(long data)
 {
-	if(data > (byte)0xFFFF)
+	if(data > (long)0xFFFF)
 	{
 		Serial.print(data,HEX);
 	}
-	else if(data > (byte)0xFFF)
+	else if(data > (long)0xFFF)
 	{
 		Serial.print("0");
 		Serial.print(data,HEX);
 	}
-	else if(data > (byte)0xFF)
+	else if(data > (long)0xFF)
 	{
 		Serial.print("00");
 		Serial.print(data,HEX);
 	}
-	else if(data > (byte)0xF)
+	else if(data > (long)0xF)
 	{
 		Serial.print("000");
 		Serial.print(data,HEX);
