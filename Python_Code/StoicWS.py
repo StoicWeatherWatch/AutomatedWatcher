@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.1.9
-# 2018-03-17
+# Version 0.1.10
+# 2018-03-20
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -75,13 +75,8 @@ STOIC Stoic Thing Observes Information on Climate
 # TODO cat /sys/class/thermal/thermal_zone0/temp  / 1000 gives temp C of CPU CHIP
 # TODO add chip temp for Arduino
 
-# TODO truncate T, P, and H at two decimal places. Anything more is past precision limits
-# TODO eleminate *3TPH,000000,000000,0000,^; and report an error instead
-
 # TODO crashes on disconnect of I2C sensor both the CHIP and probabily the arduino
 
-# TODO trim digits to save less in DB file - no need for meaningless sigfigs
-# TODO 85 C is the reset value for DS18B20. This value should be ignored. 0x0550
 
 
 # TODO DO I need this? Python 2.7 should have with_statement
@@ -99,7 +94,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.1.9'
+DRIVER_VERSION = '0.1.10'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -290,6 +285,8 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
     
 
     def __init__(self, **stn_dict):
+        
+        loginf("StoicWSDriver version %s init" %DRIVER_VERSION)
         self.model = stn_dict.get('model', 'StoicWS')
         # TODO Figure out the port
         self.port = stn_dict.get('serial_port_default', StoicWatcher.DEFAULT_PORT)
@@ -354,10 +351,7 @@ class StoicWatcher(object):
                               "25T",
                               "26T",
                               "27T",
-                              "28T",
-                              "29T",
-                              "8TH",
-                              "9TP"]
+                              "28T"]
     
     def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial=0):
     #def __init__(self, port, baudrate, debug_serial=0):
@@ -754,7 +748,7 @@ class StoicWatcher(object):
         
         """
         
-        if LineIn.find("*3TPH,000000,000000,0000") != -1:
+        if LineIn.find("000000,000000,0000") != -1:
             loginf("BME280_line_validation failed: %s" %LineIn)
             return False
 
@@ -826,7 +820,7 @@ class StoicWatcher(object):
         
         """
         
-        if LineIn.find("*9TP,000000,000000") != -1:
+        if LineIn.find("000000,000000") != -1:
             loginf("BMP280_line_validation failed: %s" %LineIn)
             return False
 
@@ -854,12 +848,6 @@ class StoicWatcher(object):
         TposStart = PposEnd+1
         TposEnd = TposStart + LineIn[TposStart+1:].find(",")
         
-        
-        # Check sums are inserted as ,^cksum; otherwise data ends with ;
-        if(LineIn.find("^") == -1):
-            HposEnd = HposStart + LineIn[HposStart+1:].find(";")
-        else:
-            HposEnd = HposStart + LineIn[HposStart+1:].find(",")
             
         TFine = self.sensor_parse_BME280_TFine(LineIn[TposStart+1:TposEnd+1],BMP280ID)
         
@@ -875,10 +863,13 @@ class StoicWatcher(object):
         Temperature = self.trim_Data_Reasonable_Places(Temperature)
         Pressure = self.trim_Data_Reasonable_Places(Pressure)
         
-        loginf("9TP Temprature: %f" %Temperature)
+        loginf("9TP Temperature - Not Recorded: %f" %Temperature)
+        loginf("9TP pressurePRS: %f" %Pressure)
         
         data = dict()
         data["pressurePRS"] = Pressure 
+        
+        
         return data
         
         
@@ -1273,6 +1264,11 @@ class StoicWatcher(object):
             logdbg("StoicWS temp_1Wire_line_validation data not correct length")
             return False
         
+        #  85 C is the reset value for DS18B20. This value should be ignored. 0x0550
+        if LineIn.find("0550") != "-1":
+            loginf("StoicWS temp_1Wire_line_validation read is 85C, the reset value of the DS18B20 %S" %LineIn)
+            return False
+        
         return True
         
 
@@ -1370,15 +1366,20 @@ class StoicWatcher(object):
         
         (Temp_High [7:0] x 64 + Temp_Low [7:2]/ 4)/ 214 x 165 - 40
         """
+        
+        loginf("sensor_parse_ChipCap2_Temp DataHex: %s" %DataHex)
+        
         DataRaw = int(DataHex,16)
+        
+        loginf("sensor_parse_ChipCap2_Temp DataRaw: %d" %DataRaw)
         
         # Bottom Two bits are garbage
         DataRaw = DataRaw & int("FFFC",16)
         
         Temp = ((DataRaw >> 8) * 64) + ((DataRaw & int("FC",16)) >> 2)
-        Temp = Temp / 214
-        Temp = Temp * 165
-        Temp = Temp - 40
+        Temp = float(Temp) / 16384.0
+        Temp = Temp * 165.0
+        Temp = Temp - 40.0
 
         return Temp
     
@@ -1389,14 +1390,19 @@ class StoicWatcher(object):
         
         (RH_High [5:0] x 256 + RH_Low [7:0])/ 214 x 100
         """
+        
+        loginf("sensor_parse_ChipCap2_Humid DataHex: %s" %DataHex)
+        
         DataRaw = int(DataHex,16)
+        
+        loginf("sensor_parse_ChipCap2_Humid DataRaw: %d" %DataRaw)
         
         # Top two bits are garbage
         DataRaw = DataRaw & int("3FFF",16)
         
         RelativeHumidity = ((DataRaw >> 8) * 256) + (DataRaw & int("FF",16))
-        RelativeHumidity = RelativeHumidity / 214
-        RelativeHumidity = RelativeHumidity * 100
+        RelativeHumidity = float(RelativeHumidity) / 16384.0
+        RelativeHumidity = RelativeHumidity * 100.0
             
         return RelativeHumidity
     
@@ -1422,9 +1428,13 @@ class StoicWatcher(object):
         *8TH,16C05D98; 
         Handles the tempreture and humidity sensor in the PRS
         ChipCap2 type sensor
+        HHHHTTTT
         """
         
-        if not temp_Hu_8TH_line_validation(LineIn):
+        loginf("8TH LineIn: %s" %LineIn)
+        
+        
+        if not self.temp_Hu_8TH_line_validation(LineIn):
             return NONE
         
         pos = LineIn.find(",")
@@ -1434,22 +1444,84 @@ class StoicWatcher(object):
         else:
             posEnd = LineIn.find("^")
             
-        Temperature = self.sensor_parse_ChipCap2_Temp(LineIn[pos+1:pos+1+4])
-        
+        Humidity = self.sensor_parse_ChipCap2_Humid(LineIn[pos+1:pos+1+4])
             
-        Humidity = self.sensor_parse_ChipCap2_Humid(LineIn[pos+1+4+1:posEnd])
+        Temperature = self.sensor_parse_ChipCap2_Temp(LineIn[pos+1+4:posEnd])
         
         Temperature = self.trim_Data_Reasonable_Places(Temperature)
         Humidity = self.trim_Data_Reasonable_Places(Humidity)
+        
+        loginf("8TH TempPRS: %f" %Temperature)
+        loginf("8TH HumidityPRS: %f" %Humidity)
         
         data = dict()
         data["TempPRS"] = Temperature
         data["HumidityPRS"] = Humidity
         return data
-            
+    
+    def sensor_parse_MLX90614_IR_Temp(self,DataHex):
+        """
+        MLX90614 IR Sensor
         
+        T (kelven) = DataHex * 0.02 K
+        """
+        
+        DataRaw = int(DataHex,16)
+        
+        Temperature = float(DataRaw)
+        
+        Temperature = (Temperature * 0.02) - 273.15
+        
+        return Temperature
         
     
+    def IR_soil_temp_line_validation(self,LineIn):
+        
+        pos = LineIn.find(",")
+        
+        if LineIn.find("^") == -1:
+            posEnd = LineIn.find(";")
+        else:
+            posEnd = LineIn.find("^")
+        
+        if (posEnd - pos) != 5:
+            loginf("IR_soil_temp_line_validation failed: %s" %LineIn)
+            return False
+        
+        return True
+    
+    
+    def key_parse_29T(self, LineIn):
+        """
+        *29T,xxxx; 
+        IR Soil Temp
+        """
+        
+        loginf("29T LineIn: %s" %LineIn)
+        
+        
+        if not self.IR_soil_temp_line_validation(LineIn):
+            return NONE
+        
+        pos = LineIn.find(",")
+        
+        if LineIn.find("^") == -1:
+            posEnd = LineIn.find(";")
+        else:
+            posEnd = LineIn.find("^")
+            
+        Temperature = self.sensor_parse_MLX90614_IR_Temp(LineIn[pos+1:posEnd])
+        
+        
+        Temperature = self.trim_Data_Reasonable_Places(Temperature)
+        
+        loginf("29T IR Soil: %f" %Temperature)
+        
+        data = dict()
+        data["soilTempIR"] = Temperature
+        return data
+            
+        
         
     
     def parse_raw_data(self, LineIn):
@@ -1476,6 +1548,10 @@ class StoicWatcher(object):
             #    return self.key_parse_6WMS_5WMD_wind_mean(LineIn)
             elif LineIn[1:pos] == "7T":
                return self.key_parse_7T_FARSTemp(LineIn)
+            elif LineIn[1:pos] == "29T":
+                loginf("this is an ugly hack")
+                #This is needed because the next one grabs everything starting with 2
+                return self.key_parse_29T(LineIn)
             elif ( LineIn[1:2] == "2" ) and ( LineIn[3:pos] == "T" ):
                 return self.key_parse_2xT_1WireTemp(LineIn)
             elif LineIn[1:pos] == "11EM":
@@ -1563,6 +1639,8 @@ class StoicWatcher(object):
         False if disabled
         """
         pos = LineIn.find(",")
+        
+        #TODO Disable sensors when the Arduino says they are bad
 
         if LineIn[1:pos] in self._ListOfDisabledSensors:
             return False
