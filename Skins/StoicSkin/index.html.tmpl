@@ -11,7 +11,21 @@
     <meta charset="utf-8" />
     <title>Stoic Weather Watch: Current Weather Conditions</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
- 
+
+ <script type="text/javascript">
+      function openURL(urlname)
+      {
+        window.location=urlname;
+      }
+      function openNoaaFile(date)
+      {
+        var url = "NOAA/NOAA-";
+        url = url + date;
+        url = url + ".txt";
+        window.location=url;
+      }
+    </script>
+
 <style>
 body {
     background-color: #000;
@@ -251,8 +265,8 @@ nav ul li a:hover, nav ul li.active a {
                 <td class="stats_data">$current.rainRate</td>
               </tr>
               <tr>
-                <td bgcolor="#222222" class="stats_label">placeholder</td>
-                <td bgcolor="#222222" class="stats_data">12345.6 unit</td>
+                <td bgcolor="#222222" class="stats_label">Soil Surface</td>
+                <td bgcolor="#222222" class="stats_data">$current.soilTempIR</td>
               </tr>
               <tr>
                 <td class="stats_label">placeholder</td>
@@ -645,13 +659,14 @@ nav ul li a:hover, nav ul li.active a {
                 <td bgcolor="#222222" class="stats_data">
                   $("%.1f&deg;" % $almanac.moon.dec)
                 </td>
-              </tr>     
+              </tr>
+              #if $almanac.next_full_moon.raw < $almanac.next_new_moon.raw
               <tr>
                 <td class="stats_label">         
                   Full Moon
                 </td>
                 <td class="stats_data">
-                  03/01/2018 4:51:20
+                  $almanac.next_full_moon
                 </td>
               </tr> 
               <tr>
@@ -659,9 +674,27 @@ nav ul li a:hover, nav ul li.active a {
                   New Moon
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  03/17/2018 6:11:34
+                  $almanac.next_new_moon
                 </td>
-              </tr>        
+              </tr>
+              #else
+              <tr>
+                <td class="stats_label">         
+                  New Moon
+                </td>
+                <td class="stats_data">
+                  $almanac.next_new_moon
+                </td>
+              </tr> 
+              <tr>
+                <td bgcolor="#222222" class="stats_label">         
+                  Full Moon
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $almanac.next_full_moon
+                </td>
+              </tr>
+              #end if
                   <tr>
                 <td class="stats_label">         
                   Phase
