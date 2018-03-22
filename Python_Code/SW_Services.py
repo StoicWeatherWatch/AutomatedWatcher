@@ -25,6 +25,18 @@ from weewx.units import CtoF, mps_to_mph, kph_to_mph, METER_PER_FOOT
 from weewx.wxservices import StdWXCalculate
 from weewx.wxservices import WXCalculate
 
+def logmsg(level, msg):
+    syslog.syslog(level, 'SW_Services: %s' % msg)
+
+def logdbg(msg):
+    logmsg(syslog.LOG_DEBUG, msg)
+
+def loginf(msg):
+    logmsg(syslog.LOG_INFO, msg)
+
+def logerr(msg):
+    logmsg(syslog.LOG_ERR, 'ERROR: %s' % msg)
+
 
 class SW_Std_Calculate(StdWXCalculate):
     """Wrapper class for SW_Calculate.
@@ -128,7 +140,7 @@ class SW_Calculate(WXCalculate):
                     data['pressureHouse'], self.altitude_ft, data['TempHouse1'])
             
     def calc_dewpointFARS(self, data, data_type):
-        #syslog.syslog(syslog.LOG_INFO, "SW_Calculate: calc_dewpointFARS Running")
+        #loginf(" calc_dewpointFARS Running")
         if 'TempFARS' in data and 'HumidityFARS' in data:
             data['dewpointFARS'] = weewx.wxformulas.dewpointF(
                 data['TempFARS'], data['HumidityFARS'])
@@ -158,7 +170,7 @@ class SW_Calculate(WXCalculate):
                     if self.SourceDest_dict['CopySources'].get('rainRate') is not None:
                         self.calc_rain(data, data_type)
                 else:
-                    syslog.syslog(syslog.LOG_INFO, "SW_Calculate: self.SourceDest_dict['CopySources'].get('rainRate') is None - ERROR")
+                    loginf("self.SourceDest_dict['CopySources'].get('rainRate') is None - ERROR")
                 
             # Only try it if we have rain data
             super(SW_Calculate, self).calc_rainRate(data, data_type)

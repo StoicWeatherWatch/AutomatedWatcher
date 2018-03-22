@@ -106,13 +106,13 @@ def logmsg(level, msg):
     syslog.syslog(level, 'StoicWS: %s' % msg)
 
 def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, 'StoicWS: %s' % msg)
+    logmsg(syslog.LOG_DEBUG, msg)
 
 def loginf(msg):
-    logmsg(syslog.LOG_INFO, 'StoicWS: %s' % msg)
+    logmsg(syslog.LOG_INFO, msg)
 
 def logerr(msg):
-    logmsg(syslog.LOG_ERR, 'StoicWS ERROR: %s' % msg)
+    logmsg(syslog.LOG_ERR, 'ERROR: %s' % msg)
     
 # TODO replace a lot of the loginf with logdbg
 
