@@ -1,6 +1,6 @@
 """
 SW_Services
-2018-03-14
+2018-03-20
 Used to subcalss and override certain services. 
 
 WXCalculate in wxservices.py is overridden to add support for derived values in SW_Schema

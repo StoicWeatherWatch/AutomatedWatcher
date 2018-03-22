@@ -1,5 +1,5 @@
 
-# StoicWS 2018-03-17
+# StoicWS 2018-03-20
 
 """User extensions module
 

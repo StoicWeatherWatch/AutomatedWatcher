@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.1.11
+# Version 0.1.12
 # 2018-03-20
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
@@ -94,7 +94,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.1.11'
+DRIVER_VERSION = '0.1.12'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -106,13 +106,13 @@ def logmsg(level, msg):
     syslog.syslog(level, 'StoicWS: %s' % msg)
 
 def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
+    logmsg(syslog.LOG_DEBUG, 'StoicWS: %s' % msg)
 
 def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
+    logmsg(syslog.LOG_INFO, 'StoicWS: %s' % msg)
 
 def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
+    logmsg(syslog.LOG_ERR, 'StoicWS ERROR: %s' % msg)
     
 # TODO replace a lot of the loginf with logdbg
 
@@ -376,13 +376,13 @@ class StoicWatcher(object):
         # TODO validate that we are talking to the Arduino and not something else
         
         if len(list(serial.tools.list_ports.comports())) == 0:
-            loginf("Stoic: No serial ports found")
+            loginf("No serial ports found")
         
         NumTrys = 17
         PortNum = self.stoic_Cal_dict["serial_port_Lowest"]
         for i in range(NumTrys):
             try:
-                loginf("Stoic: Attempting to Open com channel %s" % self.port)
+                loginf("Attempting to Open com channel %s" % self.port)
                 self.serial_port = serial.Serial(self.port, self.baudrate,timeout=self.timeout)
             except (serial.serialutil.SerialException), e:
                 loginf("Failed to open serial port: %s" % e)
@@ -391,7 +391,7 @@ class StoicWatcher(object):
                 # Sometimes the arduino comes in on a different port. 
                 if str(e).find("could not open port") != -1:
                     if str(e).find("No such file or directory") != -1:
-                        loginf("Stoic: Attempting a different port")
+                        loginf("Attempting a different port")
                         
                         self.port = self.stoic_Cal_dict["serial_port_Prefix"] + str(PortNum)
                         PortNum += 1
@@ -411,7 +411,7 @@ class StoicWatcher(object):
 
 # TODO should we handle rain in some way here
     def close(self):
-        loginf("Stoic: Close com channel >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" )
+        loginf("Close com channel >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" )
         if self.serial_port is not None:
             logdbg("close serial port %s" % self.port)
             self.serial_port.close()
@@ -420,7 +420,7 @@ class StoicWatcher(object):
     def get_raw_data(self):
         LineIn = self.serial_port.readline()
         if self._debug_serial:
-            logdbg("StoicWS said: %s" % LineIn)
+            logdbg("LineIn %s" % LineIn)
             
         return LineIn
     
@@ -950,7 +950,7 @@ class StoicWatcher(object):
         except:
             loginf("RAIN LOST Total failure in rain. Rain data may have been lost., LineIn: %s" %LineIn)
             logerr("RAIN LOST Total failure in rain. Rain data may have been lost., LineIn: %s" %LineIn)
-            logmsg(syslog.LOG_EMERG, "STOIC: RAIN LOST Total failure in rain. Rain data may have been lost., LineIn: %s" %LineIn)
+            logmsg(syslog.LOG_EMERG, "RAIN LOST Total failure in rain. Rain data may have been lost., LineIn: %s" %LineIn)
             loginf(traceback.format_exc())
             logerr(traceback.format_exc())
             raise
@@ -1017,17 +1017,17 @@ class StoicWatcher(object):
         
     def wind_gust_line_validation(self,LineIn):
         if LineIn.find("*6WGS") == -1:
-            logdbg("StoicWS wind_gust_line_validation no *6WGS")
+            logdbg("wind_gust_line_validation no *6WGS")
             return False
         pos = LineIn.find(";")
         if pos == -1:
-            logdbg("StoicWS wind_gust_line_validation no ;")
+            logdbg("wind_gust_line_validation no ;")
             return False
         if LineIn[pos:].find("+5WGD") == -1:
-            logdbg("StoicWS wind_gust_line_validation no +5WGD")
+            logdbg("wind_gust_line_validation no +5WGD")
             return False
         if LineIn[pos+1:].find(";") == -1:
-            logdbg("StoicWS wind_gust_line_validation no second ;")
+            logdbg("wind_gust_line_validation no second ;")
             return False
         
        # TODO add no speeds > 1023 ADC
@@ -1149,17 +1149,17 @@ class StoicWatcher(object):
         
     def wind_mean_line_validation(self,LineIn):
         if LineIn.find("*6WMS") == -1:
-            logdbg("StoicWS wind_mean_line_validation no *6WMS")
+            logdbg("wind_mean_line_validation no *6WMS")
             return False
         pos = LineIn.find(";")
         if pos == -1:
-            logdbg("StoicWS wind_mean_line_validation no ;")
+            logdbg("wind_mean_line_validation no ;")
             return False
         if LineIn[pos:].find("+5WMD") == -1:
-            logdbg("StoicWS wind_mean_line_validation no +5WMD")
+            logdbg("wind_mean_line_validation no +5WMD")
             return False
         if LineIn[pos+1:].find(";") == -1:
-            logdbg("StoicWS wind_mean_line_validation no second ;")
+            logdbg("wind_mean_line_validation no second ;")
             return False
         
         
@@ -1249,10 +1249,10 @@ class StoicWatcher(object):
         pos = LineIn.find(",")
         
         if LineIn[0:2] != "*2":
-            logdbg("StoicWS temp_1Wire_line_validation no *2")
+            logdbg("temp_1Wire_line_validation no *2")
             return False
         if LineIn[3:pos] != "T":
-            logdbg("StoicWS temp_1Wire_line_validation no T,")
+            logdbg("temp_1Wire_line_validation no T,")
             return False
         
         if LineIn.find("^") == -1:
@@ -1261,12 +1261,12 @@ class StoicWatcher(object):
             posEnd = LineIn.find("^")
         
         if (posEnd - pos) != 5:
-            logdbg("StoicWS temp_1Wire_line_validation data not correct length")
+            logdbg("temp_1Wire_line_validation data not correct length")
             return False
         
         #  85 C is the reset value for DS18B20. This value should be ignored. 0x0550
         if LineIn.find("0550") != "-1":
-            loginf("StoicWS temp_1Wire_line_validation read is 85C, the reset value of the DS18B20 %S" %LineIn)
+            loginf("temp_1Wire_line_validation read is 85C, the reset value of the DS18B20 %S" %LineIn)
             return False
         
         return True
@@ -1418,7 +1418,7 @@ class StoicWatcher(object):
             posEnd = LineIn.find("^")
         
         if (posEnd - pos) != 9:
-            logdbg("StoicWS temp_Hu_8TH_line_validation data not correct length")
+            logdbg("temp_Hu_8TH_line_validation data not correct length")
             return False
         
         return True
@@ -1526,7 +1526,7 @@ class StoicWatcher(object):
     
     def parse_raw_data(self, LineIn):
         if LineIn[0] != "*":
-            logdbg("StoicWS parse_raw_data given bad data")
+            logdbg("parse_raw_data given bad data")
             return None
         
         # Find the key
@@ -1596,7 +1596,7 @@ class StoicWatcher(object):
     def validate_string(LineIn):
         # TODO add aditional validation
         
-        #loginf("Stoic: validate_string: %s" %LineIn)
+        #loginf("validate_string: %s" %LineIn)
         
         if (len(LineIn)<1):
             raise weewx.WeeWxIOError("Unexpected line length %d" % len(LineIn))
@@ -1606,7 +1606,7 @@ class StoicWatcher(object):
             if(LineIn.find("4R") != 1):
                 loginf("RAIN LOST validate_string found '4R' out of place. Rain data may have been lost., LineIn: %s" %LineIn)
                 logerr("RAIN LOST validate_string found '4R' out of place. Rain data may have been lost., LineIn: %s" %LineIn)
-                logmsg(syslog.LOG_EMERG, "STOIC: RAIN LOST validate_string found '4R' out of place. Rain data may have been lost., LineIn: %s" %LineIn)
+                logmsg(syslog.LOG_EMERG, "RAIN LOST validate_string found '4R' out of place. Rain data may have been lost., LineIn: %s" %LineIn)
                 # TODO attempt recovery by reading the rain
                 raise weewx.WeeWxIOError(" '4R' is out of place. Rain data may have been lost %s" % LineIn)
             # TODO test this. The last time it happened it spit an error. I changed LOG_EMERG to syslog.LOG_EMERG. THis has not been tested.
@@ -1621,6 +1621,9 @@ class StoicWatcher(object):
         if pos != -1:
             if(LineIn[pos:].find(";") == -1):
                 raise weewx.WeeWxIOError("Line lacks second terminator ; %s" % LineIn)
+            
+        if LineIn[0:1] == "+":
+            raise weewx.WeeWxIOError("Line starts with continuation %s" % LineIn)
         
         # Check line starts
         ValidLineStarts = set(["*","#","!"])
@@ -1682,22 +1685,22 @@ class StoicWatcher(object):
             elif LineIn[0] == "!":
                 # A computer readable alert
                 # TODO Deal with computer readable alerts
-                loginf('StoicWS: %s' % LineIn)
+                loginf('LineIn: %s' % LineIn)
                 
             
             elif LineIn[0] == "#":
-                loginf('StoicWS: %s' % LineIn)
+                loginf('%s' % LineIn)
             #else:
                 # Not a valid line, validate_string should eleminate these but simply ignored here
                 
             if not self.check_for_disabled_sensors(LineIn):
-                loginf('StoicWS Sensor Diaabled: %s' % LineIn)
+                loginf('Sensor Diaabled: %s' % LineIn)
                 DataLine = False
         
         ParsedData = self.parse_raw_data(LineIn)
         
         if ParsedData == None:
-            loginf('StoicWS: Unable to parse %s' % LineIn)
+            loginf('Unable to parse %s' % LineIn)
         
         return ParsedData
     
