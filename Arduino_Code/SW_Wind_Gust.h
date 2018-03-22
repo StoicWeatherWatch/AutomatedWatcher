@@ -11,7 +11,7 @@
 #include "SW_MCP2318_GPIO_Sensor.h"
 #include "SW_Wind_Dir_Analog.h"
 
-// This assumes 1 count = 1 MPH. True if reading out every 2.25 seconds. 10 knots = 11.5078 MPH. We reound up.
+// This assumes 1 count = 1 MPH. True if reading out every 2.25 seconds. 10 knots = 11.5078 MPH. We round up.
 #define GUST_MINIMUM_DIFFERENCE 12
 
 
@@ -32,7 +32,7 @@ class SW_Wind_Gust: public SW_MCP2318_GPIO_Sensor, public SW_Wind_Dir_Analog
 public:
 	// Unlike WindSpeedQueue, GustQueue holds differences between each record. This saves memory
 		// since we only need a byte not 13 bits.
-	byte *WindSpeedGustQueue;
+		byte *WindSpeedGustQueue;
 		int CurrentSpeedQueueLoc;
 		byte SpeedQueueLength; // data chunks not bytes
 		bool HaveFullSpeedQueue;
