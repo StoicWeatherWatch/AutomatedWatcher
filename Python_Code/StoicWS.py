@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.1.12
-# 2018-03-20
+# Version 0.1.13
+# 2018-03-22
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -54,18 +54,15 @@ STOIC Stoic Thing Observes Information on Climate
 
 """
 
-# Schema to add 
-# lightningDistance INTEGER
 
 
-# TODO First readout after !Startup; is not reported. Used as baseline for wind etc.
 
 # TODO If your lose the  connection, you should raise an exception of type 
 # weewx.WeeWxIOError, or a subclass of weewx.WeeWxIOError. The engine will catch this exception 
 # and, by default, after 60 seconds do a restart. This will cause your driver to reload, giving it an 
 # opportunity to reconnect with the broker.
 
-#
+
 #Device drivers should be written to emit None if a data value is bad 
 #(perhaps because of a failed checksum). If the hardware simply doesn't 
 #support it, then the driver should not emit a value at all.
@@ -94,7 +91,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.1.12'
+DRIVER_VERSION = '0.1.13'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -150,8 +147,8 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         
         stoic_Cal_dict = dict()
          
-         # TEST line
-        loginf("StoicWSDriver.readCalibrationDict running")
+        
+        logdbg("StoicWSDriver.readCalibrationDict running")
          
         # TODO make this a try so it fails gracefully when not in the dictionary
         
@@ -274,11 +271,11 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         
         # Test stuff
 #         for i in range(1,3+1):
-#              loginf("stoic_Cal_dict['BME280_1_CAL_T" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_T"+str(i)])
+#              logdbg("stoic_Cal_dict['BME280_1_CAL_T" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_T"+str(i)])
 #         for i in range(1,9+1):
-#              loginf("stoic_Cal_dict['BME280_1_CAL_P" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_P"+str(i)])
+#              logdbg("stoic_Cal_dict['BME280_1_CAL_P" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_P"+str(i)])
 #         for i in range(1,6+1):
-#              loginf("stoic_Cal_dict['BME280_1_CAL_H" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_H"+str(i)])
+#              logdbg("stoic_Cal_dict['BME280_1_CAL_H" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_H"+str(i)])
 
         
         return stoic_Cal_dict
@@ -300,7 +297,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         # Also the hardware reports its own last rain
         self.last_rain = None
 
-        loginf('driver version is %s' % DRIVER_VERSION)
+        logdbg('driver version is %s' % DRIVER_VERSION)
         loginf('using serial port %s' % self.port)
         
         
@@ -386,7 +383,7 @@ class StoicWatcher(object):
                 self.serial_port = serial.Serial(self.port, self.baudrate,timeout=self.timeout)
             except (serial.serialutil.SerialException), e:
                 loginf("Failed to open serial port: %s" % e)
-                loginf(traceback.format_exc())
+                logdbg(traceback.format_exc())
                 
                 # Sometimes the arduino comes in on a different port. 
                 if str(e).find("could not open port") != -1:
@@ -491,7 +488,7 @@ class StoicWatcher(object):
         
         Temp = self.sensor_parse_MCP9808_Temp(LineIn[posStart+1:posEnd])
         
-        loginf("key_parse_2T_BoxTemp temp %f" % Temp)
+        logdbg("key_parse_2T_BoxTemp temp %f" % Temp)
         
         Temp = self.trim_Data_Reasonable_Places(Temp)
             
@@ -529,7 +526,7 @@ class StoicWatcher(object):
         
         Temp = self.trim_Data_Reasonable_Places(Temp)
         
-        loginf("key_parse_7T_FARSTemp temp %f" % Temp)
+        logdbg("key_parse_7T_FARSTemp temp %f" % Temp)
             
         data = dict()
         data["TempFARS"] = Temp
@@ -550,17 +547,17 @@ class StoicWatcher(object):
         The sensor does not know its altitude)
         """
         
-        #loginf("Stoic sensor_parse_BME280_Pressure  HEX in %s" % DataHex)
+        #logdbg("Stoic sensor_parse_BME280_Pressure  HEX in %s" % DataHex)
         
         RawPressure = long(DataHex,16) >> 4
         
-        #loginf("Stoic sensor_parse_BME280_Pressure  RawPressure %d" % RawPressure)
-        #loginf("Stoic sensor_parse_BME280_Pressure  RawPressure %X" % RawPressure)
+        #logdbg("Stoic sensor_parse_BME280_Pressure  RawPressure %d" % RawPressure)
+        #logdbg("Stoic sensor_parse_BME280_Pressure  RawPressure %X" % RawPressure)
         
         
         # TEST Line
-        #loginf("self.stoic_Cal_dict[BME280ID+'_CAL_P6''] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_P6"])
-        #loginf("self.stoic_Cal_dict[BME280ID+'_CAL_P6''] type  %s" % type(self.stoic_Cal_dict[BME280ID+"_CAL_P6"]))
+        #logdbg("self.stoic_Cal_dict[BME280ID+'_CAL_P6''] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_P6"])
+        #logdbg("self.stoic_Cal_dict[BME280ID+'_CAL_P6''] type  %s" % type(self.stoic_Cal_dict[BME280ID+"_CAL_P6"]))
 
         #var1 = ((BME280_S64_t)t_fine) - 128000;
         var1 = TFine - long(128000)
@@ -604,13 +601,13 @@ class StoicWatcher(object):
         p = ((p + var1 + var2) >> 8) + (self.stoic_Cal_dict[BME280ID+"_CAL_P7"] << 4)
         
     # p is integer pressure. p / 256  gives Pa.  (p / 256) / 100 gives hPa
-        #loginf("Stoic sensor_parse_BME280_Pressure  Integer Pressure %d" % p)
-        #loginf("Stoic sensor_parse_BME280_Pressure  Integer Pressure %X" % p)
+        #logdbg("Stoic sensor_parse_BME280_Pressure  Integer Pressure %d" % p)
+        #logdbg("Stoic sensor_parse_BME280_Pressure  Integer Pressure %X" % p)
         
         # Units of hPa or mbar (same thing)
         Pressure = float(p) / float(25600.0)
 
-        loginf("Stoic sensor_parse_BME280_Pressure Pressure %f" % Pressure)
+        #logdbg("Stoic sensor_parse_BME280_Pressure Pressure %f" % Pressure)
 
         return Pressure
         
@@ -628,27 +625,14 @@ class StoicWatcher(object):
         
         RawTemp = long(DataHex,16) >> 4
         
-        #loginf("Stoic sensor_parse_BME280_TFine  RawTemp %d" % RawTemp)
-        #loginf("Stoic sensor_parse_BME280_TFine  RawTemp %X" % RawTemp)
-        
-        #loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T1'] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_T1"])
-        #loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T2'] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_T2"])
-        #loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T3'] %d" % self.stoic_Cal_dict[BME280ID+"_CAL_T3"])
-        
-        #loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T1'] %X" % self.stoic_Cal_dict[BME280ID+"_CAL_T1"])
-        #loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T2'] %X" % self.stoic_Cal_dict[BME280ID+"_CAL_T2"])
-        #loginf("Stoic sensor_parse_BME280_TFine self.stoic_Cal_dict[BME280ID+'_CAL_T3'] %X" % self.stoic_Cal_dict[BME280ID+"_CAL_T3"])
         
         # This mess comes from the data sheet. Someone must like LISP
         var1  = ( ((RawTemp>>3) - (self.stoic_Cal_dict[BME280ID+"_CAL_T1"]<<1)) * (self.stoic_Cal_dict[BME280ID+"_CAL_T2"]) ) >> 11
-        #loginf("Stoic sensor_parse_BME280_TFine var1 %d" % var1)
+
         var2  = (( ( ((RawTemp>>4) - (self.stoic_Cal_dict[BME280ID+"_CAL_T1"])) * ((RawTemp>>4) - (self.stoic_Cal_dict[BME280ID+"_CAL_T1"])) ) >> 12) * (self.stoic_Cal_dict[BME280ID+"_CAL_T3"]) ) >> 14
-        #loginf("Stoic sensor_parse_BME280_TFine var2 %d" % var2)
+
         TFine = var1 + var2
         
-        #TEST Line
-        #loginf("Stoic sensor_parse_BME280_TFine %d" % TFine)
-       # loginf("Stoic sensor_parse_BME280_TFine type %s" % type(TFine))
          
 
         # The limits for the sensor are -40 to 85 C. Equivalent to an output of -4000 or 8500
@@ -668,18 +652,7 @@ class StoicWatcher(object):
         if TFine == None:
             return None
         
-        #loginf("Stoic sensor_parse_BME280_Temperature TFine %s" % type(TFine))
-        
-        #loginf("Stoic sensor_parse_BME280_Temperature TFine %d" % TFine)
-        
-       # loginf("(TFine * 5 ) >> 8 %d" % ((TFine * 5 ) >> 8))
-        #loginf("float((TFine * 5 ) >> 8) %f" % float((TFine * 5 ) >> 8))
-        #loginf("float((TFine * 5 ) >> 8)/float(100.0) %f" % (float((TFine * 5 ) >> 8)/float(100.0)))
-        
         Temperature = float((TFine * 5 ) >> 8)/float(100.0)
-        
-        #TEST Line
-        loginf("Stoic sensor_parse_BME280_Temperature %f " % Temperature)
         
         return Temperature
             
@@ -734,8 +707,6 @@ class StoicWatcher(object):
         # Because we like complexity.       12345678901234567890121234567890
         Hum = float(H >> 10) + (float(H & 0b00000000000000000000001111111111) / float(1024))
         
-        #TEST Line
-        loginf("Stoic sensor_parse_BME280_Humidity %f " % Hum)
 
         return Hum
     
@@ -863,8 +834,8 @@ class StoicWatcher(object):
         Temperature = self.trim_Data_Reasonable_Places(Temperature)
         Pressure = self.trim_Data_Reasonable_Places(Pressure)
         
-        loginf("9TP Temperature - Not Recorded: %f" %Temperature)
-        loginf("9TP pressurePRS: %f" %Pressure)
+        logdbg("9TP Temperature - Not Recorded: %f" %Temperature)
+        logdbg("9TP pressurePRS: %f" %Pressure)
         
         data = dict()
         data["pressurePRS"] = Pressure 
@@ -886,20 +857,20 @@ class StoicWatcher(object):
         Usess rain_mm_Per_Tip in weewx.conf for converting bucket tips to mm
         """
         
-        # TEST line
-        #loginf("And in self %s" % self.stoic_Cal_dict["rain_mm_Per_Tip"])
+
         try:
             CurrentRainRaw = int(DataHexCurrent,16)
             LastRainRaw = int(DataHexLast,16)
         except (ValueError), e:
-            loginf("Failed to parse or failed to get a proper hex number, DataHexCurrent, DataHexLast: %s %s" %(DataHexCurrent, DataHexLast))
-            logerr("Failed to parse or failed to get a proper hex number, DataHexCurrent, DataHexLast: %s %s" %(DataHexCurrent, DataHexLast))
+            loginf("RAIN LOST Failed to parse or failed to get a proper hex number, DataHexCurrent, DataHexLast: %s %s" %(DataHexCurrent, DataHexLast))
+            logerr("RAIN LOST Failed to parse or failed to get a proper hex number, DataHexCurrent, DataHexLast: %s %s" %(DataHexCurrent, DataHexLast))
+            logmsg(syslog.LOG_EMERG, "RAIN LOST Failed to parse or failed to get a proper hex number, DataHexCurrent, DataHexLast: %s %s" %(DataHexCurrent, DataHexLast))
             loginf(traceback.format_exc())
             logerr(traceback.format_exc())
             raise
         
         # Test Line
-        loginf("Sensor_parse_TippingBuckedt_Rain DataHexCurrent, DataHexLast: %s %s" %(DataHexCurrent, DataHexLast))
+        logdbg("Sensor_parse_TippingBuckedt_Rain DataHexCurrent, DataHexLast: %s %s" %(DataHexCurrent, DataHexLast))
         
         # The counter max int is 15
         if(CurrentRainRaw < LastRainRaw):
@@ -979,7 +950,7 @@ class StoicWatcher(object):
         WindDirectionDeg = (float(WindADCRaw) - self.stoic_Cal_dict[Offset]) / self.stoic_Cal_dict[slope]
         
         
-        #loginf("sensor_parse_wind_direction_from_ADC WindADCRaw Model WindDirectionDeg %d %s, %f" % (WindADCRaw, Model, WindDirectionDeg))
+        logdbg("sensor_parse_wind_direction_from_ADC WindADCRaw Model WindDirectionDeg %d %s, %f" % (WindADCRaw, Model, WindDirectionDeg))
         
         return WindDirectionDeg
     
@@ -1431,8 +1402,6 @@ class StoicWatcher(object):
         HHHHTTTT
         """
         
-        loginf("8TH LineIn: %s" %LineIn)
-        
         
         if not self.temp_Hu_8TH_line_validation(LineIn):
             return NONE
@@ -1451,8 +1420,8 @@ class StoicWatcher(object):
         Temperature = self.trim_Data_Reasonable_Places(Temperature)
         Humidity = self.trim_Data_Reasonable_Places(Humidity)
         
-        loginf("8TH TempPRS: %f" %Temperature)
-        loginf("8TH HumidityPRS: %f" %Humidity)
+        logdbg("8TH TempPRS: %f" %Temperature)
+        logdbg("8TH HumidityPRS: %f" %Humidity)
         
         data = dict()
         data["TempPRS"] = Temperature
@@ -1515,7 +1484,7 @@ class StoicWatcher(object):
         
         Temperature = self.trim_Data_Reasonable_Places(Temperature)
         
-        loginf("29T IR Soil: %f" %Temperature)
+        logdbg("29T IR Soil: %f" %Temperature)
         
         data = dict()
         data["soilTempIR"] = Temperature
@@ -1596,7 +1565,6 @@ class StoicWatcher(object):
     def validate_string(LineIn):
         # TODO add aditional validation
         
-        #loginf("validate_string: %s" %LineIn)
         
         if (len(LineIn)<1):
             raise weewx.WeeWxIOError("Unexpected line length %d" % len(LineIn))

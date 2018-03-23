@@ -109,8 +109,6 @@ class SW_Calculate(WXCalculate):
     
     def __init__(self, config_dict, alt_vt, lat_f, long_f, db_binder=None):
         
-
-        
         super(SW_Calculate, self).__init__(config_dict, alt_vt, lat_f, long_f, db_binder)
         
         # get any configuration settings
@@ -118,9 +116,7 @@ class SW_Calculate(WXCalculate):
         # if there is no CopySources section, then make an empty one
         if not 'CopySources' in self.SourceDest_dict:
             self.SourceDest_dict['CopySources'] = dict()
-            
-        
-        
+
         # Super handles everything else. Hopefully.
         
     # do_calculations is very nicely extendable. No need to override. Hopefully.
@@ -131,6 +127,7 @@ class SW_Calculate(WXCalculate):
             if (data.get('pressurePRS') is not None) and (data.get('TempPRS') is not None):
                 data['barometerPRS'] = weewx.wxformulas.sealevel_pressure_US(
                     data['pressurePRS'], self.altitude_ft, data['TempPRS'])
+                logdbg("calc_barometerPRS %f" %data['barometerPRS'])
             
     def calc_barometerHouse(self, data, data_type):  # @UnusedVariable
         data['barometerHouse'] = None
@@ -144,6 +141,7 @@ class SW_Calculate(WXCalculate):
         if 'TempFARS' in data and 'HumidityFARS' in data:
             data['dewpointFARS'] = weewx.wxformulas.dewpointF(
                 data['TempFARS'], data['HumidityFARS'])
+            logdbg("calc_dewpointFARS %f" %data['dewpointFARS'])
         else:
             data['dewpointFARS'] = None
             
