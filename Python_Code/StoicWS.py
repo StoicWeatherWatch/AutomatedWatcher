@@ -778,6 +778,10 @@ class StoicWatcher(object):
         Pressure = self.trim_Data_Reasonable_Places(Pressure)
         Humidity = self.trim_Data_Reasonable_Places(Humidity)
         
+        logdbg("key_parse_3TPH_FARS Temperature %f" % Temperature)
+        logdbg("key_parse_3TPH_FARS Pressure %f" % Pressure)
+        logdbg("key_parse_3TPH_FARS Humidity %f" % Humidity)
+        
         data = dict()
         data["extraTempFARS"] = Temperature
         data["pressureFARS"] = Pressure # FARS is causing issues
@@ -1134,6 +1138,8 @@ class StoicWatcher(object):
         if LineIn[pos+1:].find(";") == -1:
             logdbg("wind_mean_line_validation no second ;")
             return False
+        
+        # +5WMD,0F531,08;  seems to be the driection read out when nothing is plugged in. Consider as part of line validation
         
         
         return True
