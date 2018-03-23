@@ -70,7 +70,7 @@ img {
     width: auto;
     padding-bottom: 2%;
 }
-##wrapper {
+wrapper {
     margin: 0 auto;
     max-width: 1465px;
     width: 98%;
@@ -87,7 +87,7 @@ img {
     border-bottom-width: thin;
     border-bottom-color: #056566;
     }
-##table {
+table {
     text-align: left;
     }
 footer {
@@ -859,7 +859,6 @@ nav ul li a:hover, nav ul li.active a {
       <center>
         <h4>Text</h4>     <br />
         
-        
         <div id="navbar">
         <input type="button" value="   Current   " onclick="openURL('index.html')" />
         <input type="button" value="    Week     " onclick="openURL('week.html')" />
@@ -882,13 +881,49 @@ nav ul li a:hover, nav ul li.active a {
         </select>
         </p>
       </div>
-    </div>
+        
+        
+        
 
       </center>
       
-
+<script type="text/javascript">
+      var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+      document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+    </script>
+    <script type="text/javascript">
+      try {
+        var pageTracker = _gat._getTracker("$Extras.googleAnalyticsId");
+        pageTracker._trackPageview();
+      } catch (err) { }
+    </script>
+    <script type="application/ld+json">
+      {
+      "@context" : "http://schema.org",
+      "@type" : "Article",
+      "Headline" : "$Extras.location_long Weather",
+      "datePublished" : "$current.dateTime.format("%Y-%m-%dT%H:%M:%S")$Extras.ISO8061_delta",
+      "image" : "$station.station_url/daytempdew.png",
+      #if $day.appTemp.has_data and $Extras.has_key('use_apptemp') and $Extras.use_apptemp == "1"
+      "articleSection" : "Current Conditions: Outside Temperature $current.outTemp App. Temperature $current.appTemp ($aus.feelslike($current.appTemp.raw, $current.dateTime.raw)) Dewpoint $current.dewpoint Humidity $current.outHumidity Barometer $current.barometer Wind $current.windSpeed from $current.windDir ($current.windDir.ordinal_compass) Rain Today $day.rain.sum"
+      #else
+      "articleSection" : "Current Conditions: Outside Temperature $current.outTemp Dewpoint $current.dewpoint Humidity $current.outHumidity Barometer $current.barometer Wind $current.windSpeed from $current.windDir ($current.windDir.ordinal_compass) Rain Today $day.rain.sum"
+      #end if
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+      "@context" : "http://schema.org",
+      "@type" : "WebSite",
+      "name" : "$Extras.location_long Weather",
+      "alternateName" : "Current $Extras.location_long Weather",
+      "url" : "$station.station_url"
+      }
+    </script>
 
       </div>
+      
+      
       
       
 
