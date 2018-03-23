@@ -1460,9 +1460,9 @@ class StoicWatcher(object):
         return True
     
     
-    def key_parse_29T(self, LineIn):
+    def key_parse_30T(self, LineIn):
         """
-        *29T,xxxx; 
+        *30T,xxxx; 
         IR Soil Temp
         """
         
@@ -1484,7 +1484,7 @@ class StoicWatcher(object):
         
         Temperature = self.trim_Data_Reasonable_Places(Temperature)
         
-        logdbg("29T IR Soil: %f" %Temperature)
+        logdbg("30T IR Soil: %f" %Temperature)
         
         data = dict()
         data["soilTempIR"] = Temperature
@@ -1517,10 +1517,6 @@ class StoicWatcher(object):
             #    return self.key_parse_6WMS_5WMD_wind_mean(LineIn)
             elif LineIn[1:pos] == "7T":
                return self.key_parse_7T_FARSTemp(LineIn)
-            elif LineIn[1:pos] == "29T":
-                loginf("this is an ugly hack")
-                #This is needed because the next one grabs everything starting with 2
-                return self.key_parse_29T(LineIn)
             elif ( LineIn[1:2] == "2" ) and ( LineIn[3:pos] == "T" ):
                 return self.key_parse_2xT_1WireTemp(LineIn)
             elif LineIn[1:pos] == "11EM":

@@ -47,7 +47,7 @@ SW_Wind_Gust WG6_WindGust_Multiple = SW_Wind_Gust((byte)MCP23018_W6_ADDRESS, I2C
 
 SW_MCP9808_Sensor T7_FARS_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T7_ADDRESS,I2CBus,(byte)MCP9808_T7_FARSTEMP_SNUM);
 
-SW_MLX90614_Sensor T29_IRSoil_Sensor = SW_MLX90614_Sensor((byte)MLX90614_T29_ADDRESS,I2CBus,(byte)MLX90614_T29_IRTEMP_SNUM);
+SW_MLX90614_Sensor T30_IRSoil_Sensor = SW_MLX90614_Sensor((byte)MLX90614_T30_ADDRESS,I2CBus,(byte)MLX90614_T30_IRTEMP_SNUM);
 
 SW_ChipCap2_Sensor TH8_PRS_Sensor = SW_ChipCap2_Sensor((byte)CHIPCAP2_TH8_ADDRESS,I2CBus,(byte)CHIPCAP2_TH8_PRSTH_SNUM);
 
@@ -114,7 +114,7 @@ void setup()
 	//Not Yet
 	//EM11_Lightning_Sensor.InitializeSensor();
 
-	T29_IRSoil_Sensor.InitializeSensor();
+	T30_IRSoil_Sensor.InitializeSensor();
 
 	TH8_PRS_Sensor.ReportInitialization();
 	TP9_PRS_Sensor.InitializeSensor();
@@ -274,7 +274,7 @@ void loop()
 
 
 
-			T29_IRSoil_Sensor.GetTO1DataAndSend();
+			T30_IRSoil_Sensor.GetTO1DataAndSend();
 
 
 
