@@ -5,6 +5,8 @@
  *      Author: StoicWeather
  */
 
+// TODO Seems to spit garbage when unconnected. Getting *6WGS,FA;+5WGD,267; even when no wind I2C connected
+
 #ifndef SW_WIND_GUST_H_
 #define SW_WIND_GUST_H_
 

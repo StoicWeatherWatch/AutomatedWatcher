@@ -26,7 +26,7 @@
 //Set to report in *AUT,<Uptime / 90 seconds>; format
 //#define SW_CK_REPORT_UP_TIME_MACHINE_READABLE
 // Set to report ms every interrupt
-#define SW_CLOCK_REPORT_MILLS
+//#define SW_CLOCK_REPORT_MILLS
 
 
 //  Clock signal input pin

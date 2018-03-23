@@ -160,13 +160,6 @@ SW_Ck_Mills_Counter_timeLast = SW_Ck_Mills_Counter_timetotal;
 			}
 			Serial.println(F(" minutes;"));
 
-			// Diagnostic TEST LINEs
-			Serial.print(F("#SW_CK_CK90sCount,"));
-						Serial.print(SW_CK_CK90sCount);
-						Serial.print(F("  (SW_CK_CK90sCount * 2)  "));
-						Serial.print((SW_CK_CK90sCount * 2));
-						Serial.println(F(";"));
-
 
 #endif /*SW_CK_REPORT_UP_TIME_MACHINE_READABLE*/
 #endif /* SW_CK_REPORT_UP_TIME */
