@@ -67,9 +67,9 @@ void setup()
 	I2CBus.timeOut(5000);
 
 	//There is a 10 ms time limit to start this so it must be done early.
-	/* TEMP CUT OUT
+
 	TH8_PRS_Sensor.InitializeSensor();
-	*/
+
 
 
 	// TODO consider 7 data bits (all you need for ASSCI...) https://www.arduino.cc/reference/en/language/functions/communication/serial/begin/
@@ -89,12 +89,12 @@ void setup()
 
 
 	//I2CBus.scan();
-	/* TEMP CUT OUT
+
 	TPH3_FARS_Sensor.InitializeSensor();
 
 	T2_CircuitBox_Sensor.InitializeSensor();
 	T7_FARS_Sensor.InitializeSensor();
-	*/
+
 
 	// Switch this back on for wind
 	// TODO Need to reset the wind speed counter on startup (hardware)
@@ -109,7 +109,7 @@ void setup()
 	// Rain Sensor
 	// Set the rain reset high to reset the rain count
 	// TODO reevaluate the use of rain reset
-	/* TEMP CUT OUT
+
 	T20_1Wire_Temp_Sensor.InitializeSensor();
 	//Not Yet
 	//EM11_Lightning_Sensor.InitializeSensor();
@@ -118,7 +118,7 @@ void setup()
 
 	TH8_PRS_Sensor.ReportInitialization();
 	TP9_PRS_Sensor.InitializeSensor();
-	*/
+
 
 	// Master Reset
 	Serial.println(F("# Master Reset;"));
@@ -131,9 +131,9 @@ void setup()
 	// Rain reset?
 	//TODO Handle Rain Reset
 
-	/* TEMP CUT OUT
+
 	R4_Rain_Readout.setup();
-	*/
+
 
 
 	SW_CK_ClockSetup();
@@ -146,6 +146,7 @@ void setup()
 	Serial.print((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
 	Serial.println(F(";"));
 	// END TEST
+
 
 	Serial.flush();
 	Serial.println(F("#Setup Done;"));
@@ -198,13 +199,13 @@ void loop()
 			break;
 		case 1 :
 			// 1 Early
-			/* TEMP CUT OUT
+
 			TPH3_FARS_Sensor.AcquireData();
 			T7_FARS_Sensor.AcquireData();
 
 			TH8_PRS_Sensor.SendMeasurmentRequest();
 			TP9_PRS_Sensor.AcquireData();
-			*/
+
 
 
 
@@ -215,12 +216,12 @@ void loop()
 			// 2 Early
 
 			// 2
-			/* TEMP CUT OUT
+
 			TPH3_FARS_Sensor.RetrieveDataAndSend();
 			T7_FARS_Sensor.SendRawDataSerial();
 
 			TH8_PRS_Sensor.PerformDataFetch();
-			*/
+
 
 
 			break;
@@ -271,10 +272,9 @@ void loop()
 			// 5 Early
 
 
-			/* TEMP CUT OUT
+
 
 			T29_IRSoil_Sensor.GetTO1DataAndSend();
-			*/
 
 
 
@@ -287,9 +287,9 @@ void loop()
 			break;
 		case 6 :
 			// 6 Early
-			/* TEMP CUT OUT
+
 			TP9_PRS_Sensor.RetrieveDataAndSend();
-			*/
+
 
 
 			// 6
@@ -312,10 +312,10 @@ void loop()
 			// TODO be more sophisticated about this
 			if(SW_CK_GetCKLongCount() == 4)
 			{
-				/* TEMP CUT OUT
+
 				T2_CircuitBox_Sensor.AcquireData();
 				T2_CircuitBox_Sensor.SendRawDataSerial();
-				*/
+
 			}
 
 
@@ -324,9 +324,9 @@ void loop()
 
 		case 7 :
 				// 7 Early
-			/* TEMP CUT OUT
+
 				R4_Rain_Readout.AcquireDataAndSend();
-				*/
+
 
 
 				// 7

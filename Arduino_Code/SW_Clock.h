@@ -16,7 +16,7 @@
 #ifndef SW_CLOCK_H_
 #define SW_CLOCK_H_
 
-#define SW_CLOCK_INTERNAL_TIMER_ACTIVE
+//#define SW_CLOCK_INTERNAL_TIMER_ACTIVE
 #define SW_CLOCK_INTERNAL_TIMER_PERIOD 250
 
 #include "SW_Helper_Functions.h"
@@ -25,7 +25,7 @@
 #define SW_CK_REPORT_UP_TIME
 //Set to report in *AUT,<Uptime / 90 seconds>; format
 //#define SW_CK_REPORT_UP_TIME_MACHINE_READABLE
-
+// Set to report ms every interrupt
 #define SW_CLOCK_REPORT_MILLS
 
 
