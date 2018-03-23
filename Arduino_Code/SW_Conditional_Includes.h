@@ -72,19 +72,22 @@
 #define SI1133_EM10_UVOPT_SUNM          10
 #define AS3935_EM11_LIGHTNING_SNUM      11
 #define DS24828_1W_T20_SNUM             20
+// The DS24828 chip takes up sensors 20...27
 #define MLX90614_T30_IRTEMP_SNUM 	   30
 
 
 // Pins
 //#define SW_CK_CLOCK_PIN       2    // Defined in SW Clock
-#define RAINCOUNT_RESET_D_PIN  13
+#define LIGHTNING_IRQ_D_PIN     4
 #define MASTER_RESET_D_PIN      8
 // Rain 9-12 See RAIN_PIN_RANGE
 #define RAIN_DAQ0_D_PIN         9
-#define LIGHTNING_IRQ_D_PIN     4
+#define RAINCOUNT_RESET_D_PIN  13
+
 
 // Analog pins
 #define WIND_DIR_ADC_A_PIN      1
+// I2C Takes up Analog Pins   4...5
 
 
 // Pin Ranges - number of pins starting with DAQ0

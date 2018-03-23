@@ -103,8 +103,9 @@ void setup()
 //Not yet
 	//EM10_UV_Opt_Sensor.InitializeSensor();
 
-	// Done above
-	//WG6_WindGust_Multiple.InitializeSensor();
+	/* Done above
+	 * WG6_WindGust_Multiple.InitializeSensor();
+	 * */
 
 	// Rain Sensor
 	// Set the rain reset high to reset the rain count
@@ -334,7 +335,7 @@ void loop()
 				break;
 		case 8 :
 				// 8 Early
-			 //Switch this back on for wind
+
 
 				WG6_WindGust_Multiple.AcquireWindGustSpeed();
 
@@ -365,7 +366,7 @@ void loop()
 		// Wind Speed readout.
 		if(SW_CK_EveryFifthSecond())
 		{
-			// Switch this back on for wind
+
 
 			W6_WindSpeed_Mean_Sensor.AcquireData();
 
