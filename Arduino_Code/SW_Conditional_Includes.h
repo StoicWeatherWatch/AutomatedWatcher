@@ -76,6 +76,7 @@
 
 
 // Pins
+//#define SW_CK_CLOCK_PIN       2    // Defined in SW Clock
 #define RAINCOUNT_RESET_D_PIN  13
 #define MASTER_RESET_D_PIN      8
 // Rain 9-12 See RAIN_PIN_RANGE

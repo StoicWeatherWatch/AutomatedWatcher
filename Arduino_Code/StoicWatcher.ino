@@ -1,8 +1,9 @@
 /*
 	Stoic Watcher
-	v0.2.1
-	2018-03-18
+	v0.2.2
+	2018-03-23
  */
+#define PRINT_STOIC_VERSION F("#StoicWatcher Starting v0.2.2;")
 
 
 /*
@@ -80,7 +81,7 @@ void setup()
 	delay(10);
 	Serial.println(F(""));
 	delay(10);
-	Serial.println(F("#StoicWatcher Starting v0.2.1;"));
+	Serial.println(PRINT_STOIC_VERSION);
 	Serial.println(F("!startup;"));
 	delay(5);
 
