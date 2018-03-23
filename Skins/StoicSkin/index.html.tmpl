@@ -34,7 +34,7 @@ body {
     color: #B0FEF1;
 }
 h1{
-    font-size: x-large;
+    font-size: large;
     font-weight: bold;
     color: #B2FAFF;
     text-align: center;
@@ -52,7 +52,7 @@ h3{
     text-align: center;
 }
 h4{
-    font-size: x-large;
+    font-size: large;
     font-weight: bold;
     color: #3CF;
     text-align: center;
@@ -217,8 +217,7 @@ nav ul li a:hover, nav ul li.active a {
         <center>
              <h4>Stoic Weather Watch</h4>
 </center>
-        <h1>Current Conditions</h1>
-      <h4>$current.dateTime</h4>
+        <h1>Current Conditions<br />$current.dateTime</h1>
         
       <div class="section">
          <div id="stats_group">
@@ -602,7 +601,7 @@ nav ul li a:hover, nav ul li.active a {
             <tbody>
               
               <tr>
-                <td  bgcolor="#222222" class="stats_label">                
+                <td  bgcolor="#222222" class="stats_label">
                   Rise
                 </td>
                 <td bgcolor="#222222" class="stats_data">
@@ -635,7 +634,7 @@ nav ul li a:hover, nav ul li.active a {
                 </td>
               </tr> 
               <tr>
-                <td bgcolor="#222222" class="stats_label">         
+                <td bgcolor="#222222" class="stats_label">
                   Altitude
                 </td>
                 <td bgcolor="#222222" class="stats_data">
@@ -651,7 +650,7 @@ nav ul li a:hover, nav ul li.active a {
                 </td>
               </tr> 
               <tr>
-                <td bgcolor="#222222" class="stats_label">         
+                <td bgcolor="#222222" class="stats_label">
                   Declination
                 </td>
                 <td bgcolor="#222222" class="stats_data">
@@ -694,7 +693,7 @@ nav ul li a:hover, nav ul li.active a {
               </tr>
               #end if
                   <tr>
-                <td class="stats_label">         
+                <td class="stats_label">
                   Phase
                 </td>
                 <td class="stats_data">
@@ -721,66 +720,43 @@ nav ul li a:hover, nav ul li.active a {
 </div>
         <div class="section">
           
-          <img src="media_weather/Plot1.png"><br />
+          <a href="dayOutTempLG.png"><img src="dayOutTemp.png"></a><br />
          <p>&nbsp;</p>
          <p>&nbsp;</p>
-        <img src="media_weather/Plot3.png" ><br />
+          <img src="dayOutHumid.png" ><br />
           
           <p>&nbsp;</p>
           <p>&nbsp;</p>
 
-          <img src="media_weather/Plot2.png" ><br />
+          <img src="dayRain.png" ><br />
           <p>&nbsp;</p>
           <p>&nbsp;</p>
           
-          <img src="media_weather/Plot7.png"><br />
+          <img src="dayInTemp.png"><br />
           <p>&nbsp;</p>
-          <img src="media_weather/Plot5.png" ><br />
+          <img src="dayInHumid.png" ><br />
           
           
     </div>
         <div class="section">
-            <img src="media_weather/Plot6.png" ><br />
+          <img src="dayBarometer.png" ><br />
           <p>&nbsp;</p>
           <p>&nbsp;</p>
-          <img src="media_weather/Plot4.jpg" ><br />
+          <img src="dayWindSpeed.png" ><br />
           
           
           <p>&nbsp;</p>
           <p>&nbsp;</p>
-          <img src="media_weather/Plot8.png"><br />
+          <img src="dayWindDir.png"><br />
           <p>&nbsp;</p>
           <p>&nbsp;</p>
-          <img src="media_weather/Plot9.png"><br />
+          <img src="dayWindVec.png"><br />
           <p>&nbsp;</p>
-    <img src="media_weather/Plot10.png">
+          <img src="daySoilTemp.png">
   </div><br />
         
       <center>
-        <h4>Nav</h4>     <br />
-        
-        <div id="navbar">
-        <input type="button" value="   Current   " onclick="openURL('index.html')" />
-        <input type="button" value="    Week     " onclick="openURL('week.html')" />
-        <input type="button" value="    Month    " onclick="openURL('month.html')" />
-        <input type="button" value="    Year     " onclick="openURL('year.html')" />
-        <p>Monthly summary:&nbsp;
-        <select NAME=noaaselect onchange="openNoaaFile(value)">
-        #for $monthYear in $SummaryByMonth
-            <option value="$monthYear">$monthYear</option>
-        #end for
-        <option selected>-Select month-</option>
-        </select>
-        <br/>
-        Yearly summary:&nbsp;
-        <select NAME=noaaselect onchange="openNoaaFile(value)">
-        #for $yr in $SummaryByYear
-            <option value="$yr">$yr</option>
-        #end for
-        <option selected>-Select year-</option>
-        </select>
-        </p>
-      </div>
+        <h4></h4>     <br />
         
         
         
@@ -822,6 +798,36 @@ nav ul li a:hover, nav ul li.active a {
     </script>
 
       </div>
+      
+      <center>
+        <h4>Nav</h4>     <br />
+        
+        <div id="navbar">
+        <input type="button" value="   Current   " onclick="openURL('index.html')" />
+        <input type="button" value="    Week     " onclick="openURL('week.html')" />
+        <input type="button" value="    Month    " onclick="openURL('month.html')" />
+        <input type="button" value="    Year     " onclick="openURL('year.html')" />
+        <p>Monthly summary:&nbsp;
+        <select NAME=noaaselect onchange="openNoaaFile(value)">
+        #for $monthYear in $SummaryByMonth
+            <option value="$monthYear">$monthYear</option>
+        #end for
+        <option selected>-Select month-</option>
+        </select>
+        <br/>
+        Yearly summary:&nbsp;
+        <select NAME=noaaselect onchange="openNoaaFile(value)">
+        #for $yr in $SummaryByYear
+            <option value="$yr">$yr</option>
+        #end for
+        <option selected>-Select year-</option>
+        </select>
+        </p>
+      </div>
+        
+        
+
+      </center>
       
       
       
