@@ -1,111 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8" />
-	<title>10 Bloomers</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
- 
+    <meta charset="utf-8" />
+    <title>Stoic Weather Watch: Current Weather Conditions</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+ <script type="text/javascript">
+      function openURL(urlname)
+      {
+        window.location=urlname;
+      }
+      function openNoaaFile(date)
+      {
+        var url = "NOAA/NOAA-";
+        url = url + date;
+        url = url + ".txt";
+        window.location=url;
+      }
+    </script>
+
 <style>
 body {
-	background-color: #000;
-	font-family: Arial, Helvetica, sans-serif;
-	overflow: auto;
-	color: #B0FEF1;
+    background-color: #000;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: auto;
+    color: #B0FEF1;
 }
 h1{
 	font-size: x-large;
 	font-weight: bold;
-	color: #070;
+	color: #B2FAFF;
 	text-align: center;
-	}
+    }
 h2{
-	font-size: medium;
-	font-weight: bold;
-	color: #3CF;
-	text-align: left;
+    font-size: medium;
+    font-weight: bold;
+    color: #3CF;
+    text-align: left;
 } 
 h3{
-	font-size: large;
-	font-weight: bold;
-	color: #040;
-	text-align: center;
+    font-size: large;
+    font-weight: bold;
+    color: #040;
+    text-align: center;
 }
 h4{
-	font-size: x-large;
-	font-weight: bold;
-	color: #A00;
-	text-align: center;
-	}
+    font-size: x-large;
+    font-weight: bold;
+    color: #3CF;
+    text-align: center;
+    }
 h5{
-	font-size: x-large;
-	font-weight: bold;
-	color: #F60;
-	text-align: center;
-	}
+    font-size: x-large;
+    font-weight: bold;
+    color: #F60;
+    text-align: center;
+    }
 img {
-	text-align: center;
+    text-align: center;
     max-width: 100%;
     height: auto;
     width: auto;
-	padding-bottom: 2%;
+    padding-bottom: 2%;
 }
-#wrapper {
-	margin: 0 auto;
-	max-width: 1465px;
-	width: 98%;
-	background: #000;
-	border-radius: 2px;
-	
+wrapper {
+    margin: 0 auto;
+    max-width: 1700px;
+    width: 98%;
+    background: #000;
+    border-radius: 1px;
+    
     }
 .section {
-	width: 29%;
-	float: left;
-	margin: 2% 2%;
-	text-align: left;
-	border-bottom-style: solid;
-	border-bottom-width: thin;
-	border-bottom-color: #056566;
-	}
-#table {
-	text-align: left;
-	}
+    width: 31%;
+    float: left;
+    margin: 1% 1%;
+    text-align: left;
+    border-bottom-style: solid;
+    border-bottom-width: thin;
+    border-bottom-color: #056566;
+    }
+table {
+    text-align: left;
+    }
 footer {
-	background: #056566;
-	width: 100%;
-	overflow: hidden;
-	}
+    background: #056566;
+    width: 100%;
+    overflow: hidden;
+    }
 footer p, footer h3 {
-	color: #E9FEF3;
-	}
+    color: #E9FEF3;
+    }
 footer p a {
-	color: #E9FEF3;
-	text-decoration: none;
-	}
+    color: #E9FEF3;
+    text-decoration: none;
+    }
 ul {
-	list-style-type: none;
-	margin: 0;
-	padding: 0;
-	}
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    }
 li {
-	display: inline;
-	}	
+    display: inline;
+    }    
 nav ul{
-	list-style: none;
+    list-style: none;
     margin: 0;
     padding-left: 7%;
     text-decoration: none;
 } 
 nav ul li{
-	float: left;
+    float: left;
     border: 1px solid #056566;
     color: #056566;
-	font-family: Arial, Helvetica, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     width: 18%;
     padding: 2px;
     text-decoration: none;
 }  
 nav ul li a {
-	background: #C0D6CB;
+    background: #C0D6CB;
     display: block;
     padding: 5px 12px;
     font-weight: bold;
@@ -115,59 +129,59 @@ nav ul li a {
     text-align: center;
 }
 nav ul li a:hover, nav ul li.active a {
-	background-color: #E9FEF3;
+    background-color: #E9FEF3;
     color: #058D8F;
 }
 .banner img {
-	width: 100%;
-	text-align: center;
-	border-top: 1px solid #C0D6CB;
-	border-bottom: 1px solid #C0D6CB;
+    width: 100%;
+    text-align: center;
+    border-top: 1px solid #C0D6CB;
+    border-bottom: 1px solid #C0D6CB;
 }
 .banner {
-	width: 100%;
+    width: 100%;
     text-align: center;
 }
 .clearfix {
-	clear: both;
+    clear: both;
 }
 .left-col {
-	width: 55%;
-	float: left;
-	margin: -2% 1% 1% 1%;
+    width: 55%;
+    float: left;
+    margin: -2% 1% 1% 1%;
 }
 .sidebar {
-	width: 40%;
-	float: right;
-	margin: 1%;
-	text-align: center;
-	}
+    width: 40%;
+    float: right;
+    margin: 1%;
+    text-align: center;
+    }
 .therapy {
-	float: left;
-	margin: 0 auto;
-	width: 100%;
-	height: auto;
-	padding: 1%;
-	}
+    float: left;
+    margin: 0 auto;
+    width: 100%;
+    height: auto;
+    padding: 1%;
+    }
 
 /*-------------MEDIA!-------------*/
 @media screen and (max-width: 478px) {
-	body {
-    	font-size: 13px;
+    body {
+        font-size: 13px;
         }
 }
 @media screen and (max-width: 740px) {
-	nav {
-    	width: 98%;
+    nav {
+        width: 98%;
         margin-bottom: 10px;
     }
-	nav ul{
-    	list-style: none;
+    nav ul{
+        list-style: none;
         margin: 0 auto;
         padding-left: 0;
     }
     nav ul li {
-    	text-align: center;
+        text-align: center;
         margin-left: 0 auto;
         width: 100%;
        
@@ -176,13 +190,13 @@ nav ul li a:hover, nav ul li.active a {
     padding: 8px 0;
     }
     .left-col {
-    	width: 100%;
+        width: 100%;
     }
     .sidebar {
-    	width: 100%;
+        width: 100%;
     }
     .section {
-    	float: left;
+        float: left;
         width: 100%;
         margin: 0;       
     }
@@ -193,13 +207,13 @@ nav ul li a:hover, nav ul li.active a {
 
 <body>
   <div id="wrapper">
-		<center>
-   	      <h4>Image</h4>
+        <center>
+             <h4>Stoic Weather Watch</h4>
 </center>
-        <h1>Text</h1>
-	  <h4>Text</h4>
+        <h1>Current Conditions</h1>
+    <h4>22-Mar-2018 17:40</h4>
         
-	  <div class="section">
+      <div class="section">
          <div id="stats_group">
 
         <div class="stats">
@@ -211,41 +225,41 @@ nav ul li a:hover, nav ul li.active a {
             <tbody>
               <tr>
                 <td bgcolor="#222222"  class="stats_label">Outside Temperature</td>
-                <td bgcolor="#222222" class="stats_data">32.2°C</td>
+                <td bgcolor="#222222" class="stats_data">16.8&#176;C</td>
               </tr>
               <tr>
                 <td class="stats_label">Barometer</td>
-                <td class="stats_data">1234.5 hPa</td>
+                <td class="stats_data">948.4 hPa</td>
               </tr>
               <tr>
-                <td bgcolor="#222222" class="stats_label">Barometer Trend</td>
-                <td bgcolor="#222222" class="stats_data">123.5 hPa (falling) </td>
+                <td bgcolor="#222222" class="stats_label">Barometer Trend (3 hours)</td>
+                <td bgcolor="#222222" class="stats_data">-25.0 hPa </td>
               </tr>
               <tr>
                 <td class="stats_label">Relative Humidity</td>
-                <td class="stats_data">50.0 %</td>
+                <td class="stats_data">65%</td>
               </tr>
               <tr>
                 <td bgcolor="#222222" class="stats_label">Dewpoint</td>
-                <td bgcolor="#222222" class="stats_data">-11.5°C</td>
+                <td bgcolor="#222222" class="stats_data">10.1&#176;C</td>
               </tr>
               <tr>
                 <td class="stats_label">Wind</td>
-                <td class="stats_data">15.5 m/s from 280 (WNW)</td>
+                <td class="stats_data">   N/A from    N/A (N/A)</td>
               </tr>
               
            
               <tr>
                 <td bgcolor="#222222" class="stats_label">Wind Gust</td>
-                <td bgcolor="#222222" class="stats_data">19.1 m/s from 280 (WNW)</td>
+                <td bgcolor="#222222" class="stats_data">   N/A from    N/A (N/A)</td>
               </tr>
               <tr>
                 <td class="stats_label">Rain Rate</td>
-                <td class="stats_data">   0.0 mm/hr</td>
+                <td class="stats_data">0.0 mm/hr</td>
               </tr>
               <tr>
-                <td bgcolor="#222222" class="stats_label">placeholder</td>
-                <td bgcolor="#222222" class="stats_data">12345.6 unit</td>
+                <td bgcolor="#222222" class="stats_label">Soil Surface</td>
+                <td bgcolor="#222222" class="stats_data">18.0&#176;C</td>
               </tr>
               <tr>
                 <td class="stats_label">placeholder</td>
@@ -262,9 +276,7 @@ nav ul li a:hover, nav ul li.active a {
             </tbody>
           </table>
         </div>
-
-        <p>&nbsp;</p>
-<div class="stats">
+        <div class="stats">
           <div class="stats_header">
             <h2><strong>Inside</strong></h2>
           </div>
@@ -273,33 +285,31 @@ nav ul li a:hover, nav ul li.active a {
             <tbody>
               <tr>
                 <td bgcolor="#222222"  class="stats_label">Temperature</td>
-                <td bgcolor="#222222" class="stats_data">32.2°C</td>
+                <td bgcolor="#222222" class="stats_data">   N/A</td>
               </tr>
               <tr>
                 <td class="stats_label">Relative Humidity</td>
-                <td class="stats_data">50.0 %</td>
+                <td class="stats_data">   N/A</td>
               </tr>
               <tr>
-                <td bgcolor="#222222" class="stats_label">Dewpoint</td>
-                <td bgcolor="#222222" class="stats_data">-11.5°C  </td>
+                <td bgcolor="#222222" class="stats_label">Barometer</td>
+                <td bgcolor="#222222" class="stats_data">   N/A</td>
               </tr>
              
             </tbody>
           </table>
         </div>
-
-        <p>&nbsp;</p>
         <div class="stats">
           <div class="stats_header">
           <h2><strong>Since Midnight </strong></h2></div>
           <table>
             <tbody>
               <tr>
-                <td bgcolor="#222222" class="stats_label">                
+                <td bgcolor="#222222" class="stats_label">
                   High Temperature
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  99.0°C at 03:00:00
+                  19.7&#176;C at 14:00
                 </td>
               </tr>
               <tr>
@@ -308,14 +318,14 @@ nav ul li a:hover, nav ul li.active a {
                   Low Temperature
                 </td>
                 <td class="stats_data">
-                  -19.0°C at 03:00:00</td>
+                  10.3&#176;C at 05:33</td>
               </tr>
               <tr>
                 <td bgcolor="#222222" class="stats_label">
                   High Humidity
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  100% at 01:35:00
+                  89% at 07:25
                 </td>
               </tr>
               
@@ -324,7 +334,7 @@ nav ul li a:hover, nav ul li.active a {
                   High Dewpoint
                 </td>
                 <td class="stats_data">
-                  1299.5 hPa at 04:35:00
+                  11.1&#176;C at 17:05
                 </td>
               </tr>
               <tr>
@@ -332,15 +342,15 @@ nav ul li a:hover, nav ul li.active a {
                   Low Dewpoint
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  -6.3°C at 01:45:00
+                  7.5&#176;C at 01:45
                 </td>
               </tr>
               <tr>
-                <td class="stats_label">         
+                <td class="stats_label">
                   Low Humidity
                 </td>
                 <td class="stats_data">
-                  50.0 %
+                  51% at 14:01
                 </td>
               </tr>
               
@@ -349,7 +359,7 @@ nav ul li a:hover, nav ul li.active a {
                   High Barometer
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  1299.5 hPa at 04:35:00
+                  976.2 hPa at 14:05
                 </td>
               </tr>
               <tr>
@@ -357,23 +367,23 @@ nav ul li a:hover, nav ul li.active a {
                   Low Barometer
                 </td>
                 <td class="stats_data">
-                  1299.5 hPa at 04:35:00
+                  920.8 hPa at 04:20
                 </td>
               </tr>
               <tr>
                 <td bgcolor="#222222" class="stats_label">Today's Rain</td>
-                <td bgcolor="#222222" class="stats_data">0.3 mm</td>
+                <td bgcolor="#222222" class="stats_data">0.0 mm</td>
               </tr>
               <tr>
                 <td class="stats_label">High Rain Rate</td>
-                <td class="stats_data">2.2 mm/hr at 03:25:00</td>
+                <td class="stats_data">0.0 mm/hr at 00:00</td>
               </tr>
               <tr>
                 <td bgcolor="#222222" class="stats_label">
                   Highest Wind Mean
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                     19.1 m/s from 280 (WNW) at 03:25:00
+                     Not yet
                 </td>
               </tr>
               <tr>
@@ -381,7 +391,7 @@ nav ul li a:hover, nav ul li.active a {
                   Highest Wind Gust
                 </td>
                 <td class="stats_data">
-                     19.1 m/s from 280 (WNW) at 03:25:00
+                     Not yet
                 </td>
               </tr>
               <tr>
@@ -389,16 +399,15 @@ nav ul li a:hover, nav ul li.active a {
                   Mean Wind
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                   19.1 m/s from 280 (WNW)
+                   not yet
                 </td>
               </tr>
-
               <tr>
                 <td class="stats_label">
                   RMS Wind
                 </td>
                 <td class="stats_data">
-                     N/A
+                     not yet
                 </td>
               </tr>
 
@@ -407,7 +416,7 @@ nav ul li a:hover, nav ul li.active a {
                   Vector Average Speed
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                    
+                    not yet
                 </td>
               </tr>
               <tr>
@@ -415,24 +424,23 @@ nav ul li a:hover, nav ul li.active a {
                   Vector Average Direction
                 </td>
                 <td class="stats_data">
-                     
+                    not yet
                 </td>
               </tr>
 
               
             </tbody>
           </table>
-          <p>&nbsp;</p>
-            <div class="stats_header">
+          <div class="stats_header">
           <h2><strong>Since Midnight Inside </strong></h2></div>
           <table>
             <tbody>
               <tr>
-                <td bgcolor="#222222" class="stats_label">                
+                <td bgcolor="#222222" class="stats_label">
                   High Temperature
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  99.0°C at 03:00:00
+                  99.0C at 03:00:00
                 </td>
               </tr>
               <tr>
@@ -441,7 +449,7 @@ nav ul li a:hover, nav ul li.active a {
                   Low Temperature
                 </td>
                 <td class="stats_data">
-                  -19.0°C at 03:00:00</td>
+                  -19.0C at 03:00:00</td>
               </tr>
               <tr>
                 <td bgcolor="#222222" class="stats_label">
@@ -465,11 +473,11 @@ nav ul li a:hover, nav ul li.active a {
                   Low Dewpoint
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  -6.3°C at 01:45:00
+                  -6.3C at 01:45:00
                 </td>
               </tr>
               <tr>
-                <td class="stats_label">         
+                <td class="stats_label">
                   Low Humidity
                 </td>
                 <td class="stats_data">
@@ -478,17 +486,16 @@ nav ul li a:hover, nav ul li.active a {
               </tr>             
             </tbody>
           </table>
-          <p>&nbsp;</p>
-            <div class="stats_header">
+          <div class="stats_header">
           <h2><strong>Solar Almanac</strong></h2></div>
           <table>
             <tbody>
               <tr>
-                <td bgcolor="#222222" class="stats_label">                
+                <td bgcolor="#222222" class="stats_label">
                   Start civil Twilight
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  5:58:44 AM
+                  06:21
                 </td>
               </tr>
               <tr>
@@ -497,31 +504,28 @@ nav ul li a:hover, nav ul li.active a {
                   Sunrise
                 </td>
                 <td class="stats_data">
-                  6:24:03 AM</td>
+                  <p>$almanac.sun.rise.string<br />($sun_None)</p></td>
               </tr>
               <tr>
                 <td bgcolor="#222222" class="stats_label">
                   Transit
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  11:59:29 AM
+                  12:52
                 </td>
               </tr>
-              
               <tr>
                 <td class="stats_label">
                   Sunset
                 </td>
-                <td class="stats_data">
-                  5:35:21 PM
-                </td>
+                <td class="stats_data"><p>$almanac.sun.set.string<br />($sun_None)</p></td>
               </tr>
               <tr>
                 <td bgcolor="#222222" class="stats_label">
                   End civil Twilight
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  6:00:41 PM
+                  19:24
                 </td>
               </tr>
               <tr>
@@ -529,7 +533,7 @@ nav ul li a:hover, nav ul li.active a {
                   Azimuth
                 </td>
                 <td class="stats_data">
-                  287.3°
+                  260.8&deg;
                 </td>
               </tr> 
               <tr>
@@ -537,7 +541,7 @@ nav ul li a:hover, nav ul li.active a {
                   Altitude
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  -43.5°
+                  $("%.1f&deg;" % $sun_altitude)
                 </td>
               </tr> 
               <tr>
@@ -545,7 +549,7 @@ nav ul li a:hover, nav ul li.active a {
                   Right Ascension
                 </td>
                 <td class="stats_data">
-                  333.5°
+                  2.1&deg;
                 </td>
               </tr> 
               <tr>
@@ -553,30 +557,21 @@ nav ul li a:hover, nav ul li.active a {
                   Declination
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  -10.9°
+                  0.9&deg;
                 </td>
               </tr>     
-              <tr>
-                <td class="stats_label">         
-                  Equinox
-                </td>
-                <td class="stats_data">
-                  03/20/2018 9:15:17
-                </td>
-              </tr> 
-              <tr>
-                <td bgcolor="#222222" class="stats_label">         
-                  Solstice
-                </td>
-                <td bgcolor="#222222" class="stats_data">
-                  06/21/2018 3:07:23
-                </td>
-              </tr>        
+                <tr>
+                  <td class="stats_label">Solstice</td>
+                  <td class="stats_data">21-06-2018 03:07</td>
+                </tr>
+                <tr>
+                  <td bgcolor="#222222" class="stats_label">Equinox</td>
+                  <td bgcolor="#222222" class="stats_data">22-09-2018 18:54</td>
+                </tr>
                                   
             </tbody>
           </table>
-          <p>&nbsp;</p>
-            <div class="stats_header">
+          <div class="stats_header">
           <h2><strong>Lunar Almanac</strong></h2></div>
           <table>
             <tbody>
@@ -586,14 +581,14 @@ nav ul li a:hover, nav ul li.active a {
                   Rise
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  8:46:53 AM</td>
+                  10:24</td>
               </tr>
               <tr>
                 <td class="stats_label">
                   Transit
                 </td>
                 <td class="stats_data">
-                  3:03:17 PM
+                  17:24
                 </td>
               </tr>
               
@@ -602,7 +597,7 @@ nav ul li a:hover, nav ul li.active a {
                   Set
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  9:25:57 PM
+                  00:28
                 </td>
               </tr>
               
@@ -611,7 +606,7 @@ nav ul li a:hover, nav ul li.active a {
                   Azimuth
                 </td>
                 <td class="stats_data">
-                  271.5°
+                  193.7&deg;
                 </td>
               </tr> 
               <tr>
@@ -619,7 +614,7 @@ nav ul li a:hover, nav ul li.active a {
                   Altitude
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  4.5°
+                  74.3&deg;
                 </td>
               </tr> 
               <tr>
@@ -627,7 +622,7 @@ nav ul li a:hover, nav ul li.active a {
                   Right Ascension
                 </td>
                 <td class="stats_data">
-                  21.5°
+                  70.2&deg;
                 </td>
               </tr> 
               <tr>
@@ -635,15 +630,15 @@ nav ul li a:hover, nav ul li.active a {
                   Declination
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  3.6°
+                  17.3&deg;
                 </td>
-              </tr>     
+              </tr>
               <tr>
                 <td class="stats_label">         
                   Full Moon
                 </td>
                 <td class="stats_data">
-                  03/01/2018 4:51:20
+                  31-03-2018 05:36
                 </td>
               </tr> 
               <tr>
@@ -651,9 +646,9 @@ nav ul li a:hover, nav ul li.active a {
                   New Moon
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  03/17/2018 6:11:34
+                  15-04-2018 18:57
                 </td>
-              </tr>        
+              </tr>
                   <tr>
                 <td class="stats_label">         
                   Phase
@@ -680,158 +675,107 @@ nav ul li a:hover, nav ul li.active a {
 
 
 </div>
-    	<div class="section">
-    	  <h4>Text2</h4>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-    	  <p>&nbsp;</p>
-     
-        </div>
-    	<div class="section">
-       	  <h4>text3</h4>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-       	  <p>&nbsp;</p>
-        </div><br />
+        <div class="section">
+          
+          <img src="media_weather/Plot1.png"><br />
+         <p>&nbsp;</p>
+         <p>&nbsp;</p>
+        <img src="media_weather/Plot3.png" ><br />
+          
+          <p>&nbsp;</p>
+          <p>&nbsp;</p>
+
+          <img src="media_weather/Plot2.png" ><br />
+          <p>&nbsp;</p>
+          <p>&nbsp;</p>
+          
+          <img src="media_weather/Plot7.png"><br />
+          <p>&nbsp;</p>
+          <img src="media_weather/Plot5.png" ><br />
+          
+          
+    </div>
+        <div class="section">
+            <img src="media_weather/Plot6.png" ><br />
+          <p>&nbsp;</p>
+          <p>&nbsp;</p>
+          <img src="media_weather/Plot4.jpg" ><br />
+          
+          
+          <p>&nbsp;</p>
+          <p>&nbsp;</p>
+          <img src="media_weather/Plot8.png"><br />
+          <p>&nbsp;</p>
+          <p>&nbsp;</p>
+          <img src="media_weather/Plot9.png"><br />
+          <p>&nbsp;</p>
+    <img src="media_weather/Plot10.png">
+  </div><br />
         
       <center>
         <h4>Text</h4>     <br />
+        
+        <div id="navbar">
+        <input type="button" value="   Current   " onclick="openURL('index.html')" />
+        <input type="button" value="    Week     " onclick="openURL('week.html')" />
+        <input type="button" value="    Month    " onclick="openURL('month.html')" />
+        <input type="button" value="    Year     " onclick="openURL('year.html')" />
+        <p>Monthly summary:&nbsp;
+        <select NAME=noaaselect onchange="openNoaaFile(value)">
+            <option value="2018-03">2018-03</option>
+        <option selected>-Select month-</option>
+        </select>
+        <br/>
+        Yearly summary:&nbsp;
+        <select NAME=noaaselect onchange="openNoaaFile(value)">
+            <option value="2018">2018</option>
+        <option selected>-Select year-</option>
+        </select>
+        </p>
+      </div>
         
         
         
 
       </center>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<script src="../plants/crestridge/jquery.rwdImageMaps.min.js"></script>
-<script>
-$(document).ready(function(e) {
-		$('img[usemap]').rwdImageMaps();
-		
-});
-</script>
-  	</div>
+      
+<script type="text/javascript">
+      var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+      document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+    </script>
+    <script type="text/javascript">
+      try {
+        var pageTracker = _gat._getTracker("$Extras.googleAnalyticsId");
+        pageTracker._trackPageview();
+      } catch (err) { }
+    </script>
+    <script type="application/ld+json">
+      {
+      "@context" : "http://schema.org",
+      "@type" : "Article",
+      "Headline" : "$Extras.location_long Weather",
+      "datePublished" : "2018-03-22T17:40:00$Extras.ISO8061_delta",
+      "image" : "/daytempdew.png",
+      "articleSection" : "Current Conditions: Outside Temperature 16.8&#176;C Dewpoint ?'dewpoint'? Humidity 65% Barometer 948.4 hPa Wind    N/A from    N/A (N/A) Rain Today 0.0 mm"
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+      "@context" : "http://schema.org",
+      "@type" : "WebSite",
+      "name" : "$Extras.location_long Weather",
+      "alternateName" : "Current $Extras.location_long Weather",
+      "url" : ""
+      }
+    </script>
+
+      </div>
+      
+      
+      
+      
 
 <p style="text-align: center; padding: Opx; color: #FFF7D1;">&#169;</p>
 </body>
 </html>
+
