@@ -1474,7 +1474,7 @@ class StoicWatcher(object):
         IR Soil Temp
         """
         
-        logdbg("29T LineIn: %s" %LineIn)
+        logdbg("30T LineIn: %s" %LineIn)
         
         
         if not self.IR_soil_temp_line_validation(LineIn):
