@@ -48,7 +48,7 @@ bool SW_CK_EverySecondNotCalled = false;
 
 unsigned long SW_Ck_Internal_Timer_timeLast = 0;
 unsigned long SW_Ck_Internal_Timer_tineNow = 0;
-unsigned long SW_Ck_Mills_Counter_timeLastSec = 0;
+
 
 #endif /*SW_CLOCK_INTERNAL_TIMER_ACTIVE*/
 
@@ -56,6 +56,7 @@ unsigned long SW_Ck_Mills_Counter_timeLastSec = 0;
 
 unsigned long SW_Ck_Mills_Counter_timeLast = 0;
 unsigned long SW_Ck_Mills_Counter_timetotal = 0;
+unsigned long SW_Ck_Mills_Counter_timeLastSec = 0;
 
 #endif /*SW_CLOCK_REPORT_MILLS*/
 
