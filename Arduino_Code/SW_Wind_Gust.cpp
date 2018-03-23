@@ -81,6 +81,16 @@ void SW_Wind_Gust::AcquireWindGustSpeed()
 		Difference = (byte)(DataIn - LastGustReadout);
 	}
 
+#ifdef TEST_PRINTS
+
+	Serial.print(F("#Wind read  "));
+	Serial.print(DataIn,HEX);
+	Serial.print(F("  diff from last  "));
+	Serial.print(Difference,HEX);
+	Serial.println(F(";"));
+
+#endif /*TEST_PRINTS*/
+
 	LastGustReadout = DataIn;
 
 #ifdef RUN_GUST_SIMULATION
