@@ -5,6 +5,14 @@
 ## If you do this, you should also change the 'Content-Type' metadata below.
 #encoding UTF-8
 ##
+
+   #set $sun_altitude = $almanac.sun.alt
+   #if $sun_altitude < 0
+      #set $sun_None="<i>(Always down)</i>"
+   #else
+      #set $sun_None="<i>(Always up)</i>"
+   #end if
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -723,36 +731,36 @@ nav ul li a:hover, nav ul li.active a {
           <a href="dayOutTempLG.png"><img src="dayOutTemp.png"></a><br />
          <p>&nbsp;</p>
          <p>&nbsp;</p>
-          <img src="dayOutHumid.png" ><br />
+          <a href="dayOutHumidLG.png"><img src="dayOutHumid.png" ></a><br />
           
           <p>&nbsp;</p>
           <p>&nbsp;</p>
 
-          <img src="dayRain.png" ><br />
+          <a href="dayRainLG.png"><img src="dayRain.png" ></a><br />
           <p>&nbsp;</p>
           <p>&nbsp;</p>
           
-          <img src="dayInTemp.png"><br />
+          <a href="dayInTempLG.png"><img src="dayInTemp.png"></a><br />
           <p>&nbsp;</p>
-          <img src="dayInHumid.png" ><br />
+          <a href="dayInHumidLG.png"><img src="dayInHumid.png" ></a><br />
           
           
     </div>
         <div class="section">
-          <img src="dayBarometer.png" ><br />
+          <a href="dayBarometerLG.png"><img src="dayBarometer.png" ></a><br />
           <p>&nbsp;</p>
           <p>&nbsp;</p>
-          <img src="dayWindSpeed.png" ><br />
+          <a href="dayWindSpeedLG.png"><img src="dayWindSpeed.png" ></a><br />
           
           
           <p>&nbsp;</p>
           <p>&nbsp;</p>
-          <img src="dayWindDir.png"><br />
+          <a href="dayWindDirLG.png"><img src="dayWindDir.png"></a><br />
           <p>&nbsp;</p>
           <p>&nbsp;</p>
-          <img src="dayWindVec.png"><br />
+          <a href="dayWindVecLG.png"><img src="dayWindVec.png"></a><br />
           <p>&nbsp;</p>
-          <img src="daySoilTemp.png">
+          <a href="daySoilTempLG.png"><img src="daySoilTemp.png"></a>
   </div><br />
         
       <center>
