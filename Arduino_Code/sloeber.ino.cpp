@@ -2,24 +2,16 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2018-01-10 01:11:28
+//This file has been generated on 2018-03-23 03:34:12
 
 #include "Arduino.h"
-#include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_TSL2561_U.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
+#define PRINT_STOIC_VERSION F("#StoicWatcher Starting v0.2.2;")
+#include "SW_Conditional_Includes.h"
 
 void setup() ;
 void loop() ;
-void displaySensorDetails(void) ;
-void configureSensor(void) ;
-void setup(void)  ;
-void loop(void)  ;
 
 #include "StoicWatcher.ino"
 
-#include "sensorapi_JW.ino"
 
 #endif
