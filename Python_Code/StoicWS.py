@@ -131,8 +131,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
     def readCalibrationDict(self, stn_dict):
         
         def BoschHEXHEX2UnsignedLong(msb,lsb):
-            
-           
+
             return  ((long(msb,16) << 8) + long(lsb,16))
             
         def BoschHEXHEX2SignedLong(msb,lsb):
@@ -141,8 +140,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
                 sign = long(-1)
             else:
                 sign = long(1)
-                
-            
+
             return (sign * (((long(msb,16) & 0b01111111) << 8) + long(lsb,16)))
         
         stoic_Cal_dict = dict()
@@ -189,9 +187,8 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         stoic_Cal_dict["wind_direction_half_bin_size"] = int(stn_dict.get('wind_direction_half_bin_size'))
         stoic_Cal_dict["wind_direction_max_ADC"] = int(stn_dict.get('wind_direction_max_ADC'))
 
-
+        #  Data sheet T1 unsigned 
         stoic_Cal_dict["BME280_1_CAL_T1"] = BoschHEXHEX2UnsignedLong(stn_dict.get("cal-BME280-1.2.1"),stn_dict.get("cal-BME280-1.2.0"))
-
         #  Data sheet T2 signed 
         stoic_Cal_dict["BME280_1_CAL_T2"] = BoschHEXHEX2SignedLong(stn_dict.get("cal-BME280-1.2.3"),stn_dict.get("cal-BME280-1.2.2"))
         #  Data sheet T3 Signed
@@ -634,8 +631,6 @@ class StoicWatcher(object):
         var2  = (( ( ((RawTemp>>4) - (self.stoic_Cal_dict[BME280ID+"_CAL_T1"])) * ((RawTemp>>4) - (self.stoic_Cal_dict[BME280ID+"_CAL_T1"])) ) >> 12) * (self.stoic_Cal_dict[BME280ID+"_CAL_T3"]) ) >> 14
 
         TFine = var1 + var2
-        
-         
 
         # The limits for the sensor are -40 to 85 C. Equivalent to an output of -4000 or 8500
         if (TFine < -204826):
