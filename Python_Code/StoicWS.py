@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.1.14
-# 2018-03-23
+# Version 0.2.0
+# 2018-04-01
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
