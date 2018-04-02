@@ -16,6 +16,7 @@ SW_Wind_Speed_Mean::SW_Wind_Speed_Mean(byte AddressIn, I2C I2CBussIn, byte Numbe
 		// Holds the location of the most recently recorded record in the queue
 		CurrentSpeedQueueLoc = -1;
 		// Counts by data points. With 13 bits it takes 2 bytes for each data point unless you want to get tricky.
+		// TODO Replace all calloc with fixed array sizes fed from conditional includes.
 		WindSpeedQueue = (byte*)calloc(NumberOfSpeedRecordsIn*2, sizeof(byte));
 		SpeedQueueLength = NumberOfSpeedRecordsIn;
 

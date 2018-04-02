@@ -19,6 +19,8 @@
 #ifndef SW_MCP2318_GPIO_SENSOR_H_
 #define SW_MCP2318_GPIO_SENSOR_H_
 
+#define REPORT_ALL_READINGS_TEST
+
 // These assume BANK = 0
 #define MCP2318_IOCON_REG    0x0A
 #define MCP2318_IODIRA_REG   0x00

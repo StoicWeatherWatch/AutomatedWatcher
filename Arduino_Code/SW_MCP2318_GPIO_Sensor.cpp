@@ -18,12 +18,6 @@ SW_MCP2318_GPIO_Sensor::SW_MCP2318_GPIO_Sensor(byte AddressIn, I2C I2CBussIn, by
 {
 
 
-
-
-	Serial.print(F("#SW_MCP2318_GPIO_Sensor constructed;"));
-
-
-
 }
 
 int SW_MCP2318_GPIO_Sensor::AcquireDataAndReturn()
@@ -58,10 +52,12 @@ int SW_MCP2318_GPIO_Sensor::AcquireDataAndReturn()
 	//Serial.print(DataIn, HEX);
 	//Serial.println(F(";"));
 
-	//TEST LINE
-	/*Serial.print(F("# MCP23018 readin "));
-	Serial.print(DataIn, HEX);
-	Serial.println(F(";"));*/
+
+#ifdef REPORT_ALL_READINGS_TEST
+	Serial.print(F("# MCP23018 readin "));
+	Serial.print(DataIn, BIN);
+	Serial.println(F(";"));
+#endif /*REPORT_ALL_READINGS_TEST*/
 
 	return DataIn;
 }

@@ -15,6 +15,7 @@ SW_Wind_Gust::SW_Wind_Gust(byte MCP23018AddressIn, I2C I2CBussIn, byte NumberofG
 	if((((int)NumberofGustSpeedRecordsIn) % 8) != 0)
 		NumBytesInSentRecordQueue++;
 
+	// TODO Replace all calloc with fixed array sizes fed from conditional includes.
 	SentRecordQueue = (byte*)calloc(NumBytesInSentRecordQueue, sizeof(byte));
 
 	//  Wind Measurements
@@ -23,13 +24,18 @@ SW_Wind_Gust::SW_Wind_Gust(byte MCP23018AddressIn, I2C I2CBussIn, byte NumberofG
 	CurrentSpeedQueueLoc = -1;
 	// Counts by data points. With 13 bits it takes 2 bytes for each data point unless you want to get tricky.
 	// But since we only record differences, a byte is all we need
+	// TODO Replace all calloc with fixed array sizes fed from conditional includes.
 	WindSpeedGustQueue = (byte*)calloc(NumberofGustSpeedRecordsIn, sizeof(byte));
+	/*
+	 * For reasons unknown, calloc is not initializing the array to zero. And attempts to correct it caused all sorts of memory overflow issues.*/
+
 	SpeedQueueLength = NumberofGustSpeedRecordsIn;
 
 	LastGustReadout = 0;
 
 
 }
+
 
 void SW_Wind_Gust::AcquireWindGustDirection()
 {

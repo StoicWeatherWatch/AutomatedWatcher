@@ -1,7 +1,7 @@
 /*
 	Stoic Watcher
 	v0.2.2
-	2018-03-23
+	2018-03-29
  */
 #define PRINT_STOIC_VERSION F("#StoicWatcher Starting v0.2.2;")
 
@@ -103,9 +103,7 @@ void setup()
 //Not yet
 	//EM10_UV_Opt_Sensor.InitializeSensor();
 
-	/* Done above
-	 * WG6_WindGust_Multiple.InitializeSensor();
-	 * */
+
 
 	// Rain Sensor
 	// Set the rain reset high to reset the rain count

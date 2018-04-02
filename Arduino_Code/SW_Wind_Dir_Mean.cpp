@@ -25,6 +25,7 @@ void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 
 		// Bin the data
 		byte *Bins;
+		// TODO Replace all calloc with fixed array sizes fed from conditional includes.
 		Bins = (byte*) calloc ((int)NUMBER_OF_BINS,sizeof(byte));
 
 		int *DirectionQueueCopy;

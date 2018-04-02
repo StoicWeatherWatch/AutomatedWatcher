@@ -21,6 +21,7 @@ SW_Wind_Dir_Analog::SW_Wind_Dir_Analog(byte AAQ0PinIn, byte NumberOfRecordsIn, b
 	CurrentDirectionQueueLoc = -1;
 	// Counts by data points. CurrentQueueLoc*3/2 + CurrentQueueLoc*3%2 gives pointer to LSB block.
 	// We can fit a 10 bit ADC output in a 12 bit space. Thus we can fit two data points in three bytes. It just gets tricky to save and recover it...
+	// TODO Replace all calloc with fixed array sizes fed from conditional includes.
 	DirectionQueue = (byte*)calloc((NumberOfRecordsIn*3)/2, sizeof(byte));
 	DirectionQueueLength = NumberOfRecordsIn;
 
@@ -35,6 +36,13 @@ SW_Wind_Dir_Analog::SW_Wind_Dir_Analog(byte AAQ0PinIn, byte NumberOfRecordsIn, b
 bool SW_Wind_Dir_Analog::AcquireDirectionDataOnly()
 {
 	int AAQread = Read_Pin();
+
+#ifdef PRINT_READING_TEST
+	Serial.print(F("#Wind AcquireDataOnly direction  "));
+	Serial.print(AAQread);
+	Serial.println(F(";"));
+#endif /*PRINT_READING_TEST*/
+
 	//Serial.println(F("#Wind AcquireDataOnly;"));
 
 	return RecordDirectionReading(AAQread);

@@ -16,7 +16,7 @@
 #ifndef SW_CLOCK_H_
 #define SW_CLOCK_H_
 
-//#define SW_CLOCK_INTERNAL_TIMER_ACTIVE
+#define SW_CLOCK_INTERNAL_TIMER_ACTIVE
 #define SW_CLOCK_INTERNAL_TIMER_PERIOD 250
 
 #include "SW_Helper_Functions.h"

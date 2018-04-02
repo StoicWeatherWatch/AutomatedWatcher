@@ -13,6 +13,9 @@
 // Tests to see how llong it takes to serial write certain things.
 //#define RUN_TIME_TEST
 
+// Print out each direction reading
+//#define PRINT_READING_TEST
+
 
 // Make certain it is called the correct number of times
 #define CALL_COUNT_VALIDATION
