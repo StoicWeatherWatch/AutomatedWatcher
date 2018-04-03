@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.2.0
+# Version 0.2.1
 # 2018-04-01
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
@@ -85,13 +85,15 @@ import time
 import traceback
 import serial.tools.list_ports
 
+from SW_RemoteWatcher import SW_RemoteWatcher
+
 # TODO do I use binascii?
 import binascii
 
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.1.14'
+DRIVER_VERSION = '0.2.1'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -300,16 +302,27 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         
         stoic_Cal_dict = self.readCalibrationDict(stn_dict)
 
-        
 
         self.StoicWatcher = StoicWatcher(self.port, self.baudrate, stoic_Cal_dict, debug_serial=debug_serial)
         #self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial)
         self.StoicWatcher.open()
         
+        #This is for receiving form remote sensors
+        #TODO Set the port from conf file
+        loginf("StoicWSDriver opening SW_RemoteWatcher")
+        self.RemoteSouce = SW_RemoteWatcher(1216,dict())
+        loginf("StoicWSDriver init done")
+        self.RemoteSouce.StartMonitoringForRemotes()
+        
     def closePort(self):
+        loginf("StoicWSDriver closePort") 
         if self.StoicWatcher is not None:
             self.StoicWatcher.close()
             self.StoicWatcher = None
+            
+        if self.RemoteSouce is not None:
+            self.RemoteSouce.StopMonitoringForRemotes()
+            self.RemoteSouce = None
         
     @property
     def hardware_name(self):
@@ -323,6 +336,11 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         raise NotImplementedError("Method 'setTime' not implemented because Stoic is timeless")
     
     def genLoopPackets(self):
+        """
+        This is where the action is
+        """
+        loginf("StoicWSDriver genLoopPackets")
+        
         while True:
             packet = {'dateTime': int(time.time() + 0.5),
                       'usUnits': weewx.METRICWX}
@@ -331,6 +349,16 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
             if data != None:
                 packet.update(data)
                 yield packet
+            
+            # This handles the remote sensors
+            packet2 = {'dateTime': int(time.time() + 0.5),'usUnits': weewx.METRICWX}
+            
+            data2 = self.RemoteSouce.GetData()
+            
+            
+            if data2 != None:
+                packet2.update(data2)
+                yield packet2
 
 class StoicWatcher(object):
     
