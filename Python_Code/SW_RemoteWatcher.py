@@ -7,8 +7,11 @@
 Remotes will push data. This class will hold it and report it when asked
 """
 
+#TODO Try a sequence of addresses (ports) until one works
+
 from twisted.protocols import amp
 from twisted.internet import reactor
+from twisted.internet import error as twistedError
 from twisted.internet.protocol import Factory
 
 import threading
@@ -47,10 +50,10 @@ class RemoteWatcherFactory(Factory):
     
     
 class IndoorPiA(amp.Command):
-    arguments = [(b'TA', amp.Float()),
-                 (b'PA', amp.Float()),
-                 (b'HA', amp.Float())]
-    response = [(b'cksu', amp.Float())]
+    arguments = [('TA', amp.Float()),
+                 ('PA', amp.Float()),
+                 ('HA', amp.Float())]
+    response = [('cksu', amp.Float())]
     
 
 
@@ -78,7 +81,7 @@ class SW_RemoteWatcher(object):
         try:
             reactor.listenTCP(self.portNum,self.factory)
             
-        except twisted.internet.error.CannotListenError:
+        except twistedError.CannotListenError:
             loginf("SW_RemoteWatcher reactor.listenTCP sent twisted.internet.error.CannotListenError  ")
             loginf(traceback.format_exc())
             self.SetupFailed = True
@@ -113,17 +116,19 @@ class SW_RemoteWatcher(object):
             return False
         
     def StopMonitoringForRemotes(self):
-        try:
-            loginf("SW_RemoteWatcher StopMonitoringForRemotes Running")
-            reactor.callFromThread(reactor.stop)
-            loginf("SW_RemoteWatcher StopMonitoringForRemotes Done")
-            return True
-        except:
-            loginf("SW_RemoteWatcher StopMonitoringForRemotes some error")
-            loginf(traceback.format_exc())
-            #This kills the thread brutaly
-            self.ThreadForTwisted.exit()
-            return False
+        loginf("SW_RemoteWatcher StopMonitoringForRemotes called but does nothing - might want to fix this someday")
+        #TODO Make this work
+#         try:
+#             loginf("SW_RemoteWatcher StopMonitoringForRemotes Running")
+#             reactor.callFromThread(reactor.stop)
+#             loginf("SW_RemoteWatcher StopMonitoringForRemotes Done")
+#             return True
+#         except:
+#             loginf("SW_RemoteWatcher StopMonitoringForRemotes some error")
+#             loginf(traceback.format_exc())
+#             #This kills the thread brutaly
+#             self.ThreadForTwisted.exit()
+#             return False
     
     def ReportTheDataToWeeWX(self, data):
         """
@@ -132,8 +137,8 @@ class SW_RemoteWatcher(object):
         self.NewData = True
         self.Data = data
         
-        loginf("SW_RemoteWatcher ReportTheDataToWeeWX reactor.callFromThread(reactor.stop)")
-        reactor.callFromThread(reactor.stop)
+        #loginf("SW_RemoteWatcher ReportTheDataToWeeWX reactor.callFromThread(reactor.stop)")
+        #reactor.callFromThread(reactor.stop)
         
         # TODO make this more robust against bad data
         loginf("SW_RemoteWatcher ReportTheDataToWeeWX New Data from Indoors T %f P %f H %f" %(data.get('TA'),data.get('PA'),data.get('HA')))
@@ -146,11 +151,12 @@ class SW_RemoteWatcher(object):
         loginf("SW_RemoteWatcher GetData")
         
         if self.NewData:
+            loginf("SW_RemoteWatcher GetData has new data")
             self.NewData = False
-            ConvertedData = self.ConvertKeys(self,self.Data)
+            ConvertedData = self.ConvertKeys(self.Data)
             
-            loginf("SW_RemoteWatcher ReportTheDataToWeeWX self.StartMonitoringForRemotes()")
-            self.StartMonitoringForRemotes()
+            #loginf("SW_RemoteWatcher ReportTheDataToWeeWX self.StartMonitoringForRemotes()")
+            #self.StartMonitoringForRemotes()
             
             return ConvertedData
         else:
@@ -160,8 +166,8 @@ class SW_RemoteWatcher(object):
         DataOut = dict()
         # TODO make this less hard coded
         DataOut["TempHouse1"] = data.get('TA')
-        DataOut["HumidityHouse1"] = data.get('PA')
-        DataOut["pressureHouse"] = data.get('HA')
+        DataOut["HumidityHouse1"] = data.get('HA')
+        DataOut["pressureHouse"] = data.get('PA')
         
         return DataOut
     
@@ -175,13 +181,19 @@ class SW_RemoteWatcher(object):
 class SW_RemoteAMPReceiver(amp.AMP):
     """This handles the actuall communication"""
 
-    def indoorPiA(self, data):
+    #@IndoorPiA.responder
+    def indoorPiA(self, TA,PA,HA):
         """
         This is called by magic whenever there is new data
         """
         loginf( "SW_RemoteAMPReceiver indoorPiA " )
         
-        loginf( "SW_RemoteAMPReceiver indoorPiA T %f P %f H %f" %(data.get('TA'),data.get('PA'),data.get('HA')) )
+        loginf( "SW_RemoteAMPReceiver indoorPiA T %f P %f H %f" %(TA,PA,HA)) 
+        
+        data = dict()
+        data["TA"] = TA
+        data["PA"] = PA
+        data["HA"] = HA
         
         self.factory.ReportTheDataToWeeWX(data)
 

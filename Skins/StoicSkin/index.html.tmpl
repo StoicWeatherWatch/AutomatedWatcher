@@ -312,6 +312,11 @@ nav ul li a:hover, nav ul li.active a {
                 <td bgcolor="#222222" class="stats_label">Barometer</td>
                 <td bgcolor="#222222" class="stats_data">$current.barometerHouse</td>
               </tr>
+              <tr>
+                <td class="stats_label">Barometer Trend ($trend.time_delta.hour.format("%.0f"))</td>
+                <td class="stats_data">$trend.barometerHouse</td>
+              </tr>
+
              
             </tbody>
           </table>
@@ -459,7 +464,7 @@ nav ul li a:hover, nav ul li.active a {
                   High Temperature
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  99.0C at 03:00:00
+                  $day.TempHouse1.max at $day.TempHouse1.maxtime
                 </td>
               </tr>
               <tr>
@@ -468,41 +473,25 @@ nav ul li a:hover, nav ul li.active a {
                   Low Temperature
                 </td>
                 <td class="stats_data">
-                  -19.0C at 03:00:00</td>
+                  $day.TempHouse1.min at $day.TempHouse1.mintime</td>
               </tr>
               <tr>
                 <td bgcolor="#222222" class="stats_label">
                   High Humidity
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                  100% at 01:35:00
+                  $day.HumidityHouse1.max at $day.HumidityHouse1.maxtime
                 </td>
               </tr>
               
               <tr>
                 <td class="stats_label">
-                  High Dewpoint
-                </td>
-                <td class="stats_data">
-                  1299.5 hPa at 04:35:00
-                </td>
-              </tr>
-              <tr>
-                <td bgcolor="#222222" class="stats_label">
-                  Low Dewpoint
-                </td>
-                <td bgcolor="#222222" class="stats_data">
-                  -6.3C at 01:45:00
-                </td>
-              </tr>
-              <tr>
-                <td class="stats_label">
                   Low Humidity
                 </td>
                 <td class="stats_data">
-                  50.0 %
+                  $day.HumidityHouse1.min at $day.HumidityHouse1.mintime
                 </td>
-              </tr>             
+              </tr>        
             </tbody>
           </table>
 
