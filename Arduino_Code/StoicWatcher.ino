@@ -399,10 +399,11 @@ void loop()
 			Serial.println(F(";"));*/
 
 
+		Serial.println(F("#Stoic End if SW_CK_InterruptOccurred"));
 
 	} // End if SW_CK_InterruptOccurred
 
-
+	Serial.println(F("#Stoic Loop done"));
 } // main loop
 
 
