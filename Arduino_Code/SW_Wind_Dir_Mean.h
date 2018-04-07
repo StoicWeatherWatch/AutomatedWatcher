@@ -24,9 +24,9 @@
 // This is NUMBER_OF_WIND_DIR_RECORDS * 3/2 (An even number is assumed. Otherwise all hell may break loose.)
 #define NUMBER_OF_BYTES_NEEDED_FOR_MEAN_DIRECTION_QUEUE  180
 
-#define RUN_RAM_TEST
+//#define RUN_RAM_TEST
 
-#define PRINT_TEST_LINES
+//#define PRINT_TEST_LINES
 
 /*
  *

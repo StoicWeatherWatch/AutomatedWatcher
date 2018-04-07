@@ -12,7 +12,7 @@
 
 
 
-#define TEST_REPORT_MEAN_STATUS
+//#define TEST_REPORT_MEAN_STATUS
 
 // We have 13 bits. The counter may wrap
 #define MAX_WIND_CTS     0b1111111111111

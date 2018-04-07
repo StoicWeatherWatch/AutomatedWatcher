@@ -171,7 +171,7 @@ void loop()
 
 	if(SW_CK_InterruptOccurred())
 	{
-		Serial.println(F("#Stoic SW_CK_InterruptOccurred"));
+		//Serial.println(F("#Stoic SW_CK_InterruptOccurred"));
 
 		// Time test
 
@@ -179,14 +179,14 @@ void loop()
 
 		// First clock housekeeping
 		SW_CK_ClockIntruptProcessing();
-		Serial.println(F("#Stoic SW_CK_ClockIntruptProcessing() done"));
+		//Serial.println(F("#Stoic SW_CK_ClockIntruptProcessing() done"));
 
 		// Every second for wind directions
 		if(SW_CK_EverySecond())
 		{
-			Serial.println(F("#Stoic calling W5_WindDir_Mean_Readout.AcquireDirectionDataOnly();"));
+			//Serial.println(F("#Stoic calling W5_WindDir_Mean_Readout.AcquireDirectionDataOnly();"));
 			W5_WindDir_Mean_Readout.AcquireDirectionDataOnly();
-			Serial.println(F("#Stoic W5_WindDir_Mean_Readout.AcquireDirectionDataOnly(); Done"));
+			//Serial.println(F("#Stoic W5_WindDir_Mean_Readout.AcquireDirectionDataOnly(); Done"));
 		}
 
 
@@ -262,10 +262,10 @@ void loop()
 
 
 			 //Switch this back on for wind
-			Serial.println(F("#Stoic calling WG6_WindGust_Multiple.AcquireWindGustDirection()"));
+			//Serial.println(F("#Stoic calling WG6_WindGust_Multiple.AcquireWindGustDirection()"));
 			WG6_WindGust_Multiple.AcquireWindGustDirection();
 
-			Serial.println(F("#Stoic WG6_WindGust_Multiple.AcquireWindGustDirection() Done"));
+			//Serial.println(F("#Stoic WG6_WindGust_Multiple.AcquireWindGustDirection() Done"));
 
 
 			//WG6_WindGust_Multiple.AcquireAnalogDataAndSend();
@@ -281,9 +281,9 @@ void loop()
 
 
 
-			Serial.println(F("#Stoic calling T30_IRSoil_Sensor.GetTO1DataAndSend();"));
+			//Serial.println(F("#Stoic calling T30_IRSoil_Sensor.GetTO1DataAndSend();"));
 			T30_IRSoil_Sensor.GetTO1DataAndSend();
-			Serial.println(F("#Stoic T30_IRSoil_Sensor.GetTO1DataAndSend(); done"));
+			//Serial.println(F("#Stoic T30_IRSoil_Sensor.GetTO1DataAndSend(); done"));
 
 
 
@@ -296,9 +296,9 @@ void loop()
 		case 6 :
 			// 6 Early
 
-			Serial.println(F("#Stoic calling TP9_PRS_Sensor.RetrieveDataAndSend();"));
+			//Serial.println(F("#Stoic calling TP9_PRS_Sensor.RetrieveDataAndSend();"));
 			TP9_PRS_Sensor.RetrieveDataAndSend();
-			Serial.println(F("#Stoic TP9_PRS_Sensor.RetrieveDataAndSend(); done"));
+			//Serial.println(F("#Stoic TP9_PRS_Sensor.RetrieveDataAndSend(); done"));
 
 
 
@@ -334,9 +334,9 @@ void loop()
 
 		case 7 :
 				// 7 Early
-			Serial.println(F("#Stoic calling R4_Rain_Readout.AcquireDataAndSend();"));
+			//Serial.println(F("#Stoic calling R4_Rain_Readout.AcquireDataAndSend();"));
 				R4_Rain_Readout.AcquireDataAndSend();
-				Serial.println(F("#Stoic  R4_Rain_Readout.AcquireDataAndSend(); done"));
+				//Serial.println(F("#Stoic  R4_Rain_Readout.AcquireDataAndSend(); done"));
 
 
 
@@ -347,11 +347,11 @@ void loop()
 		case 8 :
 				// 8 Early
 
-			Serial.println(F("#Stoic calling WG6_WindGust_Multiple.AcquireWindGustSpeed();"));
+			//Serial.println(F("#Stoic calling WG6_WindGust_Multiple.AcquireWindGustSpeed();"));
 				WG6_WindGust_Multiple.AcquireWindGustSpeed();
 
 				WG6_WindGust_Multiple.SendWindGustData();
-				Serial.println(F("#Stoic  WG6_WindGust_Multiple.AcquireWindGustSpeed(); done"));
+				//Serial.println(F("#Stoic  WG6_WindGust_Multiple.AcquireWindGustSpeed(); done"));
 
 
 				// 8
@@ -379,7 +379,7 @@ void loop()
 		if(SW_CK_EveryFifthSecond())
 		{
 
-			Serial.println(F("#Stoic SW_CK_EveryFifthSecond"));
+			//Serial.println(F("#Stoic SW_CK_EveryFifthSecond"));
 			W6_WindSpeed_Mean_Sensor.AcquireData();
 
 			W6_WindSpeed_Mean_Sensor.SendMostRecentRawMean();
@@ -400,11 +400,11 @@ void loop()
 			Serial.println(F(";"));*/
 
 
-		Serial.println(F("#Stoic End if SW_CK_InterruptOccurred"));
+		//Serial.println(F("#Stoic End if SW_CK_InterruptOccurred"));
 
 	} // End if SW_CK_InterruptOccurred
 
-	Serial.println(F("#Stoic Loop done"));
+	//Serial.println(F("#Stoic Loop done"));
 } // main loop
 
 
