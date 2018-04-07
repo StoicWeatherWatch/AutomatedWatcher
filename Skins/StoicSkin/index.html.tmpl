@@ -406,7 +406,7 @@ nav ul li a:hover, nav ul li.active a {
                   Highest Wind Mean
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                     Not yet
+                     $day.windSpeed.max at $day.windSpeed.maxtime
                 </td>
               </tr>
               <tr>
@@ -414,7 +414,7 @@ nav ul li a:hover, nav ul li.active a {
                   Highest Wind Gust
                 </td>
                 <td class="stats_data">
-                     Not yet
+                     $day.windGust.max at $day.windGust.maxtime
                 </td>
               </tr>
               <tr>
@@ -422,7 +422,7 @@ nav ul li a:hover, nav ul li.active a {
                   Mean Wind
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                   not yet
+                   $day.windSpeed.avg
                 </td>
               </tr>
               <tr>
@@ -430,7 +430,7 @@ nav ul li a:hover, nav ul li.active a {
                   RMS Wind
                 </td>
                 <td class="stats_data">
-                     not yet
+                     $day.wind.rms
                 </td>
               </tr>
 
@@ -439,7 +439,7 @@ nav ul li a:hover, nav ul li.active a {
                   Vector Average Speed
                 </td>
                 <td bgcolor="#222222" class="stats_data">
-                    not yet
+                    $day.wind.vecavg<br/>
                 </td>
               </tr>
               <tr>
@@ -447,7 +447,7 @@ nav ul li a:hover, nav ul li.active a {
                   Vector Average Direction
                 </td>
                 <td class="stats_data">
-                    not yet
+                    From $day.wind.vecdir ($day.wind.vecdir.ordinal_compass)
                 </td>
               </tr>
 
