@@ -9,7 +9,7 @@
 
 SW_Wind_Gust::SW_Wind_Gust(byte MCP23018AddressIn, I2C I2CBussIn, byte SpeedSensorNumberIN, byte AAQ0PinIn, byte DirectionSensorNumberIn)
 :SW_MCP2318_GPIO_Sensor(MCP23018AddressIn, I2CBussIn, SpeedSensorNumberIN),
- SW_Wind_Dir_Analog(AAQ0PinIn, NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, DirectionSensorNumberIn)
+ SW_Wind_Dir_Analog(AAQ0PinIn, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, DirectionSensorNumberIn)
 {
 	//int NumBytesInSentRecordQueue = ((int)NumberofGustSpeedRecordsIn) / 8;
 	/*if((((int)NumberofGustSpeedRecordsIn) % 8) != 0)
@@ -39,7 +39,15 @@ SW_Wind_Gust::SW_Wind_Gust(byte MCP23018AddressIn, I2C I2CBussIn, byte SpeedSens
 
 void SW_Wind_Gust::AcquireWindGustDirection()
 {
+#ifdef TEST_REPORT_STATUS
+	Serial.println(F("#SW_Wind_Gust::AcquireWindGustDirection() starting;"));
+#endif /*TEST_REPORT_STATUS*/
+
 	AcquireDirectionDataOnly();
+
+#ifdef TEST_REPORT_STATUS
+	Serial.println(F("#SW_Wind_Gust::AcquireWindGustDirection() done;"));
+#endif /*TEST_REPORT_STATUS*/
 
 }
 

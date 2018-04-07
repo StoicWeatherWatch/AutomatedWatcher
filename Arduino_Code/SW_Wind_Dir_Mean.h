@@ -1,7 +1,7 @@
 /*
  * SW_Wind_Dir_Mean.h
  *
- *  Created on: 2018-02-08
+ *  Created on: 2018-04-07
  *      Author: StoicWeather
  */
 
@@ -17,7 +17,9 @@
 #define HALF_BIN_SIZE 32
 #define MAX_ADC_VALUE 1023
 
-//#define RUN_RAM_TEST
+#define RUN_RAM_TEST
+
+#define PRINT_TEST_LINES
 
 /*
  *
@@ -31,6 +33,8 @@ public:
 	void SendMeanAndBinBlock();
 	void swap(byte *A, byte *B);
 
+	byte Bins[NUMBER_OF_BINS];
+	byte BinList[NUMBER_OF_BINS];
 
 
 };
