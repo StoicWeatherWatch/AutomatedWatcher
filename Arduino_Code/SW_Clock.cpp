@@ -119,6 +119,14 @@ Serial.println(F(" ;"));
 SW_Ck_Mills_Counter_timeLast = SW_Ck_Mills_Counter_timetotal;
 
 #endif /*SW_CLOCK_REPORT_MILLS*/
+#ifdef REPORT_MEMORY_EVERY_TICK
+extern int __heap_start, *__brkval;
+	int v;
+	Serial.print(F("# Free RAM  "));
+	Serial.print((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
+	Serial.println(F(";"));
+	// END TEST
+#endif /*REPORT_MEMORY_EVERY_TICK*/
 
 
 	SW_CK_CKShortCountTo9++;

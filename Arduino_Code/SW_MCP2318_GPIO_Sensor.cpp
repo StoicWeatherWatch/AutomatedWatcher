@@ -22,35 +22,54 @@ SW_MCP2318_GPIO_Sensor::SW_MCP2318_GPIO_Sensor(byte AddressIn, I2C I2CBussIn, by
 
 int SW_MCP2318_GPIO_Sensor::AcquireDataAndReturn()
 {
+#ifdef SET_FULL_TESTS
+	Serial.println(F("# MCP2318 AcquireDataAndReturn;"));
+#endif /*SET_FULL_TESTS*/
 	//SEQOP = 0 So the second byte should be GPIOA :)
+#ifdef SET_FULL_TESTS
 	byte status = I2CBuss.read(SensorAddress, (byte)MCP2318_GPIOB_REG, (byte)1);
+#endif /*SET_FULL_TESTS*/
+#ifndef SET_FULL_TESTS
+	I2CBuss.read(SensorAddress, (byte)MCP2318_GPIOB_REG, (byte)1);
+#endif /*SET_FULL_TESTS*/
 
-	//TEST line
-	/*Serial.print(F("# MCP2318 read status "));
+#ifdef SET_FULL_TESTS
+	Serial.print(F("# MCP2318 read status "));
 	Serial.print(status,HEX);
-	Serial.println(F(";"));*/
+	Serial.println(F(";"));
 
 	//TEST line
-					/*Serial.print(F("# MCP2318 I2c.available()  "));
-					Serial.print(I2CBuss.available(),HEX);
-					Serial.println(F(";"));*/
+	Serial.print(F("# MCP2318 I2c.available()  "));
+	Serial.print(I2CBuss.available(),HEX);
+	Serial.println(F(";"));
 	//TEST line
-	//Serial.print(F("# MCP2318 readin "));
+	Serial.print(F("# MCP2318 readin "));
+#endif /*SET_FULL_TESTS*/
 
 	int DataIn = (int)I2CBuss.receive();
 
-	//TEST line
-	//Serial.print(DataIn, HEX);
+#ifdef SET_FULL_TESTS
+	Serial.print(DataIn, HEX);
+	Serial.print(F("   "));
+#endif /*SET_FULL_TESTS*/
 
 	I2CBuss.read(SensorAddress, (byte)MCP2318_GPIOA_REG, (byte)1);
 
 	// Most sig bits came in first. They get shifted up. Only 13 bits of data.
 	DataIn = DataIn &0b00011111;
 	DataIn <<= 8;
+
+#ifdef SET_FULL_TESTS
+	int temp = (int)I2CBuss.receive();
+	Serial.print(temp, HEX);
+	Serial.println(F(";"));
+	DataIn |= temp;
+#endif /*SET_FULL_TESTS*/
+#ifndef SET_FULL_TESTS
 	DataIn |= (int)I2CBuss.receive();
-	//TEST line
-	//Serial.print(DataIn, HEX);
-	//Serial.println(F(";"));
+#endif /*SET_FULL_TESTS*/
+
+
 
 
 #ifdef REPORT_ALL_READINGS_TEST
@@ -58,6 +77,19 @@ int SW_MCP2318_GPIO_Sensor::AcquireDataAndReturn()
 	Serial.print(DataIn, BIN);
 	Serial.println(F(";"));
 #endif /*REPORT_ALL_READINGS_TEST*/
+
+#ifdef SET_FULL_TESTS
+	Serial.println(F("# AcquireDataAndReturn Done returning"));
+#endif /*SET_FULL_TESTS*/
+
+#ifdef REPORT_MEMORY_LEVEL
+extern int __heap_start, *__brkval;
+	int v;
+	Serial.print(F("# Free RAM  "));
+	Serial.print((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
+	Serial.println(F(";"));
+	// END TEST
+#endif /*REPORT_MEMORY_LEVEL*/
 
 	return DataIn;
 }
@@ -154,9 +186,9 @@ bool SW_MCP2318_GPIO_Sensor::VerifyChip()
 	byte status = I2CBuss.read(SensorAddress, (byte)MCP2318_IOCON_REG, (byte)2);
 
 	//TEST line
-				//Serial.print(F("# MCP2318 I2c.available()  "));
-				//Serial.print(I2CBuss.available(),HEX);
-				//Serial.println(F(";"));
+	//Serial.print(F("# MCP2318 I2c.available()  "));
+	//Serial.print(I2CBuss.available(),HEX);
+	//Serial.println(F(";"));
 
 	int DataIn = (int)I2CBuss.receive();
 	// Most sig bits came in first. They get shifted up.
@@ -183,10 +215,10 @@ bool SW_MCP2318_GPIO_Sensor::VerifyChip()
 	status = I2CBuss.read(SensorAddress, (byte)MCP2318_IODIRA_REG, (byte)2);
 
 
-		//TEST line
-			//Serial.print(F("# MCP23018 I2c.available()  "));
-			//Serial.print(I2CBuss.available(),HEX);
-			//Serial.println(F(";"));
+	//TEST line
+	//Serial.print(F("# MCP23018 I2c.available()  "));
+	//Serial.print(I2CBuss.available(),HEX);
+	//Serial.println(F(";"));
 
 	DataIn = (int)I2CBuss.receive();
 	// Most sig bits came in first. They get shifted up.

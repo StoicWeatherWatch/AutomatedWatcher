@@ -49,11 +49,26 @@ void SW_Wind_Gust::AcquireWindGustSpeed()
 	CurrentSpeedQueueLoc++;
 
 	// TODO CurrentQueueLoc >QueueLength >=?
+#ifdef TEST_REPORT_STATUS
+	Serial.println(F("#SW_Wind_Gust AcquireWindGustSpeed testing queue length;"));
+
+extern int __heap_start, *__brkval;
+	int v;
+	Serial.print(F("# Free RAM  "));
+	Serial.print((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
+	Serial.println(F(";"));
+	// END TEST
+
+#endif /* TEST_REPORT_STATUS*/
 	if(CurrentSpeedQueueLoc >= SpeedQueueLength)
 	{
 		CurrentSpeedQueueLoc = 0;
 		HaveFullSpeedQueue = true;
 	}
+
+#ifdef TEST_REPORT_STATUS
+	Serial.println(F("#SW_Wind_Gust AcquireWindGustSpeed testing queue length done;"));
+#endif /* TEST_REPORT_STATUS*/
 
 	/*//SEQOP = 0 So the second byte should be GPIOA :)
 		byte status = I2CBuss.read(SensorAddress, (byte)MCP2318_GPIOB_REG, (byte)2);
@@ -174,8 +189,16 @@ void SW_Wind_Gust::SendWindGustData()
 
 
 #endif /*TEST_PRINTS*/
-if(HaveFullSpeedQueue)
+
+#ifdef TEST_REPORT_STATUS
+	Serial.println(F("#SW_Wind_Gust AcquireWindGustSpeed if(HaveFullSpeedQueue);"));
+#endif /* TEST_REPORT_STATUS*/
+	if(HaveFullSpeedQueue)
 {
+#ifdef TEST_REPORT_STATUS
+	Serial.println(F("#SW_Wind_Gust AcquireWindGustSpeed if(HaveFullSpeedQueue) true;"));
+#endif /* TEST_REPORT_STATUS*/
+
 	// Find min and max in queue
 	int MaxPos = -1;
 	//int MinPos = -1;
@@ -195,6 +218,9 @@ if(HaveFullSpeedQueue)
 			MaxPos = i;
 		}
 	}
+#ifdef TEST_REPORT_STATUS
+	Serial.println(F("#SW_Wind_Gust AcquireWindGustSpeed if(HaveFullSpeedQueue) done;"));
+#endif /* TEST_REPORT_STATUS*/
 
 	// TEST Block
 #ifdef TEST_PRINTS

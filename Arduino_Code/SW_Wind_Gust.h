@@ -24,7 +24,8 @@
 // We have 13 bits. The counter may wrap
 #define MAX_WIND_CTS     0b1111111111111
 
-#define TEST_PRINTS
+//#define TEST_PRINTS
+#define TEST_REPORT_STATUS
 
 /*
  *
