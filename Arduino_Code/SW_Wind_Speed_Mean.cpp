@@ -40,7 +40,7 @@ bool SW_Wind_Speed_Mean::AcquireData()
 	CurrentSpeedQueueLoc++;
 
 	// TODO CurrentQueueLoc >QueueLength >=? I think correct below
-	if(CurrentSpeedQueueLoc >= NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP)
+	if(CurrentSpeedQueueLoc >= (int)NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP)
 	{
 		CurrentSpeedQueueLoc = 0;
 		HaveFullSpeedQueue = true;

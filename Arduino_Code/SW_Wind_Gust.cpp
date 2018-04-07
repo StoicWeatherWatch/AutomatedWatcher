@@ -58,7 +58,10 @@ void SW_Wind_Gust::AcquireWindGustSpeed()
 
 	// TODO CurrentQueueLoc >QueueLength >=?
 #ifdef TEST_REPORT_STATUS
-	Serial.println(F("#SW_Wind_Gust AcquireWindGustSpeed testing queue length;"));
+	Serial.print(F("#SW_Wind_Gust AcquireWindGustSpeed testing queue length;"));
+	Serial.print(CurrentSpeedQueueLoc);
+
+	Serial.println(F("  CurrentSpeedQueueLoc"));
 
 extern int __heap_start, *__brkval;
 	int v;
@@ -68,7 +71,7 @@ extern int __heap_start, *__brkval;
 	// END TEST
 
 #endif /* TEST_REPORT_STATUS*/
-	if(CurrentSpeedQueueLoc >= NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP)
+	if(CurrentSpeedQueueLoc >= (int)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP)
 	{
 		CurrentSpeedQueueLoc = 0;
 		HaveFullSpeedQueue = true;

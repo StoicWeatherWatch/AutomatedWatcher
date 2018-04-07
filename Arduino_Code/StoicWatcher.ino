@@ -55,7 +55,8 @@ SW_BMP280_Sensor TP9_PRS_Sensor = SW_BMP280_Sensor((byte)BMP280_TP9_ADDRESS,I2CB
 //Not Yet
 //SW_SI1133_Sensor EM10_UV_Opt_Sensor = SW_SI1133_Sensor((byte)SI1133_EM10_ADDRESS, I2CBus, (byte)SI1133_EM10_UVOPT_SUNM);
 
-SW_DS24828_1W_Sensor T20_1Wire_Temp_Sensor = SW_DS24828_1W_Sensor((byte)DS24828_1W_T20_ADDRESS, I2CBus, (byte)DS24828_1W_T20_SNUM);
+//TEMP
+//SW_DS24828_1W_Sensor T20_1Wire_Temp_Sensor = SW_DS24828_1W_Sensor((byte)DS24828_1W_T20_ADDRESS, I2CBus, (byte)DS24828_1W_T20_SNUM);
 //Not Yet
 //SW_AS3935_Lightning_Sensor EM11_Lightning_Sensor = SW_AS3935_Lightning_Sensor((byte)AS3935_EM11_ADDRESS, I2CBus, (byte)AS3935_EM11_LIGHTNING_SNUM, (byte)LIGHTNING_IRQ_D_PIN);
 
