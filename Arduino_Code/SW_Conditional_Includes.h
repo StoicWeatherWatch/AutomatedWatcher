@@ -95,7 +95,8 @@
 
 // Presets
 // Currently dir every second and speed every 5
-#define NUMBER_OF_WIND_DIR_RECORDS 120 // Must be even!
+//This is defined in SW_Wind_Dir_Mean.h to avoid calloc
+//#define NUMBER_OF_WIND_DIR_RECORDS 120 // Must be even!
 
 // This is defined in SW_Wind_Speed_Mean.h
 //#define NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP   24  // Should match the above as related to the life cycle.

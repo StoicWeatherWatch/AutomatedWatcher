@@ -14,19 +14,21 @@
  * 0011223344556677889900
  */
 
-SW_Wind_Dir_Analog::SW_Wind_Dir_Analog(byte AAQ0PinIn, byte NumberOfRecordsIn, byte SensorNumberAnalogIn)
-:SW_Ard_Analog(AAQ0PinIn, SensorNumberAnalogIn)
+SW_Wind_Dir_Analog::SW_Wind_Dir_Analog(byte AAQ0PinIn, byte NumberOfRecordsIn, byte *PointerToDirectionQueueArrayIn, byte SensorNumberAnalogIn)
+:SW_Ard_Analog(AAQ0PinIn, SensorNumberAnalogIn),
+ DirectionQueueLength(NumberOfRecordsIn),
+ DirectionQueue(PointerToDirectionQueueArrayIn)
 {
 	HaveFullDirectionQueue = false;
 	CurrentDirectionQueueLoc = -1;
 	// Counts by data points. CurrentQueueLoc*3/2 + CurrentQueueLoc*3%2 gives pointer to LSB block.
 	// We can fit a 10 bit ADC output in a 12 bit space. Thus we can fit two data points in three bytes. It just gets tricky to save and recover it...
 	// TODO Replace all calloc with fixed array sizes fed from conditional includes.
-	DirectionQueue = (byte*)calloc((NumberOfRecordsIn*3)/2, sizeof(byte));
-	DirectionQueueLength = NumberOfRecordsIn;
+	//DirectionQueue = (byte*)calloc((NumberOfRecordsIn*3)/2, sizeof(byte));
+	//DirectionQueueLength = NumberOfRecordsIn;
 
 
-	Serial.print(F("#Wind Direction Initialized;"));
+	Serial.print(F("#SW_Wind_Dir_Analog Initialized;"));
 
 
 }

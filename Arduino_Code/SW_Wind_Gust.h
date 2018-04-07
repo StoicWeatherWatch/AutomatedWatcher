@@ -28,6 +28,8 @@
 #define NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP   54
 // This is NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP /8 and rounded up
 #define NUMBER_OF_BYTES_NEEDED_FOR_SENT_RECORD_QUEUE   7
+// This is NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP * 3/2 (An even number is assumed. Otherwise all hell may break loose.)
+#define NUMBER_OF_BYTES_NEEDED_FOR_DIRECTION_QUEUE   81
 
 //#define TEST_PRINTS
 #define TEST_REPORT_STATUS
@@ -44,8 +46,12 @@ public:
 		int CurrentSpeedQueueLoc;
 		//byte SpeedQueueLength; // data chunks not bytes
 		bool HaveFullSpeedQueue;
-
 		int LastGustReadout;
+
+		/* This is used to hold direction of gust. It is fed to SW_Wind_Dir_Analog
+		 * It is created here to avoid a need for calloc since other subclasses of SW_Ard_Analog use different lengths.
+		 * */
+		byte GustDirectionQueue[NUMBER_OF_BYTES_NEEDED_FOR_DIRECTION_QUEUE];
 
 	// This holds a record of if a gust was sent in each bit. 0 for unsent 1 for sent
 	byte SentRecordQueue[NUMBER_OF_BYTES_NEEDED_FOR_SENT_RECORD_QUEUE];

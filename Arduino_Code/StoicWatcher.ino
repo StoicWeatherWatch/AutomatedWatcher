@@ -3,7 +3,7 @@
 	v0.2.3
 	2018-04-07
  */
-#define PRINT_STOIC_VERSION F("#StoicWatcher Starting v0.2.2;")
+#define PRINT_STOIC_VERSION F("#StoicWatcher Starting v0.2.3;")
 
 
 /*
@@ -39,7 +39,7 @@ SW_MCP9808_Sensor T2_CircuitBox_Sensor = SW_MCP9808_Sensor((byte)MCP9808_T2_ADDR
 
 SW_Rain_Readout R4_Rain_Readout = SW_Rain_Readout((byte)RAIN_DAQ0_D_PIN, (byte)RAIN_PIN_RANGE, (byte)RAINCOUNT_RESET_D_PIN, (byte)TIPPINGBUCKET_R4_RAIN_SUNM);
 
-SW_Wind_Dir_Mean W5_WindDir_Mean_Readout =  SW_Wind_Dir_Mean((byte)WIND_DIR_ADC_A_PIN, (byte)NUMBER_OF_WIND_DIR_RECORDS, (byte)DAVISANNA_WD5_WIND_DIR_SUNM);
+SW_Wind_Dir_Mean W5_WindDir_Mean_Readout =  SW_Wind_Dir_Mean((byte)WIND_DIR_ADC_A_PIN, (byte)DAVISANNA_WD5_WIND_DIR_SUNM);
 
 SW_Wind_Speed_Mean W6_WindSpeed_Mean_Sensor = SW_Wind_Speed_Mean((byte)MCP23018_W6_ADDRESS, I2CBus, (byte)DAVISANNA_WS6_WIND_SPEED_SUNM);
 
