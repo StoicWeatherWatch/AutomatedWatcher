@@ -30,6 +30,8 @@
 class SW_Wind_Dir_Analog: public SW_Ard_Analog
 {
 public:
+	//TODO make this void. Make DirectionQueue in SW_Wind_Dir_Mean and SW_Wind_Gust. That way it is not dynamic and length can be set with constant
+	//TODO remove calloc see above
 	byte *DirectionQueue;
 	int CurrentDirectionQueueLoc;
 	byte DirectionQueueLength; // data points
