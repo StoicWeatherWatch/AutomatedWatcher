@@ -1,9 +1,9 @@
 /*
 	Stoic Watcher
-	v0.2.3
+	v0.2.4
 	2018-04-07
  */
-#define PRINT_STOIC_VERSION F("#StoicWatcher Starting v0.2.3;")
+#define PRINT_STOIC_VERSION F("#StoicWatcher Starting v0.2.4;")
 
 
 /*

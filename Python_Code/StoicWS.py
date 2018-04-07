@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.2.1
-# 2018-04-01
+# Version 0.2.2
+# 2018-04-07
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -93,7 +93,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.2.1'
+DRIVER_VERSION = '0.2.2'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -373,9 +373,7 @@ class StoicWatcher(object):
                               "25T",
                               "26T",
                               "27T",
-                              "28T",
-                              "6WGS",
-                              "6WMS"]
+                              "28T"]
     
     def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial=0):
     #def __init__(self, port, baudrate, debug_serial=0):
@@ -1541,11 +1539,10 @@ class StoicWatcher(object):
                 return self.key_parse_3TPH_FARS(LineIn)
             elif LineIn[1:pos] == "4R":
                 return self.key_parse_4R_Rain(LineIn)
-            # Release 1. No wind. Concrete not yet set.
-            #elif LineIn[1:pos] == "6WGS":
-            #    return self.key_parse_6WGS_5WGD_wind_gust(LineIn)
-            #elif LineIn[1:pos] == "6WMS":
-            #    return self.key_parse_6WMS_5WMD_wind_mean(LineIn)
+            elif LineIn[1:pos] == "6WGS":
+                return self.key_parse_6WGS_5WGD_wind_gust(LineIn)
+            elif LineIn[1:pos] == "6WMS":
+                return self.key_parse_6WMS_5WMD_wind_mean(LineIn)
             elif LineIn[1:pos] == "7T":
                return self.key_parse_7T_FARSTemp(LineIn)
             elif ( LineIn[1:2] == "2" ) and ( LineIn[3:pos] == "T" ):
