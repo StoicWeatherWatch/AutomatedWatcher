@@ -1,7 +1,7 @@
 /*
  * SW_Conditional_Includes.h
  *
- *  Created on: 2018-02-08
+ *  Created on: 2018-04-07
  *      Author: StoicWeather
  */
 
@@ -100,7 +100,8 @@
 // This is defined in SW_Wind_Speed_Mean.h
 //#define NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP   24  // Should match the above as related to the life cycle.
 // 2.25 seconds gives 54 in 121.5 seconds
-#define NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP   54
+//This is defined in SW_Wind_Gust.h
+//#define NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP   54
 
 
 

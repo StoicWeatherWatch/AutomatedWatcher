@@ -1,7 +1,7 @@
 /*
  * SW_Wind_Speed_Mean.cpp
  *
- *  Created on: 2018-02-06
+ *  Created on: 2018-04-07
  *      Author: StoicWeather
  */
 
