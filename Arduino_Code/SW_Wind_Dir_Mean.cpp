@@ -1,14 +1,14 @@
 /*
  * SW_Wind_Dir_Mean.cpp
  *
- *  Created on: 2018-02-08
+ *  Created on: 2018-04-07
  *      Author: StoicWeather
  */
 
 #include "SW_Wind_Dir_Mean.h"
 
-SW_Wind_Dir_Mean::SW_Wind_Dir_Mean(byte AAQ0PinIn, byte NumberOfRecordsIn, byte SensorNumberAnalogIn)
-:SW_Wind_Dir_Analog(AAQ0PinIn, NumberOfRecordsIn, SensorNumberAnalogIn)
+SW_Wind_Dir_Mean::SW_Wind_Dir_Mean(byte AAQ0PinIn, byte SensorNumberAnalogIn)
+:SW_Wind_Dir_Analog(AAQ0PinIn, (byte)NUMBER_OF_WIND_DIR_RECORDS, MeanDirectionQueue, SensorNumberAnalogIn)
 {
 
 
@@ -16,29 +16,47 @@ SW_Wind_Dir_Mean::SW_Wind_Dir_Mean(byte AAQ0PinIn, byte NumberOfRecordsIn, byte 
 
 void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 {
+#ifdef PRINT_TEST_LINES
+	Serial.println(F("#SW_Wind_Dir_Mean SendMeanAndBinBlock;"));
+#endif /*PRINT_TEST_LINES*/
 	if(HaveFullDirectionQueue)
 	{
+#ifdef PRINT_TEST_LINES
+		Serial.println(F("#SW_Wind_Dir_Mean SendMeanAndBinBlock HaveFullDirectionQueue;"));
+#endif /*PRINT_TEST_LINES*/
 
 #ifdef RUN_TIME_TEST
-	unsigned long timeB = millis();
+		unsigned long timeB = millis();
 #endif
 
 		// Bin the data
-		byte *Bins;
-		Bins = (byte*) calloc ((int)NUMBER_OF_BINS,sizeof(byte));
+		//byte *Bins;
+		//Bins = (byte*) calloc ((int)NUMBER_OF_BINS,sizeof(byte));
 
-		int *DirectionQueueCopy;
-		DirectionQueueCopy = (int*)calloc(DirectionQueueLength, sizeof(int));
+		//int *DirectionQueueCopy;
+		//DirectionQueueCopy = (int*)calloc(DirectionQueueLength, sizeof(int));
+
+		// Zero Bins
+#ifdef PRINT_TEST_LINES
+		Serial.println(F("#SW_Wind_Dir_Mean SendMeanAndBinBlock Zero Bins;"));
+#endif /*PRINT_TEST_LINES*/
+		for (int i = 0; i < NUMBER_OF_BINS; ++i)
+		{
+			Bins[i] = 0;
+		}
+#ifdef PRINT_TEST_LINES
+		Serial.println(F("#SW_Wind_Dir_Mean SendMeanAndBinBlock Zero Bins Done;"));
+#endif /*PRINT_TEST_LINES*/
 
 
-
+		int DirectionReadingHolder;
 		for(int i = 0; i < DirectionQueueLength; i++)
 		{
 			// We will need a temporary copy of the queue to rotate the compass
-			DirectionQueueCopy[i] = (int)(GetDirectionReadingAt(i));
+			DirectionReadingHolder = (int)(GetDirectionReadingAt(i));
 
 			// Divide by 64 to place the data in 16 bins
-			switch ((DirectionQueueCopy[i] >> BITS_TO_SHIFT_FOR_BINNING))
+			switch ((DirectionReadingHolder >> BITS_TO_SHIFT_FOR_BINNING))
 			{
 
 			case 0 :
@@ -97,11 +115,11 @@ void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 		// Find most common bin
 
 #ifdef RUN_TIME_TEST
-	unsigned long time = millis();
+		unsigned long time = millis();
 #endif
 
-		byte *BinList;
-		BinList = (byte*) calloc ((int)NUMBER_OF_BINS,sizeof(byte));
+		//byte *BinList;
+		//BinList = (byte*) calloc ((int)NUMBER_OF_BINS,sizeof(byte));
 		for(int i = 0; i < (int)NUMBER_OF_BINS; i++)
 		{
 			BinList[i] = (byte)i;
@@ -122,15 +140,15 @@ void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 		}
 
 #ifdef RUN_TIME_TEST
-	Serial.flush();
-	unsigned long Endtime = millis();
-	Serial.print(F("# Time to sort "));
-	Serial.print(Endtime-time);
-	Serial.println(F(";"));
+		Serial.flush();
+		unsigned long Endtime = millis();
+		Serial.print(F("# Time to sort "));
+		Serial.print(Endtime-time);
+		Serial.println(F(";"));
 #endif
 
-	// TEST Lines
-	/*Serial.println(F("# BinList ;"));
+		// TEST Lines
+		/*Serial.println(F("# BinList ;"));
 	Serial.print(F("# "));
 	for(int i =0;i < NUMBER_OF_BINS; i++)
 	{
@@ -161,7 +179,7 @@ void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 		{
 			rotation = 511 - ((BinList[NUMBER_OF_BINS-1] << BITS_TO_SHIFT_FOR_BINNING) + HALF_BIN_SIZE);
 		}
-	// Sum the data
+		// Sum the data
 
 
 		//TEST lines
@@ -169,57 +187,59 @@ void SW_Wind_Dir_Mean::SendMeanAndBinBlock()
 			Serial.print(rotation);
 			Serial.println(F(";"));*/
 
-			long sum = 0;
-			for(int i = 0; i < DirectionQueueLength; i++)
+		long sum = 0;
+		for(int i = 0; i < DirectionQueueLength; i++)
+		{
+			DirectionReadingHolder = (int)(GetDirectionReadingAt(i));
+
+			DirectionReadingHolder += rotation;
+			if(DirectionReadingHolder > MAX_ADC_VALUE)
 			{
-				DirectionQueueCopy[i] += rotation;
-				if(DirectionQueueCopy[i] > MAX_ADC_VALUE)
-				{
-					DirectionQueueCopy[i] -= (MAX_ADC_VALUE+1);
-				}
-
-				sum += DirectionQueueCopy[i];
-
+				DirectionReadingHolder -= (MAX_ADC_VALUE+1);
 			}
+
+			sum += DirectionReadingHolder;
+
+		}
 
 
 
 
 
 		// Send sum, rotation, bin info
-			Serial.print(F("+"));
-				Serial.print(SensorNumberAnalog,DEC);
-				Serial.print(F("WMD,"));
-				SerialHexFourAndAHalfBytefPrint(sum);
-				Serial.print(F(","));
-				SerialHexBytePrint(BinList[NUMBER_OF_BINS-1]);
-				Serial.println(F(";"));
+		Serial.print(F("+"));
+		Serial.print(SensorNumberAnalog,DEC);
+		Serial.print(F("WMD,"));
+		SerialHexFourAndAHalfBytefPrint(sum);
+		Serial.print(F(","));
+		SerialHexBytePrint(BinList[NUMBER_OF_BINS-1]);
+		Serial.println(F(";"));
 
-				// TODO Print Bin Info
-				// Full width at half max. Sum up bins until you reach half the number of measurments. Report all bins in bin list.
-				// If it is a normal dist, this will give FWHM. Not quite. Width at half the area under the curve.
+		// TODO Print Bin Info
+		// Full width at half max. Sum up bins until you reach half the number of measurments. Report all bins in bin list.
+		// If it is a normal dist, this will give FWHM. Not quite. Width at half the area under the curve.
 
 
 #ifdef RUN_RAM_TEST
-	extern int __heap_start, *__brkval;
+		extern int __heap_start, *__brkval;
 		int v;
 		Serial.print(F("# Free RAM in Wind Dir Mean "));
 		Serial.print((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
 		Serial.println(F(";"));
 #endif
 
-		free(Bins);
-		free(BinList);
-		free(DirectionQueueCopy);
+		//free(Bins);
+		//free(BinList);
+		//free(DirectionQueueCopy);
 
 #ifdef RUN_TIME_TEST
-	Serial.flush();
-	unsigned long EndtimeB = millis();
-	Serial.print(F("# Time to to take full mean "));
-	Serial.print(EndtimeB-timeB);
-	Serial.println(F(";"));
+		Serial.flush();
+		unsigned long EndtimeB = millis();
+		Serial.print(F("# Time to to take full mean "));
+		Serial.print(EndtimeB-timeB);
+		Serial.println(F(";"));
 #endif
-	}
+	} // End if have full dir queue
 }
 
 void SW_Wind_Dir_Mean::swap(byte *A, byte *B)

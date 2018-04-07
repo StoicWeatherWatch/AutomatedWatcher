@@ -1,5 +1,5 @@
 
-# StoicWS 2018-03-17
+# StoicWS 2018-03-20
 
 """User extensions module
 
@@ -23,6 +23,8 @@ locale.setlocale(locale.LC_ALL, 'en_US.utf8')
 # This is to get the measurments in the right group.
 
 import weewx.units
+weewx.units.obs_group_dict['barometerPRS'] = 'group_pressure'
+weewx.units.obs_group_dict['barometerHouse'] = 'group_pressure'
 weewx.units.obs_group_dict['pressurePRS'] = 'group_pressure'
 weewx.units.obs_group_dict['pressureFARS'] = 'group_pressure'
 weewx.units.obs_group_dict['pressureHouse'] = 'group_pressure'
@@ -35,6 +37,8 @@ weewx.units.obs_group_dict['extraTempFARS'] = 'group_temperature'
 weewx.units.obs_group_dict['extraTempUV'] = 'group_temperature'
 weewx.units.obs_group_dict['soilTemp5'] = 'group_temperature'
 weewx.units.obs_group_dict['soilTempIR'] = 'group_temperature'
+weewx.units.obs_group_dict['dewpointFARS'] = 'group_temperature'
+weewx.units.obs_group_dict['dewpointPRS'] = 'group_temperature'
 weewx.units.obs_group_dict['HumidityHouse1'] = 'group_percent'
 weewx.units.obs_group_dict['HumidityHouse2'] = 'group_percent'
 weewx.units.obs_group_dict['HumidityFARS'] = 'group_percent'

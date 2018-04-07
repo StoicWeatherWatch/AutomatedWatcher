@@ -1,6 +1,6 @@
 """
 SW_Services
-2018-03-14
+2018-03-20
 Used to subcalss and override certain services. 
 
 WXCalculate in wxservices.py is overridden to add support for derived values in SW_Schema
@@ -24,6 +24,18 @@ from weewx.units import CtoF, mps_to_mph, kph_to_mph, METER_PER_FOOT
 
 from weewx.wxservices import StdWXCalculate
 from weewx.wxservices import WXCalculate
+
+def logmsg(level, msg):
+    syslog.syslog(level, 'SW_Services: %s' % msg)
+
+def logdbg(msg):
+    logmsg(syslog.LOG_DEBUG, msg)
+
+def loginf(msg):
+    logmsg(syslog.LOG_INFO, msg)
+
+def logerr(msg):
+    logmsg(syslog.LOG_ERR, 'ERROR: %s' % msg)
 
 
 class SW_Std_Calculate(StdWXCalculate):
@@ -97,8 +109,6 @@ class SW_Calculate(WXCalculate):
     
     def __init__(self, config_dict, alt_vt, lat_f, long_f, db_binder=None):
         
-
-        
         super(SW_Calculate, self).__init__(config_dict, alt_vt, lat_f, long_f, db_binder)
         
         # get any configuration settings
@@ -106,9 +116,7 @@ class SW_Calculate(WXCalculate):
         # if there is no CopySources section, then make an empty one
         if not 'CopySources' in self.SourceDest_dict:
             self.SourceDest_dict['CopySources'] = dict()
-            
-        
-        
+
         # Super handles everything else. Hopefully.
         
     # do_calculations is very nicely extendable. No need to override. Hopefully.
@@ -119,6 +127,7 @@ class SW_Calculate(WXCalculate):
             if (data.get('pressurePRS') is not None) and (data.get('TempPRS') is not None):
                 data['barometerPRS'] = weewx.wxformulas.sealevel_pressure_US(
                     data['pressurePRS'], self.altitude_ft, data['TempPRS'])
+                logdbg("calc_barometerPRS %f" %data['barometerPRS'])
             
     def calc_barometerHouse(self, data, data_type):  # @UnusedVariable
         data['barometerHouse'] = None
@@ -128,10 +137,11 @@ class SW_Calculate(WXCalculate):
                     data['pressureHouse'], self.altitude_ft, data['TempHouse1'])
             
     def calc_dewpointFARS(self, data, data_type):
-        #syslog.syslog(syslog.LOG_INFO, "SW_Calculate: calc_dewpointFARS Running")
+        #loginf(" calc_dewpointFARS Running")
         if 'TempFARS' in data and 'HumidityFARS' in data:
             data['dewpointFARS'] = weewx.wxformulas.dewpointF(
                 data['TempFARS'], data['HumidityFARS'])
+            logdbg("calc_dewpointFARS %f" %data['dewpointFARS'])
         else:
             data['dewpointFARS'] = None
             
@@ -158,7 +168,7 @@ class SW_Calculate(WXCalculate):
                     if self.SourceDest_dict['CopySources'].get('rainRate') is not None:
                         self.calc_rain(data, data_type)
                 else:
-                    syslog.syslog(syslog.LOG_INFO, "SW_Calculate: self.SourceDest_dict['CopySources'].get('rainRate') is None - ERROR")
+                    loginf("self.SourceDest_dict['CopySources'].get('rainRate') is None - ERROR")
                 
             # Only try it if we have rain data
             super(SW_Calculate, self).calc_rainRate(data, data_type)
@@ -180,7 +190,7 @@ class SW_Calculate(WXCalculate):
         if self.SourceDest_dict['CopySources'].get('outTemp') is not None:
             if self.SourceDest_dict['CopySources'].get('outTemp') in data:
                 data['outTemp'] = data[self.SourceDest_dict['CopySources'].get('outTemp')]
-                syslog.syslog(syslog.LOG_INFO, "SW_Calculate: calc_outTemp %s %f %f" %(self.SourceDest_dict['CopySources'].get('outTemp'),data[self.SourceDest_dict['CopySources'].get('outTemp')],data['outTemp']))
+                
         
     
     def calc_inTemp(self, data, data_type):

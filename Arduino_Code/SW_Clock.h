@@ -1,7 +1,7 @@
 /*
  * SW_Clock.h
  *
- *  Created on: 2018-02-06
+ *  Created on: 2018-03-23
  *      Author: StoicWeather
  */
 
@@ -9,11 +9,8 @@
 
 
 
-#if(ARDUINO >= 100)
 #include <Arduino.h>
-#else
-#include <WProgram.h>
-#endif
+
 
 
 #ifndef SW_CLOCK_H_
@@ -22,12 +19,16 @@
 //#define SW_CLOCK_INTERNAL_TIMER_ACTIVE
 #define SW_CLOCK_INTERNAL_TIMER_PERIOD 250
 
+//#define REPORT_MEMORY_EVERY_TICK
+
 #include "SW_Helper_Functions.h"
 
 // Set to report total uptime every 90 seconds
 #define SW_CK_REPORT_UP_TIME
 //Set to report in *AUT,<Uptime / 90 seconds>; format
 //#define SW_CK_REPORT_UP_TIME_MACHINE_READABLE
+// Set to report ms every interrupt
+//#define SW_CLOCK_REPORT_MILLS
 
 
 //  Clock signal input pin

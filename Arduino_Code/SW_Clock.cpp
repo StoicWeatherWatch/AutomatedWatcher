@@ -1,7 +1,7 @@
 /*
  * SW_Clock.cpp
  *
- *  Created on: 2018-02-06
+ *  Created on: 2018-03-23
  *      Author: StoicWeather
  */
 
@@ -49,7 +49,17 @@ bool SW_CK_EverySecondNotCalled = false;
 unsigned long SW_Ck_Internal_Timer_timeLast = 0;
 unsigned long SW_Ck_Internal_Timer_tineNow = 0;
 
+
 #endif /*SW_CLOCK_INTERNAL_TIMER_ACTIVE*/
+
+#ifdef SW_CLOCK_REPORT_MILLS
+
+unsigned long SW_Ck_Mills_Counter_timeLast = 0;
+unsigned long SW_Ck_Mills_Counter_timetotal = 0;
+unsigned long SW_Ck_Mills_Counter_timeLastSec = 0;
+
+#endif /*SW_CLOCK_REPORT_MILLS*/
+
 
 
 
@@ -74,6 +84,13 @@ SW_Ck_Internal_Timer_Initialize();
 
 #endif /*SW_CLOCK_INTERNAL_TIMER_ACTIVE*/
 
+#ifdef SW_CLOCK_REPORT_MILLS
+
+SW_Ck_Mills_Counter_timeLast = millis();
+SW_Ck_Mills_Counter_timetotal = millis();
+
+#endif /*SW_CLOCK_REPORT_MILLS*/
+
 	Serial.println(F("#Clock Interrupt Functional;"));
 	SW_CK_CKInterrupted = false;
 
@@ -91,6 +108,26 @@ void SW_CK_ClockIntruptProcessing()
 {
 	SW_CK_CKInterrupted = false;
 
+#ifdef SW_CLOCK_REPORT_MILLS
+
+SW_Ck_Mills_Counter_timetotal = millis();
+
+Serial.print(F("#ms ct "));
+Serial.print(SW_Ck_Mills_Counter_timetotal - SW_Ck_Mills_Counter_timeLast);
+Serial.println(F(" ;"));
+
+SW_Ck_Mills_Counter_timeLast = SW_Ck_Mills_Counter_timetotal;
+
+#endif /*SW_CLOCK_REPORT_MILLS*/
+#ifdef REPORT_MEMORY_EVERY_TICK
+extern int __heap_start, *__brkval;
+	int v;
+	Serial.print(F("# Free RAM  "));
+	Serial.print((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
+	Serial.println(F(";"));
+	// END TEST
+#endif /*REPORT_MEMORY_EVERY_TICK*/
+
 
 	SW_CK_CKShortCountTo9++;
 	SW_CK_CKShortCountTo4++;
@@ -102,12 +139,14 @@ void SW_CK_ClockIntruptProcessing()
 		SW_CK_CKShortCountTo9 = 0;
 
 		SW_CK_CKMedCount++;
+
 		if(SW_CK_CKMedCount >= SW_CK_MED_COUNT_PERIOD)
 		{
 			SW_CK_CKMedCount = 0;
 		}
 
 		SW_CK_CKLongCount++;
+
 		if(SW_CK_CKLongCount >= SW_CK_LONG_COUNT_PERIOD)
 		{
 			SW_CK_CKLongCount = 0;
@@ -120,10 +159,16 @@ void SW_CK_ClockIntruptProcessing()
 			Serial.print(SW_CK_CK90sCount);
 			Serial.println(F(";"));
 #else /*SW_CK_REPORT_UP_TIME_MACHINE_READABLE - Print as comment*/
-			Serial.print(F("#Uptime,"));
-			int Tminutes = (SW_CK_CK90sCount * 2) / 3;
+			Serial.print(F("#Uptime, "));
+			int Tminutes = (SW_CK_CK90sCount * 3) / 2;
 			Serial.print(Tminutes);
-			Serial.println(F(",minutes;"));
+			if (((SW_CK_CK90sCount * 3) % 2) == 1)
+			{
+				Serial.print(F(".5"));
+			}
+			Serial.println(F(" minutes;"));
+
+
 #endif /*SW_CK_REPORT_UP_TIME_MACHINE_READABLE*/
 #endif /* SW_CK_REPORT_UP_TIME */
 
@@ -233,6 +278,20 @@ bool SW_CK_EverySecond()
 {
 	if(SW_CK_EverySecondNotCalled)
 	{
+
+#ifdef SW_CLOCK_REPORT_MILLS
+
+SW_Ck_Mills_Counter_timetotal = millis();
+
+Serial.print(F("#s ct "));
+Serial.print(SW_Ck_Mills_Counter_timetotal - SW_Ck_Mills_Counter_timeLastSec);
+Serial.println(F(" ms;"));
+
+SW_Ck_Mills_Counter_timeLastSec = SW_Ck_Mills_Counter_timetotal;
+
+#endif /*SW_CLOCK_REPORT_MILLS*/
+
+
 		SW_CK_EverySecondNotCalled = false;
 		return true;
 	}

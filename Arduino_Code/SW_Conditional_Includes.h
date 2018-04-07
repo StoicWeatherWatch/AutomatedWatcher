@@ -1,7 +1,7 @@
 /*
  * SW_Conditional_Includes.h
  *
- *  Created on: 2018-02-08
+ *  Created on: 2018-04-07
  *      Author: StoicWeather
  */
 
@@ -55,7 +55,7 @@
 #define SI1133_EM10_ADDRESS     0x55
 #define DS24828_1W_T20_ADDRESS  0x1F
 #define AS3935_EM11_ADDRESS     0x03
-#define MLX90614_T29_ADDRESS    0x5A
+#define MLX90614_T30_ADDRESS    0x5A
 #define CHIPCAP2_TH8_ADDRESS    0x28
 #define BMP280_TP9_ADDRESS      0x76
 
@@ -72,18 +72,22 @@
 #define SI1133_EM10_UVOPT_SUNM          10
 #define AS3935_EM11_LIGHTNING_SNUM      11
 #define DS24828_1W_T20_SNUM             20
-#define MLX90614_T29_IRTEMP_SNUM 	   29
+// The DS24828 chip takes up sensors 20...27
+#define MLX90614_T30_IRTEMP_SNUM 	   30
 
 
 // Pins
-#define RAINCOUNT_RESET_D_PIN  13
+//#define SW_CK_CLOCK_PIN       2    // Defined in SW Clock
+#define LIGHTNING_IRQ_D_PIN     4
 #define MASTER_RESET_D_PIN      8
 // Rain 9-12 See RAIN_PIN_RANGE
 #define RAIN_DAQ0_D_PIN         9
-#define LIGHTNING_IRQ_D_PIN     4
+#define RAINCOUNT_RESET_D_PIN  13
+
 
 // Analog pins
 #define WIND_DIR_ADC_A_PIN      1
+// I2C Takes up Analog Pins   4...5
 
 
 // Pin Ranges - number of pins starting with DAQ0
@@ -91,10 +95,14 @@
 
 // Presets
 // Currently dir every second and speed every 5
-#define NUMBER_OF_WIND_DIR_RECORDS 120 // Must be even!
-#define NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP   24  // Should match the above as related to the life cycle.
+//This is defined in SW_Wind_Dir_Mean.h to avoid calloc
+//#define NUMBER_OF_WIND_DIR_RECORDS 120 // Must be even!
+
+// This is defined in SW_Wind_Speed_Mean.h
+//#define NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP   24  // Should match the above as related to the life cycle.
 // 2.25 seconds gives 54 in 121.5 seconds
-#define NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP   54
+//This is defined in SW_Wind_Gust.h
+//#define NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP   54
 
 
 

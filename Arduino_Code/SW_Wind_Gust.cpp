@@ -1,21 +1,22 @@
 /*
  * SW_Wind_Gust.cpp
  *
- *  Created on: 2018-02-10
+ *  Created on: 2018-04-07
  *      Author: StoicWeather
  */
 
 #include "SW_Wind_Gust.h"
 
-SW_Wind_Gust::SW_Wind_Gust(byte MCP23018AddressIn, I2C I2CBussIn, byte NumberofGustSpeedRecordsIn, byte SpeedSensorNumberIN, byte AAQ0PinIn, byte NumberOfDirectionRecordsIn, byte DirectionSensorNumberIn)
+SW_Wind_Gust::SW_Wind_Gust(byte MCP23018AddressIn, I2C I2CBussIn, byte SpeedSensorNumberIN, byte AAQ0PinIn, byte DirectionSensorNumberIn)
 :SW_MCP2318_GPIO_Sensor(MCP23018AddressIn, I2CBussIn, SpeedSensorNumberIN),
- SW_Wind_Dir_Analog(AAQ0PinIn, NumberOfDirectionRecordsIn, DirectionSensorNumberIn)
+ SW_Wind_Dir_Analog(AAQ0PinIn, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, GustDirectionQueue, DirectionSensorNumberIn)
 {
-	int NumBytesInSentRecordQueue = ((int)NumberofGustSpeedRecordsIn) / 8;
-	if((((int)NumberofGustSpeedRecordsIn) % 8) != 0)
-		NumBytesInSentRecordQueue++;
+	//int NumBytesInSentRecordQueue = ((int)NumberofGustSpeedRecordsIn) / 8;
+	/*if((((int)NumberofGustSpeedRecordsIn) % 8) != 0)
+		NumBytesInSentRecordQueue++;*/
 
-	SentRecordQueue = (byte*)calloc(NumBytesInSentRecordQueue, sizeof(byte));
+
+	//SentRecordQueue = (byte*)calloc(NumBytesInSentRecordQueue, sizeof(byte));
 
 	//  Wind Measurements
 	HaveFullSpeedQueue = false;
@@ -23,17 +24,30 @@ SW_Wind_Gust::SW_Wind_Gust(byte MCP23018AddressIn, I2C I2CBussIn, byte NumberofG
 	CurrentSpeedQueueLoc = -1;
 	// Counts by data points. With 13 bits it takes 2 bytes for each data point unless you want to get tricky.
 	// But since we only record differences, a byte is all we need
-	WindSpeedGustQueue = (byte*)calloc(NumberofGustSpeedRecordsIn, sizeof(byte));
-	SpeedQueueLength = NumberofGustSpeedRecordsIn;
+
+	//WindSpeedGustQueue = (byte*)calloc(NumberofGustSpeedRecordsIn, sizeof(byte));
+	/*
+	 * For reasons unknown, calloc is not initializing the array to zero. And attempts to correct it caused all sorts of memory overflow issues.*/
+
+	//SpeedQueueLength = NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP;
 
 	LastGustReadout = 0;
 
 
 }
 
+
 void SW_Wind_Gust::AcquireWindGustDirection()
 {
+#ifdef TEST_REPORT_STATUS
+	Serial.println(F("#SW_Wind_Gust::AcquireWindGustDirection() starting;"));
+#endif /*TEST_REPORT_STATUS*/
+
 	AcquireDirectionDataOnly();
+
+#ifdef TEST_REPORT_STATUS
+	Serial.println(F("#SW_Wind_Gust::AcquireWindGustDirection() done;"));
+#endif /*TEST_REPORT_STATUS*/
 
 }
 
@@ -43,11 +57,29 @@ void SW_Wind_Gust::AcquireWindGustSpeed()
 	CurrentSpeedQueueLoc++;
 
 	// TODO CurrentQueueLoc >QueueLength >=?
-	if(CurrentSpeedQueueLoc >= SpeedQueueLength)
+#ifdef TEST_REPORT_STATUS
+	Serial.print(F("#SW_Wind_Gust AcquireWindGustSpeed testing queue length;"));
+	Serial.print(CurrentSpeedQueueLoc);
+
+	Serial.println(F("  CurrentSpeedQueueLoc"));
+
+extern int __heap_start, *__brkval;
+	int v;
+	Serial.print(F("# Free RAM  "));
+	Serial.print((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
+	Serial.println(F(";"));
+	// END TEST
+
+#endif /* TEST_REPORT_STATUS*/
+	if(CurrentSpeedQueueLoc >= (int)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP)
 	{
 		CurrentSpeedQueueLoc = 0;
 		HaveFullSpeedQueue = true;
 	}
+
+#ifdef TEST_REPORT_STATUS
+	Serial.println(F("#SW_Wind_Gust AcquireWindGustSpeed testing queue length done;"));
+#endif /* TEST_REPORT_STATUS*/
 
 	/*//SEQOP = 0 So the second byte should be GPIOA :)
 		byte status = I2CBuss.read(SensorAddress, (byte)MCP2318_GPIOB_REG, (byte)2);
@@ -81,6 +113,16 @@ void SW_Wind_Gust::AcquireWindGustSpeed()
 		Difference = (byte)(DataIn - LastGustReadout);
 	}
 
+#ifdef TEST_PRINTS
+
+	Serial.print(F("#Wind read  "));
+	Serial.print(DataIn,HEX);
+	Serial.print(F("  diff from last  "));
+	Serial.print(Difference,HEX);
+	Serial.println(F(";"));
+
+#endif /*TEST_PRINTS*/
+
 	LastGustReadout = DataIn;
 
 #ifdef RUN_GUST_SIMULATION
@@ -112,14 +154,14 @@ void SW_Wind_Gust::SendWindGustData()
 	Serial.println(F("#Wind Speed Queue;"));
 	Serial.print(F("#"));
 	byte QueueLoc = 0;
-	for(int i = 0; i< SpeedQueueLength; i++)
+	for(int i = 0; i< NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP; i++)
 	{
 		QueueLoc = CurrentSpeedQueueLoc + i;
 
 		// TODO CurrentQueueLoc >QueueLength >=?
-		if(QueueLoc >= SpeedQueueLength)
+		if(QueueLoc >= NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP)
 		{
-			QueueLoc -= SpeedQueueLength;
+			QueueLoc -= NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP;
 		}
 
 		Serial.print(F(","));
@@ -132,14 +174,14 @@ void SW_Wind_Gust::SendWindGustData()
 	Serial.println(F("#SentRecordQueue;"));
 	Serial.print(F("#"));
 
-	for(int i = 0; i< SpeedQueueLength; i++)
+	for(int i = 0; i< NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP; i++)
 	{
 		QueueLoc = CurrentSpeedQueueLoc + i;
 
 		// TODO CurrentQueueLoc >QueueLength >=?
-		if(QueueLoc >= SpeedQueueLength)
+		if(QueueLoc >= NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP)
 		{
-			QueueLoc -= SpeedQueueLength;
+			QueueLoc -= NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP;
 		}
 
 		Serial.print(F(",  "));
@@ -158,15 +200,23 @@ void SW_Wind_Gust::SendWindGustData()
 
 
 #endif /*TEST_PRINTS*/
-if(HaveFullSpeedQueue)
+
+#ifdef TEST_REPORT_STATUS
+	Serial.println(F("#SW_Wind_Gust AcquireWindGustSpeed if(HaveFullSpeedQueue);"));
+#endif /* TEST_REPORT_STATUS*/
+	if(HaveFullSpeedQueue)
 {
+#ifdef TEST_REPORT_STATUS
+	Serial.println(F("#SW_Wind_Gust AcquireWindGustSpeed if(HaveFullSpeedQueue) true;"));
+#endif /* TEST_REPORT_STATUS*/
+
 	// Find min and max in queue
 	int MaxPos = -1;
 	//int MinPos = -1;
 	byte minSpeed = 150;
 	byte maxSpeed = 0;
 
-	for(int i = 0; i < (int)SpeedQueueLength; i++)
+	for(int i = 0; i < (int)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP; i++)
 	{
 		if(WindSpeedGustQueue[i] < minSpeed)
 		{
@@ -179,6 +229,9 @@ if(HaveFullSpeedQueue)
 			MaxPos = i;
 		}
 	}
+#ifdef TEST_REPORT_STATUS
+	Serial.println(F("#SW_Wind_Gust AcquireWindGustSpeed if(HaveFullSpeedQueue) done;"));
+#endif /* TEST_REPORT_STATUS*/
 
 	// TEST Block
 #ifdef TEST_PRINTS

@@ -1,0 +1,837 @@
+#errorCatcher Echo
+##
+## Specifying an encoding of UTF-8 is usually safe, but if your text is 
+## actually in Latin-1, then you should replace the string "UTF-8" with "latin-1"
+## If you do this, you should also change the 'Content-Type' metadata below.
+#encoding UTF-8
+##
+
+   #set $sun_altitude = $almanac.sun.alt
+   #if $sun_altitude < 0
+      #set $sun_None="<i>(Always down)</i>"
+   #else
+      #set $sun_None="<i>(Always up)</i>"
+   #end if
+   
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Stoic Weather Watch: Current Weather Conditions</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+ <script type="text/javascript">
+      function openURL(urlname)
+      {
+        window.location=urlname;
+      }
+      function openNoaaFile(date)
+      {
+        var url = "NOAA/NOAA-";
+        url = url + date;
+        url = url + ".txt";
+        window.location=url;
+      }
+    </script>
+
+<style>
+body {
+    background-color: #000;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: auto;
+    color: #B0FEF1;
+}
+h1{
+    font-size: large;
+    font-weight: bold;
+    color: #B2FAFF;
+    text-align: center;
+    }
+h2{
+    font-size: medium;
+    font-weight: bold;
+    color: #3CF;
+    text-align: left;
+} 
+h3{
+    font-size: large;
+    font-weight: bold;
+    color: #040;
+    text-align: center;
+}
+h4{
+    font-size: large;
+    font-weight: bold;
+    color: #3CF;
+    text-align: center;
+    }
+h5{
+    font-size: x-large;
+    font-weight: bold;
+    color: #F60;
+    text-align: center;
+    }
+img {
+    text-align: center;
+    max-width: 100%;
+    height: auto;
+    width: auto;
+    padding-bottom: 2%;
+}
+wrapper {
+    margin: 0 auto;
+    max-width: 1700px;
+    width: 98%;
+    background: #000;
+    border-radius: 1px;
+    
+    }
+.section {
+    width: 31%;
+    float: left;
+    margin: 1% 1%;
+    text-align: left;
+    border-bottom-style: solid;
+    border-bottom-width: thin;
+    border-bottom-color: #056566;
+    }
+table {
+    text-align: left;
+    }
+footer {
+    background: #056566;
+    width: 100%;
+    overflow: hidden;
+    }
+footer p, footer h3 {
+    color: #E9FEF3;
+    }
+footer p a {
+    color: #E9FEF3;
+    text-decoration: none;
+    }
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    }
+li {
+    display: inline;
+    }    
+nav ul{
+    list-style: none;
+    margin: 0;
+    padding-left: 7%;
+    text-decoration: none;
+} 
+nav ul li{
+    float: left;
+    border: 1px solid #056566;
+    color: #056566;
+    font-family: Arial, Helvetica, sans-serif;
+    width: 18%;
+    padding: 2px;
+    text-decoration: none;
+}  
+nav ul li a {
+    background: #C0D6CB;
+    display: block;
+    padding: 5px 12px;
+    font-weight: bold;
+    font-size: x-large;
+    color: #056566;
+    text-decoration: none;
+    text-align: center;
+}
+nav ul li a:hover, nav ul li.active a {
+    background-color: #E9FEF3;
+    color: #058D8F;
+}
+.banner img {
+    width: 100%;
+    text-align: center;
+    border-top: 1px solid #C0D6CB;
+    border-bottom: 1px solid #C0D6CB;
+}
+.banner {
+    width: 100%;
+    text-align: center;
+}
+.clearfix {
+    clear: both;
+}
+.left-col {
+    width: 55%;
+    float: left;
+    margin: -2% 1% 1% 1%;
+}
+.sidebar {
+    width: 40%;
+    float: right;
+    margin: 1%;
+    text-align: center;
+    }
+.therapy {
+    float: left;
+    margin: 0 auto;
+    width: 100%;
+    height: auto;
+    padding: 1%;
+    }
+
+/*-------------MEDIA!-------------*/
+@media screen and (max-width: 478px) {
+    body {
+        font-size: 13px;
+        }
+}
+@media screen and (max-width: 740px) {
+    nav {
+        width: 98%;
+        margin-bottom: 10px;
+    }
+    nav ul{
+        list-style: none;
+        margin: 0 auto;
+        padding-left: 0;
+    }
+    nav ul li {
+        text-align: center;
+        margin-left: 0 auto;
+        width: 100%;
+       
+    }
+    nav ul li a {
+    padding: 8px 0;
+    }
+    .left-col {
+        width: 100%;
+    }
+    .sidebar {
+        width: 100%;
+    }
+    .section {
+        float: left;
+        width: 100%;
+        margin: 0;       
+    }
+}
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+
+<body>
+  <div id="wrapper">
+        <center>
+             <h4>Stoic Weather Watch</h4>
+</center>
+        <h1>Current Conditions<br />$current.dateTime</h1>
+        
+        
+      <div class="section">
+         <div id="stats_group">
+
+        <div class="stats">
+          <div class="stats_header">
+            <h2><strong>Current Readings</strong></h2>
+          </div>
+
+          <table>
+            <tbody>
+              <tr>
+                <td bgcolor="#222222"  class="stats_label">Outside Temperature</td>
+                <td bgcolor="#222222" class="stats_data">$current.outTemp</td>
+              </tr>
+              <tr>
+                <td class="stats_label">Barometer</td>
+                <td class="stats_data">$current.barometer</td>
+              </tr>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">Barometer Trend ($trend.time_delta.hour.format("%.0f"))</td>
+                <td bgcolor="#222222" class="stats_data">$trend.barometer </td>
+              </tr>
+              <tr>
+                <td class="stats_label">Relative Humidity</td>
+                <td class="stats_data">$current.HumidityFARS</td>
+              </tr>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">Dewpoint</td>
+                <td bgcolor="#222222" class="stats_data">$current.dewpointFARS</td>
+              </tr>
+              <tr>
+                <td class="stats_label">Wind</td>
+                <td class="stats_data">$current.windSpeed from $current.windDir ($current.windDir.ordinal_compass)</td>
+              </tr>
+              
+           
+              <tr>
+                <td bgcolor="#222222" class="stats_label">Wind Gust</td>
+                <td bgcolor="#222222" class="stats_data">$current.windGust from $current.windGustDir ($current.windGustDir.ordinal_compass)</td>
+              </tr>
+              <tr>
+                <td class="stats_label">Rain Rate</td>
+                <td class="stats_data">$current.rainRate</td>
+              </tr>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">Soil Surface</td>
+                <td bgcolor="#222222" class="stats_data">$current.soilTempIR</td>
+              </tr>
+              <tr>
+                <td class="stats_label">placeholder</td>
+                <td class="stats_data">12345.6 unit</td>
+              </tr>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">placeholder</td>
+                <td bgcolor="#222222" class="stats_data">12345.6 unit</td>
+              </tr>
+              <tr>
+                <td class="stats_label">placeholder</td>
+                <td class="stats_data">12345.6 unit</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+<div class="stats">
+          <div class="stats_header">
+            <h2><strong>Inside</strong></h2>
+          </div>
+
+          <table>
+            <tbody>
+              <tr>
+                <td bgcolor="#222222"  class="stats_label">Temperature</td>
+                <td bgcolor="#222222" class="stats_data">$current.inTemp</td>
+              </tr>
+              <tr>
+                <td class="stats_label">Relative Humidity</td>
+                <td class="stats_data">$current.HumidityHouse1</td>
+              </tr>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">Barometer</td>
+                <td bgcolor="#222222" class="stats_data">$current.barometerHouse</td>
+              </tr>
+              <tr>
+                <td class="stats_label">Barometer Trend ($trend.time_delta.hour.format("%.0f"))</td>
+                <td class="stats_data">$trend.barometerHouse</td>
+              </tr>
+
+             
+            </tbody>
+          </table>
+        </div>
+
+        <div class="stats">
+          <div class="stats_header">
+          <h2><strong>Since Midnight </strong></h2></div>
+          <table>
+            <tbody>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  High Temperature
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $day.TempFARS.max at $day.TempFARS.maxtime
+                </td>
+              </tr>
+              <tr>
+                <td  class="stats_label">
+                
+                  Low Temperature
+                </td>
+                <td class="stats_data">
+                  $day.TempFARS.min at $day.TempFARS.mintime</td>
+              </tr>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  High Humidity
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $day.HumidityFARS.max at $day.HumidityFARS.maxtime
+                </td>
+              </tr>
+              
+              <tr>
+                <td class="stats_label">
+                  High Dewpoint
+                </td>
+                <td class="stats_data">
+                  $day.dewpointFARS.max at $day.dewpointFARS.maxtime
+                </td>
+              </tr>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  Low Dewpoint
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $day.dewpointFARS.min at $day.dewpointFARS.mintime
+                </td>
+              </tr>
+              <tr>
+                <td class="stats_label">
+                  Low Humidity
+                </td>
+                <td class="stats_data">
+                  $day.HumidityFARS.min at $day.HumidityFARS.mintime
+                </td>
+              </tr>
+              
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  High Barometer
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $day.barometer.max at $day.barometer.maxtime
+                </td>
+              </tr>
+              <tr>
+                <td class="stats_label">
+                  Low Barometer
+                </td>
+                <td class="stats_data">
+                  $day.barometer.min at $day.barometer.mintime
+                </td>
+              </tr>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">Today's Rain</td>
+                <td bgcolor="#222222" class="stats_data">$day.rainSmallTip.sum</td>
+              </tr>
+              <tr>
+                <td class="stats_label">High Rain Rate</td>
+                <td class="stats_data">$day.rainRate.max at $day.rainRate.maxtime</td>
+              </tr>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  Highest Wind Mean
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                     $day.windSpeed.max at $day.windSpeed.maxtime
+                </td>
+              </tr>
+              <tr>
+                <td class="stats_label">
+                  Highest Wind Gust
+                </td>
+                <td class="stats_data">
+                     $day.windGust.max at $day.windGust.maxtime
+                </td>
+              </tr>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  Mean Wind
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                   $day.windSpeed.avg
+                </td>
+              </tr>
+              <tr>
+                <td class="stats_label">
+                  RMS Wind
+                </td>
+                <td class="stats_data">
+                     $day.wind.rms
+                </td>
+              </tr>
+
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  Vector Average Speed
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                    $day.wind.vecavg<br/>
+                </td>
+              </tr>
+              <tr>
+                <td class="stats_label">
+                  Vector Average Direction
+                </td>
+                <td class="stats_data">
+                    From $day.wind.vecdir ($day.wind.vecdir.ordinal_compass)
+                </td>
+              </tr>
+
+              
+            </tbody>
+          </table>
+
+            <div class="stats_header">
+          <h2><strong>Since Midnight Inside </strong></h2></div>
+          <table>
+            <tbody>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  High Temperature
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $day.TempHouse1.max at $day.TempHouse1.maxtime
+                </td>
+              </tr>
+              <tr>
+                <td  class="stats_label">
+                
+                  Low Temperature
+                </td>
+                <td class="stats_data">
+                  $day.TempHouse1.min at $day.TempHouse1.mintime</td>
+              </tr>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  High Humidity
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $day.HumidityHouse1.max at $day.HumidityHouse1.maxtime
+                </td>
+              </tr>
+              
+              <tr>
+                <td class="stats_label">
+                  Low Humidity
+                </td>
+                <td class="stats_data">
+                  $day.HumidityHouse1.min at $day.HumidityHouse1.mintime
+                </td>
+              </tr>        
+            </tbody>
+          </table>
+
+            <div class="stats_header">
+          <h2><strong>Solar Almanac</strong></h2></div>
+          <table>
+            <tbody>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  Start civil Twilight
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $almanac(horizon=-6).sun(use_center=1).rise
+                </td>
+              </tr>
+              <tr>
+                <td  class="stats_label">
+                
+                  Sunrise
+                </td>
+                <td class="stats_data">
+                  $almanac.sun.rise.string($sun_None)</td>
+              </tr>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  Transit
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $almanac.sun.transit
+                </td>
+              </tr>
+              <tr>
+                <td class="stats_label">
+                  Sunset
+                </td>
+                <td class="stats_data">$almanac.sun.set.string($sun_None)</td>
+              </tr>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  End civil Twilight
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $almanac(horizon=-6).sun(use_center=1).set
+                </td>
+              </tr>
+              <tr>
+                <td class="stats_label">         
+                  Azimuth
+                </td>
+                <td class="stats_data">
+                  $("%.1f&deg;" % $almanac.sun.az)
+                </td>
+              </tr> 
+              <tr>
+                <td bgcolor="#222222" class="stats_label">         
+                  Altitude
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $("%.1f&deg;" % $sun_altitude)
+                </td>
+              </tr> 
+              <tr>
+                <td class="stats_label">         
+                  Right Ascension
+                </td>
+                <td class="stats_data">
+                  $("%.1f&deg;" % $almanac.sun.ra)
+                </td>
+              </tr> 
+              <tr>
+                <td bgcolor="#222222" class="stats_label">         
+                  Declination
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $("%.1f&deg;" % $almanac.sun.dec)
+                </td>
+              </tr>     
+              #if $almanac.next_equinox.raw < $almanac.next_solstice.raw
+                ## The equinox is before the solstice. Display them in order.
+                <tr>
+                  <td class="stats_label">Equinox</td>
+                  <td class="stats_data">$almanac.next_equinox</td>
+                </tr>
+                <tr>
+                  <td bgcolor="#222222" class="stats_label">Solstice</td>
+                  <td bgcolor="#222222" class="stats_data">$almanac.next_solstice</td>
+                </tr>
+                #else
+                ## The solstice is before the equinox. Display them in order.
+                <tr>
+                  <td class="stats_label">Solstice</td>
+                  <td class="stats_data">$almanac.next_solstice</td>
+                </tr>
+                <tr>
+                  <td bgcolor="#222222" class="stats_label">Equinox</td>
+                  <td bgcolor="#222222" class="stats_data">$almanac.next_equinox</td>
+                </tr>
+                #end if      
+                                  
+            </tbody>
+          </table>
+
+            <div class="stats_header">
+          <h2><strong>Lunar Almanac</strong></h2></div>
+          <table>
+            <tbody>
+              
+              <tr>
+                <td  bgcolor="#222222" class="stats_label">
+                  Rise
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $almanac.moon.rise</td>
+              </tr>
+              <tr>
+                <td class="stats_label">
+                  Transit
+                </td>
+                <td class="stats_data">
+                  $almanac.moon.transit
+                </td>
+              </tr>
+              
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  Set
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $almanac.moon.set
+                </td>
+              </tr>
+              
+              <tr>
+                <td class="stats_label">         
+                  Azimuth
+                </td>
+                <td class="stats_data">
+                  $("%.1f&deg;" % $almanac.moon.az)
+                </td>
+              </tr> 
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  Altitude
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $("%.1f&deg;" % $almanac.moon.alt)
+                </td>
+              </tr> 
+              <tr>
+                <td class="stats_label">         
+                  Right Ascension
+                </td>
+                <td class="stats_data">
+                  $("%.1f&deg;" % $almanac.moon.ra)
+                </td>
+              </tr> 
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  Declination
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $("%.1f&deg;" % $almanac.moon.dec)
+                </td>
+              </tr>
+              #if $almanac.next_full_moon.raw < $almanac.next_new_moon.raw
+              <tr>
+                <td class="stats_label">         
+                  Full Moon
+                </td>
+                <td class="stats_data">
+                  $almanac.next_full_moon
+                </td>
+              </tr> 
+              <tr>
+                <td bgcolor="#222222" class="stats_label">         
+                  New Moon
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $almanac.next_new_moon
+                </td>
+              </tr>
+              #else
+              <tr>
+                <td class="stats_label">         
+                  New Moon
+                </td>
+                <td class="stats_data">
+                  $almanac.next_new_moon
+                </td>
+              </tr> 
+              <tr>
+                <td bgcolor="#222222" class="stats_label">         
+                  Full Moon
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $almanac.next_full_moon
+                </td>
+              </tr>
+              #end if
+                  <tr>
+                <td class="stats_label">
+                  Phase
+                </td>
+                <td class="stats_data">
+                  Waxing Crescent
+                </td>
+              </tr>  
+              <tr>
+                <td bgcolor="#222222" class="stats_label">         
+                  
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  19% full
+                </td>
+              </tr>                  
+            </tbody>
+          </table>
+        </div> <!--End class "stats" -->
+
+        <p>&nbsp;</p>
+       </div> 
+         <!--End class "stats_group" -->
+
+
+</div>
+        <div class="section">
+          
+          <a href="dayOutTempLG.png"><img src="dayOutTemp.png"></a><br />
+         <p>&nbsp;</p>
+         <p>&nbsp;</p>
+          <a href="dayOutHumidLG.png"><img src="dayOutHumid.png" ></a><br />
+          
+          <p>&nbsp;</p>
+          <p>&nbsp;</p>
+
+          <a href="dayRainLG.png"><img src="dayRain.png" ></a><br />
+          <p>&nbsp;</p>
+          <p>&nbsp;</p>
+          
+          <a href="dayInTempLG.png"><img src="dayInTemp.png"></a><br />
+          <p>&nbsp;</p>
+          <a href="dayInHumidLG.png"><img src="dayInHumid.png" ></a><br />
+          
+          
+    </div>
+        <div class="section">
+          <a href="dayBarometerLG.png"><img src="dayBarometer.png" ></a><br />
+          <p>&nbsp;</p>
+          <p>&nbsp;</p>
+          <a href="dayWindSpeedLG.png"><img src="dayWindSpeed.png" ></a><br />
+          
+          
+          <p>&nbsp;</p>
+          <p>&nbsp;</p>
+          <a href="dayWindDirLG.png"><img src="dayWindDir.png"></a><br />
+          <p>&nbsp;</p>
+          <p>&nbsp;</p>
+          <a href="dayWindVecLG.png"><img src="dayWindVec.png"></a><br />
+          <p>&nbsp;</p>
+          <a href="daySoilTempLG.png"><img src="daySoilTemp.png"></a>
+  </div><br />
+        
+      <center>
+        <h4></h4>     <br />
+        
+        
+        
+
+      </center>
+      
+<script type="text/javascript">
+      var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+      document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+    </script>
+    <script type="text/javascript">
+      try {
+        var pageTracker = _gat._getTracker("$Extras.googleAnalyticsId");
+        pageTracker._trackPageview();
+      } catch (err) { }
+    </script>
+    <script type="application/ld+json">
+      {
+      "@context" : "http://schema.org",
+      "@type" : "Article",
+      "Headline" : "$Extras.location_long Weather",
+      "datePublished" : "$current.dateTime.format("%Y-%m-%dT%H:%M:%S")$Extras.ISO8061_delta",
+      "image" : "$station.station_url/daytempdew.png",
+      #if $day.appTemp.has_data and $Extras.has_key('use_apptemp') and $Extras.use_apptemp == "1"
+      "articleSection" : "Current Conditions: Outside Temperature $current.outTemp App. Temperature $current.appTemp ($aus.feelslike($current.appTemp.raw, $current.dateTime.raw)) Dewpoint $current.dewpoint Humidity $current.outHumidity Barometer $current.barometer Wind $current.windSpeed from $current.windDir ($current.windDir.ordinal_compass) Rain Today $day.rain.sum"
+      #else
+      "articleSection" : "Current Conditions: Outside Temperature $current.outTemp Dewpoint $current.dewpoint Humidity $current.outHumidity Barometer $current.barometer Wind $current.windSpeed from $current.windDir ($current.windDir.ordinal_compass) Rain Today $day.rain.sum"
+      #end if
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+      "@context" : "http://schema.org",
+      "@type" : "WebSite",
+      "name" : "$Extras.location_long Weather",
+      "alternateName" : "Current $Extras.location_long Weather",
+      "url" : "$station.station_url"
+      }
+    </script>
+
+      </div>
+      
+      <center>
+        <h4>Nav</h4>     <br />
+        
+        <div id="navbar">
+        <input type="button" value="   Current   " onclick="openURL('index.html')" />
+        <input type="button" value="    Week     " onclick="openURL('week.html')" />
+        <input type="button" value="    Month    " onclick="openURL('month.html')" />
+        <input type="button" value="    Year     " onclick="openURL('year.html')" />
+        <p>Monthly summary:&nbsp;
+        <select NAME=noaaselect onchange="openNoaaFile(value)">
+        #for $monthYear in $SummaryByMonth
+            <option value="$monthYear">$monthYear</option>
+        #end for
+        <option selected>-Select month-</option>
+        </select>
+        <br/>
+        Yearly summary:&nbsp;
+        <select NAME=noaaselect onchange="openNoaaFile(value)">
+        #for $yr in $SummaryByYear
+            <option value="$yr">$yr</option>
+        #end for
+        <option selected>-Select year-</option>
+        </select>
+        </p>
+      </div>
+        
+        
+
+      </center>
+      
+      
+      
+      
+
+<p style="text-align: center; padding: Opx; color: #FFF7D1;">&#169;</p>
+</body>
+</html>
