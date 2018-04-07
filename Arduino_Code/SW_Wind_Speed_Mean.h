@@ -10,8 +10,14 @@
 
 #include "SW_MCP2318_GPIO_Sensor.h"
 
+
+
+#define TEST_REPORT_MEAN_STATUS
+
 // We have 13 bits. The counter may wrap
 #define MAX_WIND_CTS     0b1111111111111
+
+#define NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP   24
 
 /*
  *
@@ -20,12 +26,12 @@ class SW_Wind_Speed_Mean: public SW_MCP2318_GPIO_Sensor
 {
 public:
 	// Raw counts
-	byte *WindSpeedQueue;
+	byte WindSpeedQueue[NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP*2];
 	int CurrentSpeedQueueLoc;
-	byte SpeedQueueLength; // data chunks not bytes
+	//byte SpeedQueueLength; // data chunks not bytes
 	bool HaveFullSpeedQueue;
 
-	SW_Wind_Speed_Mean(byte AddressIn, I2C I2CBussIn, byte NumberOfSpeedRecordsIn, byte SensorNumberIN);
+	SW_Wind_Speed_Mean(byte AddressIn, I2C I2CBussIn, byte SensorNumberIN);
 
 	bool AcquireData();
 	int GetMostRecentRawMean();

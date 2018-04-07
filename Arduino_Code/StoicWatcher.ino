@@ -41,7 +41,7 @@ SW_Rain_Readout R4_Rain_Readout = SW_Rain_Readout((byte)RAIN_DAQ0_D_PIN, (byte)R
 
 SW_Wind_Dir_Mean W5_WindDir_Mean_Readout =  SW_Wind_Dir_Mean((byte)WIND_DIR_ADC_A_PIN, (byte)NUMBER_OF_WIND_DIR_RECORDS, (byte)DAVISANNA_WD5_WIND_DIR_SUNM);
 
-SW_Wind_Speed_Mean W6_WindSpeed_Mean_Sensor = SW_Wind_Speed_Mean((byte)MCP23018_W6_ADDRESS, I2CBus, (byte)NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP, (byte)DAVISANNA_WS6_WIND_SPEED_SUNM);
+SW_Wind_Speed_Mean W6_WindSpeed_Mean_Sensor = SW_Wind_Speed_Mean((byte)MCP23018_W6_ADDRESS, I2CBus, (byte)DAVISANNA_WS6_WIND_SPEED_SUNM);
 
 SW_Wind_Gust WG6_WindGust_Multiple = SW_Wind_Gust((byte)MCP23018_W6_ADDRESS, I2CBus, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, (byte)DAVISANNA_WS6_WIND_SPEED_SUNM, (byte)WIND_DIR_ADC_A_PIN, (byte)NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP, (byte)DAVISANNA_WD5_WIND_DIR_SUNM);
 

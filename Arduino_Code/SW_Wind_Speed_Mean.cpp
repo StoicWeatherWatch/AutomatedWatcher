@@ -7,7 +7,7 @@
 
 #include "SW_Wind_Speed_Mean.h"
 
-SW_Wind_Speed_Mean::SW_Wind_Speed_Mean(byte AddressIn, I2C I2CBussIn, byte NumberOfSpeedRecordsIn, byte SensorNumberIN)
+SW_Wind_Speed_Mean::SW_Wind_Speed_Mean(byte AddressIn, I2C I2CBussIn, byte SensorNumberIN)
 :SW_MCP2318_GPIO_Sensor(AddressIn, I2CBussIn, SensorNumberIN)
 {
 
@@ -17,19 +17,30 @@ SW_Wind_Speed_Mean::SW_Wind_Speed_Mean(byte AddressIn, I2C I2CBussIn, byte Numbe
 		CurrentSpeedQueueLoc = -1;
 		// Counts by data points. With 13 bits it takes 2 bytes for each data point unless you want to get tricky.
 		// TODO Replace all calloc with fixed array sizes fed from conditional includes.
-		WindSpeedQueue = (byte*)calloc(NumberOfSpeedRecordsIn*2, sizeof(byte));
-		SpeedQueueLength = NumberOfSpeedRecordsIn;
+		//WindSpeedQueue = (byte*)calloc(NumberOfSpeedRecordsIn*2, sizeof(byte));
+		//SpeedQueueLength = NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP;
 
 
 }
 
 bool SW_Wind_Speed_Mean::AcquireData()
 {
+#ifdef TEST_REPORT_MEAN_STATUS
+	Serial.println(F("# SW_Wind_Speed_Mean AcquireData;"));
+
+	extern int __heap_start, *__brkval;
+		int v;
+		Serial.print(F("# Free RAM  "));
+		Serial.print((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
+		Serial.println(F(";"));
+		// END TEST
+
+#endif /* TEST_REPORT_MEAN_STATUS*/
 	// Prep queue
 	CurrentSpeedQueueLoc++;
 
 	// TODO CurrentQueueLoc >QueueLength >=? I think correct below
-	if(CurrentSpeedQueueLoc >= SpeedQueueLength)
+	if(CurrentSpeedQueueLoc >= NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP)
 	{
 		CurrentSpeedQueueLoc = 0;
 		HaveFullSpeedQueue = true;
@@ -76,7 +87,7 @@ int SW_Wind_Speed_Mean::GetMostRecentRawMean()
 	}
 
 	byte OldestQueueLoc = 0;
-	if(CurrentSpeedQueueLoc != SpeedQueueLength - 1)
+	if(CurrentSpeedQueueLoc != NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP - 1)
 	{
 		// This is the normal case.
 		OldestQueueLoc = CurrentSpeedQueueLoc + 1;
@@ -93,6 +104,18 @@ int SW_Wind_Speed_Mean::GetMostRecentRawMean()
 	{
 		Difference += MAX_WIND_CTS;
 	}
+
+#ifdef TEST_REPORT_MEAN_STATUS
+	Serial.println(F("# SW_Wind_Speed_Mean GetMostRecentRawMean returning;"));
+
+	extern int __heap_start, *__brkval;
+		int v;
+		Serial.print(F("# Free RAM  "));
+		Serial.print((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
+		Serial.println(F(";"));
+		// END TEST
+
+#endif /* TEST_REPORT_MEAN_STATUS*/
 
 	return Difference;
 

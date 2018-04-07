@@ -96,7 +96,9 @@
 // Presets
 // Currently dir every second and speed every 5
 #define NUMBER_OF_WIND_DIR_RECORDS 120 // Must be even!
-#define NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP   24  // Should match the above as related to the life cycle.
+
+// This is defined in SW_Wind_Speed_Mean.h
+//#define NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP   24  // Should match the above as related to the life cycle.
 // 2.25 seconds gives 54 in 121.5 seconds
 #define NUMBER_OF_WIND_GUST_RECORDS_TO_KEEP   54
 
