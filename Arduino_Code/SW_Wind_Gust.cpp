@@ -104,9 +104,20 @@ extern int __heap_start, *__brkval;
 
 	byte Difference;
 
+	//Test to see if the counter has rolled over
 	if(LastGustReadout > DataIn)
 	{
-		Difference = (byte)(DataIn + (int)MAX_WIND_CTS - LastGustReadout);
+		Difference = (byte)(DataIn + ((int)MAX_WIND_CTS) - LastGustReadout);
+
+#ifdef REPORT_GUST_COUNTER_ROLLOVER
+		Serial.println(F("#SW_Wind_Gust AcquireWindGustSpeed Counter roll over;"));
+		Serial.print(F("!GUSTOVER "));
+		Serial.print(DataIn);
+		Serial.print(F("  "));
+		Serial.print(Difference);
+		Serial.println(F(";"));
+#endif /*REPORT_GUST_COUNTER_ROLLOVER*/
+
 	}
 	else
 	{

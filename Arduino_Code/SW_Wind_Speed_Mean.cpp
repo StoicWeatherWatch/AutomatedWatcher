@@ -102,6 +102,15 @@ int SW_Wind_Speed_Mean::GetMostRecentRawMean()
 	if(Difference < 0)
 	{
 		Difference += MAX_WIND_CTS;
+
+#ifdef REPORT_SPEED_COUNTER_ROLLOVER
+		Serial.println(F("#SW_Wind_Speed GetMostRecentRawMean Counter roll over;"));
+		Serial.print(F("!SPEEDOVER "));
+		Serial.print((int)((WindSpeedQueue[CurrentSpeedQueueLoc*2] << 8) + WindSpeedQueue[(CurrentSpeedQueueLoc*2)+1]));
+		Serial.print(F("  "));
+		Serial.print((int)((WindSpeedQueue[OldestQueueLoc*2] << 8) + WindSpeedQueue[(OldestQueueLoc*2)+1]));
+		Serial.println(F(";"));
+#endif /*REPORT_GUST_COUNTER_ROLLOVER*/
 	}
 
 #ifdef TEST_REPORT_MEAN_STATUS

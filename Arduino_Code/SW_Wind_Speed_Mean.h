@@ -14,6 +14,8 @@
 
 //#define TEST_REPORT_MEAN_STATUS
 
+#define REPORT_SPEED_COUNTER_ROLLOVER
+
 // We have 13 bits. The counter may wrap
 #define MAX_WIND_CTS     0b1111111111111
 

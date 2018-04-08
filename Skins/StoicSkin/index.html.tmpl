@@ -263,11 +263,20 @@ nav ul li a:hover, nav ul li.active a {
                 <td class="stats_label">Wind</td>
                 <td class="stats_data">$current.windSpeed from $current.windDir ($current.windDir.ordinal_compass)</td>
               </tr>
-              
-           
+
               <tr>
                 <td bgcolor="#222222" class="stats_label">Wind Gust</td>
                 <td bgcolor="#222222" class="stats_data">$current.windGust from $current.windGustDir ($current.windGustDir.ordinal_compass)</td>
+              </tr>
+              <tr>
+                <td class="stats_label">15 Min Gust</td>
+                <td class="stats_data">$span($time_delta=900).windGust.max</td>
+              </tr>
+              
+           
+              <tr>
+                <td bgcolor="#222222" class="stats_label">1 Hour Gust</td>
+                <td bgcolor="#222222" class="stats_data">$span($hour_delta=1).windGust.max</td>
               </tr>
               <tr>
                 <td class="stats_label">Rain Rate</td>

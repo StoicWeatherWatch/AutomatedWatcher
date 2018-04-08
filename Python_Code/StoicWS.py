@@ -101,6 +101,8 @@ def loader(config_dict, _):
 def confeditor_loader():
     return StoicWConfEditor()
 
+LOCAL_LOG_FILE = "/root/Stoic_LOG.txt"
+
 def logmsg(level, msg):
     syslog.syslog(level, 'StoicWS: %s' % msg)
 
@@ -1217,6 +1219,13 @@ class StoicWatcher(object):
         loginf("key_parse_6WMS_5WMD_wind_mean windDir %f" % data["windDir"])
         loginf("key_parse_6WMS_5WMD_wind_mean windSpeed %f" % data["windSpeed"])
         
+        # Gusts are defined such that there may not always be a gust. StoicWatcher does not send a WGS line when there is no gust.
+        #  This will cause Weewx to assum that gusts are not reported at all if it does not get one in an archive intervaul period. 
+        #  We don't care about a mean gust. The archive record will take the max of windgust to archive. 
+        #  So here we fake it so WeeWx knows it is getting gust data from the station.
+        data["windGust"] = float(0.0)
+        data["windGustDir"] = float(0.0)
+        
         return data
     
     def sensor_parse_DS18B20_1Wire(self,DataHex):
@@ -1409,6 +1418,13 @@ class StoicWatcher(object):
     
     
     def temp_Hu_8TH_line_validation(self, LineIn):
+        """
+        se_ChipCap2_Humid DataHex: 0000
+Apr  8 06:34:27 StoicWatcher weewx[1453]: StoicWS: sensor_parse_ChipCap2_Humid DataRaw: 0
+Apr  8 06:34:27 StoicWatcher weewx[1453]: StoicWS: sensor_parse_ChipCap2_Temp DataHex: 0000
+Apr  8 06:34:27 StoicWatcher weewx[1453]: StoicWS: sensor_parse_ChipCap2_Temp DataRaw: 0
+TH,00000000
+        """
         
         pos = LineIn.find(",")
         
@@ -1419,6 +1435,12 @@ class StoicWatcher(object):
         
         if (posEnd - pos) != 9:
             logdbg("temp_Hu_8TH_line_validation data not correct length")
+            logdbg("temp_Hu_8TH_line_validation LineIn: %s" %LineIn)
+            return False
+        
+        if(LineIn.find("TH,00000000") != -1):
+            logdbg("temp_Hu_8TH_line_validation data all zeros - likely no sensor conneciton")
+            logdbg("temp_Hu_8TH_line_validation LineIn: %s" %LineIn)
             return False
         
         return True
@@ -1430,6 +1452,7 @@ class StoicWatcher(object):
         ChipCap2 type sensor
         HHHHTTTT
         """
+        
         
         
         if not self.temp_Hu_8TH_line_validation(LineIn):
@@ -1678,7 +1701,7 @@ class StoicWatcher(object):
                 # A computer readable alert
                 # TODO Deal with computer readable alerts
                 loginf('LineIn: %s' % LineIn)
-                
+                alert_parse(LineIn)
             
             elif LineIn[0] == "#":
                 loginf('%s' % LineIn)
@@ -1706,7 +1729,16 @@ class StoicWatcher(object):
         # Varify data received
         # raise exception if unable to reset
             
-            
+    def alert_parse(self,LineIn):
+        """
+        Handle lines starting with !
+        """
+        with open(LOCAL_LOG_FILE, "a") as SpecialLogFile: 
+            SpecialLogFile.write(strftime("%Y-%m-%d-%H:%M:%S,", gmtime()))
+            #This is they key used for data records
+            SpecialLogFile.write("%d," %int(time.time()))
+            SpecialLogFile.write(LineIn)
+            SpecialLogFile.write("\n")
             
         
 

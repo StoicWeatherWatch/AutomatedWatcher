@@ -33,6 +33,7 @@
 
 //#define TEST_PRINTS
 //#define TEST_REPORT_STATUS
+#define REPORT_GUST_COUNTER_ROLLOVER
 
 /*
  *
