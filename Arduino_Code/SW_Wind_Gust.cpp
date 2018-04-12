@@ -100,6 +100,7 @@ extern int __heap_start, *__brkval;
 			Serial.print(DataIn, HEX);
 			Serial.println(F(";"));
 	 */
+	Serial.println(F("#SW_Wind_Gust AcquireDataAndReturn Calling;"));
 	int DataIn = AcquireDataAndReturn();
 
 	byte Difference;
@@ -124,15 +125,30 @@ extern int __heap_start, *__brkval;
 		Difference = (byte)(DataIn - LastGustReadout);
 	}
 
-#ifdef TEST_PRINTS
+#ifdef TEST_PRINT_EACH_READ
 
-	Serial.print(F("#Wind read  "));
+	Serial.print(F("#SW_Wind_Gust read  "));
 	Serial.print(DataIn,HEX);
 	Serial.print(F("  diff from last  "));
 	Serial.print(Difference,HEX);
 	Serial.println(F(";"));
 
-#endif /*TEST_PRINTS*/
+#endif /*TEST_PRINT_EACH_READ*/
+
+#ifdef REPORT_HIGH_GUST
+//7 m/s = 15 mph = 15 clicks in 2.25 seconds
+	if(Difference >= (15))
+	{
+	Serial.println(F("#SW_Wind_Gust AcquireWindGustSpeed High Speed Reported;"));
+	Serial.print(F("!GUSTHIGH "));
+	Serial.print((int)Difference);
+	Serial.print(F(",  "));
+	Serial.print(DataIn);
+	Serial.print(F(",  "));
+	Serial.print(LastGustReadout);
+	Serial.println(F(";"));
+	}
+#endif /*REPORT_HIGH_GUST*/
 
 	LastGustReadout = DataIn;
 
@@ -272,6 +288,8 @@ void SW_Wind_Gust::SendWindGustData()
 
 					Serial.println(F(" # Max has not been sent;"));
 					#endif /*TEST_PRINTS*/
+
+
 			// set sent to true
 			SetSentRecord(MaxPos, true);
 			// send data
