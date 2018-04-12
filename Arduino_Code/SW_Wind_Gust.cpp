@@ -33,6 +33,11 @@ SW_Wind_Gust::SW_Wind_Gust(byte MCP23018AddressIn, I2C I2CBussIn, byte SpeedSens
 
 	LastGustReadout = 0;
 
+#ifdef RUN_GUST_TIME_TEST
+	SW_GUST_Current_Time = 0;
+	SW_GUST_Last_Time = 0;
+#endif /*RUN_GUST_TIME_TEST*/
+
 
 }
 
@@ -170,8 +175,20 @@ extern int __heap_start, *__brkval;
 
 	SetSentRecord(CurrentSpeedQueueLoc, false);
 
+#ifdef RUN_GUST_TIME_TEST
+	SW_GUST_Current_Time = millis();
+	Serial.print(F("#SW_Wind_Gust AcquireWindGustSpeed time between records "));
+	Serial.print(SW_GUST_Current_Time);
+	Serial.print(F(",  "));
+		Serial.print(SW_GUST_Last_Time);
+		Serial.print(F(",  "));
+		Serial.print(SW_GUST_Current_Time-SW_GUST_Last_Time);
+	Serial.println(F(";"));
+	SW_GUST_Last_Time = SW_GUST_Current_Time;
+#endif /*RUN_GUST_TIME_TEST*/
 
-}
+
+} /*AcquireWindGustSpeed*/
 
 void SW_Wind_Gust::SendWindGustData()
 {
