@@ -15,6 +15,7 @@
 //#define TEST_REPORT_MEAN_STATUS
 
 #define REPORT_SPEED_COUNTER_ROLLOVER
+#define REPORT_HIGH_MEAN
 
 // We have 13 bits. The counter may wrap
 #define MAX_WIND_CTS     0b1111111111111
@@ -28,7 +29,7 @@ class SW_Wind_Speed_Mean: public SW_MCP2318_GPIO_Sensor
 {
 public:
 	// Raw counts
-	byte WindSpeedQueue[NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP*2];
+	int WindSpeedQueue[NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP];
 	int CurrentSpeedQueueLoc;
 	//byte SpeedQueueLength; // data chunks not bytes
 	bool HaveFullSpeedQueue;

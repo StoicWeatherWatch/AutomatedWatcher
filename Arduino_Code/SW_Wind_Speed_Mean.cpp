@@ -12,12 +12,12 @@ SW_Wind_Speed_Mean::SW_Wind_Speed_Mean(byte AddressIn, I2C I2CBussIn, byte Senso
 {
 
 	//  Wind Measurements
-		HaveFullSpeedQueue = false;
-		// Holds the location of the most recently recorded record in the queue
-		CurrentSpeedQueueLoc = -1;
-		// Counts by data points. With 13 bits it takes 2 bytes for each data point unless you want to get tricky.
-		//WindSpeedQueue = (byte*)calloc(NumberOfSpeedRecordsIn*2, sizeof(byte));
-		//SpeedQueueLength = NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP;
+	HaveFullSpeedQueue = false;
+	// Holds the location of the most recently recorded record in the queue
+	CurrentSpeedQueueLoc = -1;
+	// Counts by data points. With 13 bits it takes 2 bytes for each data point unless you want to get tricky.
+	//WindSpeedQueue = (byte*)calloc(NumberOfSpeedRecordsIn*2, sizeof(byte));
+	//SpeedQueueLength = NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP;
 
 
 }
@@ -28,11 +28,11 @@ bool SW_Wind_Speed_Mean::AcquireData()
 	Serial.println(F("# SW_Wind_Speed_Mean AcquireData;"));
 
 	extern int __heap_start, *__brkval;
-		int v;
-		Serial.print(F("# Free RAM  "));
-		Serial.print((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
-		Serial.println(F(";"));
-		// END TEST
+	int v;
+	Serial.print(F("# Free RAM  "));
+	Serial.print((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
+	Serial.println(F(";"));
+	// END TEST
 
 #endif /* TEST_REPORT_MEAN_STATUS*/
 	// Prep queue
@@ -64,12 +64,11 @@ bool SW_Wind_Speed_Mean::AcquireData()
 		Serial.print(DataIn, HEX);
 		Serial.println(F(";"));
 	 */
+	Serial.println(F("# SW_Wind_Speed_Mean AcquireDataAndReturn calling;"));
 	int DataIn = AcquireDataAndReturn();
 
-	WindSpeedQueue[CurrentSpeedQueueLoc*2] = (byte)(DataIn >> 8);
+	WindSpeedQueue[CurrentSpeedQueueLoc] = DataIn;
 
-	// (byte) should truncate
-	WindSpeedQueue[(CurrentSpeedQueueLoc*2)+1] = (byte)(DataIn);
 
 
 
@@ -86,7 +85,7 @@ int SW_Wind_Speed_Mean::GetMostRecentRawMean()
 	}
 
 	byte OldestQueueLoc = 0;
-	if(CurrentSpeedQueueLoc != NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP - 1)
+	if(CurrentSpeedQueueLoc != (NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP - 1))
 	{
 		// This is the normal case.
 		OldestQueueLoc = CurrentSpeedQueueLoc + 1;
@@ -96,8 +95,7 @@ int SW_Wind_Speed_Mean::GetMostRecentRawMean()
 		OldestQueueLoc = 0;
 	}
 
-	int Difference = (int)((WindSpeedQueue[CurrentSpeedQueueLoc*2] << 8) + WindSpeedQueue[(CurrentSpeedQueueLoc*2)+1])
-					- (int)((WindSpeedQueue[OldestQueueLoc*2] << 8) + WindSpeedQueue[(OldestQueueLoc*2)+1]);
+	int Difference = WindSpeedQueue[CurrentSpeedQueueLoc] - WindSpeedQueue[OldestQueueLoc];
 
 	if(Difference < 0)
 	{
@@ -106,24 +104,43 @@ int SW_Wind_Speed_Mean::GetMostRecentRawMean()
 #ifdef REPORT_SPEED_COUNTER_ROLLOVER
 		Serial.println(F("#SW_Wind_Speed GetMostRecentRawMean Counter roll over;"));
 		Serial.print(F("!SPEEDOVER "));
-		Serial.print((int)((WindSpeedQueue[CurrentSpeedQueueLoc*2] << 8) + WindSpeedQueue[(CurrentSpeedQueueLoc*2)+1]));
+		Serial.print(WindSpeedQueue[CurrentSpeedQueueLoc]);
 		Serial.print(F("  "));
-		Serial.print((int)((WindSpeedQueue[OldestQueueLoc*2] << 8) + WindSpeedQueue[(OldestQueueLoc*2)+1]));
+		Serial.print(WindSpeedQueue[OldestQueueLoc]);
 		Serial.println(F(";"));
-#endif /*REPORT_GUST_COUNTER_ROLLOVER*/
+#endif /*REPORT_SPEED_COUNTER_ROLLOVER*/
 	}
 
 #ifdef TEST_REPORT_MEAN_STATUS
 	Serial.println(F("# SW_Wind_Speed_Mean GetMostRecentRawMean returning;"));
 
 	extern int __heap_start, *__brkval;
-		int v;
-		Serial.print(F("# Free RAM  "));
-		Serial.print((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
-		Serial.println(F(";"));
-		// END TEST
+	int v;
+	Serial.print(F("# Free RAM  "));
+	Serial.print((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
+	Serial.println(F(";"));
+	// END TEST
 
 #endif /* TEST_REPORT_MEAN_STATUS*/
+
+#ifdef REPORT_HIGH_MEAN
+//7 m/s = 15 mph = 835 clicks in 120 seconds
+	if(Difference >= (835))
+	{
+	Serial.println(F("#SW_Wind_Speed GetMostRecentRawMean High Speed Reported;"));
+	Serial.print(F("!SPEEDHIGH "));
+	Serial.print(WindSpeedQueue[CurrentSpeedQueueLoc]);
+			Serial.print(F(",  "));
+			Serial.print(WindSpeedQueue[OldestQueueLoc]);
+	Serial.print(F(",  "));
+	Serial.print(Difference);
+	Serial.print(F(",  "));
+	Serial.print(CurrentSpeedQueueLoc);
+	Serial.print(F(",  "));
+	Serial.print(OldestQueueLoc);
+	Serial.println(F(";"));
+	}
+#endif /*REPORT_HIGH_MEAN*/
 
 	return Difference;
 
@@ -135,13 +152,13 @@ void SW_Wind_Speed_Mean::SendMostRecentRawMean()
 	{
 
 
-	int Difference = GetMostRecentRawMean();
+		int Difference = GetMostRecentRawMean();
 
-	Serial.print(F("*"));
-	Serial.print(SensorNumber,DEC);
-	Serial.print(F("WMS,"));
-	SerialHexByteAndAHalfPrint(Difference);
-	Serial.print(F(";"));
+		Serial.print(F("*"));
+		Serial.print(SensorNumber,DEC);
+		Serial.print(F("WMS,"));
+		SerialHexByteAndAHalfPrint(Difference);
+		Serial.print(F(";"));
 
 	}
 
