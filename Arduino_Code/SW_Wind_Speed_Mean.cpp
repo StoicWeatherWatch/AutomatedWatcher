@@ -19,7 +19,37 @@ SW_Wind_Speed_Mean::SW_Wind_Speed_Mean(byte AddressIn, I2C I2CBussIn, byte Senso
 	//WindSpeedQueue = (byte*)calloc(NumberOfSpeedRecordsIn*2, sizeof(byte));
 	//SpeedQueueLength = NUMBER_OF_WIND_SPEED_RECORDS_TO_KEEP;
 
-
+#ifdef RUN_TIME_TEST
+	SW_Wind_Time_holder[0] = 0;
+	SW_Wind_Time_holder[1] = 0;
+	SW_Wind_Time_holder[2] = 0;
+	SW_Wind_Time_holder[3] = 0;
+	SW_Wind_Time_holder[4] = 0;
+	SW_Wind_Time_holder[5] = 0;
+	SW_Wind_Time_holder[6] = 0;
+	SW_Wind_Time_holder[7] = 0;
+	SW_Wind_Time_holder[8] = 0;
+	SW_Wind_Time_holder[9] = 0;
+	SW_Wind_Time_holder[10] = 0;
+	SW_Wind_Time_holder[11] = 0;
+	SW_Wind_Time_holder[12] = 0;
+	SW_Wind_Time_holder[13] = 0;
+	SW_Wind_Time_holder[14] = 0;
+	SW_Wind_Time_holder[15] = 0;
+	SW_Wind_Time_holder[16] = 0;
+	SW_Wind_Time_holder[17] = 0;
+	SW_Wind_Time_holder[18] = 0;
+	SW_Wind_Time_holder[19] = 0;
+	SW_Wind_Time_holder[20] = 0;
+	SW_Wind_Time_holder[21] = 0;
+	SW_Wind_Time_holder[22] = 0;
+	SW_Wind_Time_holder[23] = 0;
+#endif /*RUN_TIME_TEST*/
+#ifdef RUN_LONG_TIME_TEST
+	SW_Wind_Time_CURRENT = 0;
+	SW_Wind_Time_LAST = 0;
+	SW_Wind_Time_COUNT = 0;
+#endif /*RUN_LONG_TIME_TEST*/
 }
 
 bool SW_Wind_Speed_Mean::AcquireData()
@@ -70,7 +100,35 @@ bool SW_Wind_Speed_Mean::AcquireData()
 	WindSpeedQueue[CurrentSpeedQueueLoc] = DataIn;
 
 
+#ifdef RUN_TIME_TEST
+	SW_Wind_Time_holder[CurrentSpeedQueueLoc] = millis();
+#endif /*RUN_TIME_TEST*/
+#ifdef RUN_LONG_TIME_TEST
 
+	SW_Wind_Time_CURRENT = millis();
+	SW_Wind_Time_COUNT++;
+
+	if(SW_Wind_Time_LAST == 0)
+	{
+		SW_Wind_Time_COUNT = 0;
+		SW_Wind_Time_LAST = SW_Wind_Time_CURRENT;
+	}
+
+	if((SW_Wind_Time_CURRENT - SW_Wind_Time_LAST) >= 600000)
+	{
+		Serial.print(F("!SPEEDTIME, "));
+		Serial.print(SW_Wind_Time_CURRENT - SW_Wind_Time_LAST);
+		Serial.print(F(", "));
+				Serial.print(SW_Wind_Time_COUNT);
+		Serial.println(F(";"));
+		SW_Wind_Time_LAST = SW_Wind_Time_CURRENT;
+		SW_Wind_Time_COUNT = 0;
+	}
+
+
+
+
+#endif /*RUN_LONG_TIME_TEST*/
 
 	return true;
 
@@ -81,6 +139,7 @@ int SW_Wind_Speed_Mean::GetMostRecentRawMean()
 {
 	if(!HaveFullSpeedQueue)
 	{
+		//This should never happen since it should be tested before being called
 		return 0;
 	}
 
@@ -99,7 +158,6 @@ int SW_Wind_Speed_Mean::GetMostRecentRawMean()
 
 	if(Difference < 0)
 	{
-		Difference += MAX_WIND_CTS;
 
 #ifdef REPORT_SPEED_COUNTER_ROLLOVER
 		Serial.println(F("#SW_Wind_Speed GetMostRecentRawMean Counter roll over;"));
@@ -107,8 +165,12 @@ int SW_Wind_Speed_Mean::GetMostRecentRawMean()
 		Serial.print(WindSpeedQueue[CurrentSpeedQueueLoc]);
 		Serial.print(F("  "));
 		Serial.print(WindSpeedQueue[OldestQueueLoc]);
+		Serial.print(F("  "));
+				Serial.print(Difference);
 		Serial.println(F(";"));
 #endif /*REPORT_SPEED_COUNTER_ROLLOVER*/
+
+		Difference = Difference + (int)MAX_WIND_CTS;
 	}
 
 #ifdef TEST_REPORT_MEAN_STATUS
@@ -141,6 +203,26 @@ int SW_Wind_Speed_Mean::GetMostRecentRawMean()
 	Serial.println(F(";"));
 	}
 #endif /*REPORT_HIGH_MEAN*/
+
+#ifdef RUN_TIME_TEST
+	Serial.print(F("#SW_Wind_Speed GetMostRecentRawMean time between records "));
+	Serial.print(SW_Wind_Time_holder[CurrentSpeedQueueLoc]);
+	Serial.print(F(",  "));
+		Serial.print(SW_Wind_Time_holder[OldestQueueLoc]);
+		Serial.print(F(",  "));
+		Serial.print(SW_Wind_Time_holder[CurrentSpeedQueueLoc]-SW_Wind_Time_holder[OldestQueueLoc]);
+	Serial.println(F(";"));
+#endif /*RUN_TIME_TEST*/
+#ifdef RUN_TIME_TEST
+	Serial.print(F("#SW_Wind_Speed GetMostRecentRawMean time between records "));
+	Serial.print(SW_Wind_Time_holder[CurrentSpeedQueueLoc]);
+	Serial.print(F(",  "));
+		Serial.print(SW_Wind_Time_holder[OldestQueueLoc]);
+		Serial.print(F(",  "));
+		Serial.print(SW_Wind_Time_holder[CurrentSpeedQueueLoc]-SW_Wind_Time_holder[OldestQueueLoc]);
+	Serial.println(F(";"));
+#endif /*RUN_TIME_TEST*/
+
 
 	return Difference;
 

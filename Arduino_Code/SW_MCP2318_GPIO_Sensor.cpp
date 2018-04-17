@@ -52,6 +52,11 @@ int SW_MCP2318_GPIO_Sensor::AcquireDataAndReturn()
 	Serial.print(DataIn, HEX);
 	Serial.print(F("   "));
 #endif /*SET_FULL_TESTS*/
+#ifdef SET_REPORT_BIT_READ
+	Serial.print(F("# MCP2318 MSB "));
+	Serial.print(DataIn,BIN);
+	Serial.println(F(" ;"));
+#endif /*SET_REPORT_BIT_READ*/
 
 	I2CBuss.read(SensorAddress, (byte)MCP2318_GPIOA_REG, (byte)1);
 
@@ -60,15 +65,32 @@ int SW_MCP2318_GPIO_Sensor::AcquireDataAndReturn()
 	DataIn <<= 8;
 
 #ifdef SET_FULL_TESTS
+	//int temp = (int)I2CBuss.receive();
+	//Serial.print(temp, HEX);
+	//Serial.println(F(";"));
+	//DataIn |= temp;
+#endif /*SET_FULL_TESTS*/
+#ifdef SET_REPORT_BIT_READ
 	int temp = (int)I2CBuss.receive();
-	Serial.print(temp, HEX);
-	Serial.println(F(";"));
-	DataIn |= temp;
-#endif /*SET_FULL_TESTS*/
-#ifndef SET_FULL_TESTS
-	DataIn |= (int)I2CBuss.receive();
-#endif /*SET_FULL_TESTS*/
 
+	Serial.print(F("# MCP2318 LSB "));
+	Serial.print(temp,BIN);
+	Serial.println(F(" ;"));
+
+	DataIn |= temp;
+#endif /*SET_REPORT_BIT_READ*/
+#ifndef SET_REPORT_BIT_READ
+	DataIn |= (int)I2CBuss.receive();
+#endif /*SET_REPORT_BIT_READ*/
+
+#ifdef SET_REPORT_BIT_READ
+	Serial.print(F("# MCP2318 ALL "));
+	Serial.print(DataIn,BIN);
+	Serial.println(F(" ;"));
+	Serial.print(F("# MCP2318 ALL "));
+		Serial.print(DataIn,HEX);
+		Serial.println(F(" ;"));
+#endif /*SET_REPORT_BIT_READ*/
 
 
 

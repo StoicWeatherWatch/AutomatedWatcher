@@ -36,7 +36,8 @@
 #define REPORT_GUST_COUNTER_ROLLOVER
 #define TEST_PRINT_EACH_READ
 #define REPORT_HIGH_GUST
-#define RUN_GUST_TIME_TEST
+//#define RUN_GUST_TIME_TEST
+#define RUN_GUST_LONG_TIME_TEST
 
 /*
  *
@@ -76,6 +77,11 @@ public:
 	unsigned long SW_GUST_Last_Time;
 
 #endif /*RUN_GUST_TIME_TEST*/
+#ifdef RUN_GUST_LONG_TIME_TEST
+	unsigned long SW_Gust_Time_LAST;
+	unsigned long SW_Gust_Time_CURRENT;
+	int SW_Gust_Time_COUNT;
+#endif /*RUN_GUST_LONG_TIME_TEST*/
 
 
 };

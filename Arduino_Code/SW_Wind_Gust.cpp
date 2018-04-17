@@ -38,6 +38,12 @@ SW_Wind_Gust::SW_Wind_Gust(byte MCP23018AddressIn, I2C I2CBussIn, byte SpeedSens
 	SW_GUST_Last_Time = 0;
 #endif /*RUN_GUST_TIME_TEST*/
 
+#ifdef RUN_GUST_LONG_TIME_TEST
+	SW_Gust_Time_LAST = 0;
+	SW_Gust_Time_CURRENT = 0;
+	SW_Gust_Time_COUNT = 0;
+#endif /*RUN_GUST_LONG_TIME_TEST*/
+
 
 }
 
@@ -186,6 +192,33 @@ extern int __heap_start, *__brkval;
 	Serial.println(F(";"));
 	SW_GUST_Last_Time = SW_GUST_Current_Time;
 #endif /*RUN_GUST_TIME_TEST*/
+
+#ifdef RUN_GUST_LONG_TIME_TEST
+
+	SW_Gust_Time_CURRENT = millis();
+	SW_Gust_Time_COUNT++;
+
+	if(SW_Gust_Time_LAST == 0)
+	{
+		SW_Gust_Time_COUNT = 0;
+		SW_Gust_Time_LAST = SW_Gust_Time_CURRENT;
+	}
+
+	if((SW_Gust_Time_CURRENT - SW_Gust_Time_LAST) >= 600000)
+	{
+		Serial.print(F("!GUSTTIME, "));
+		Serial.print(SW_Gust_Time_CURRENT - SW_Gust_Time_LAST);
+		Serial.print(F(", "));
+				Serial.print(SW_Gust_Time_COUNT);
+		Serial.println(F(";"));
+		SW_Gust_Time_LAST = SW_Gust_Time_CURRENT;
+		SW_Gust_Time_COUNT = 0;
+	}
+
+
+
+
+#endif /*RUN_GUST_LONG_TIME_TEST*/
 
 
 } /*AcquireWindGustSpeed*/

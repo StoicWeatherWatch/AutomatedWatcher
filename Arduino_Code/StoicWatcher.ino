@@ -109,6 +109,7 @@ void setup()
 	// Rain Sensor
 	// Set the rain reset high to reset the rain count
 	// TODO reevaluate the use of rain reset
+	// TODO read out the rain before reset. Report non zero
 // TEMPREARY
 	//TODO Switch on the one wire sensor
 	//T20_1Wire_Temp_Sensor.InitializeSensor();
