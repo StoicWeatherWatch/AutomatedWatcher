@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.2.2
-# 2018-04-07
+# Version 0.2.3
+# 2018-04-08
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -1073,6 +1073,7 @@ class StoicWatcher(object):
         data["windGust"] = GustSpeed
         
         # TEST lines
+        loginf(LineIn)
         loginf("key_parse_6WGS_5WGD_wind_gust windGustDir %f" % data["windGustDir"])
         loginf("key_parse_6WGS_5WGD_wind_gust windGust %f" % data["windGust"])
         
@@ -1216,6 +1217,7 @@ class StoicWatcher(object):
         data["windSpeed"] = MeanSpeed
         
         # TEST lines
+        loginf(LineIn)
         loginf("key_parse_6WMS_5WMD_wind_mean windDir %f" % data["windDir"])
         loginf("key_parse_6WMS_5WMD_wind_mean windSpeed %f" % data["windSpeed"])
         
@@ -1419,11 +1421,9 @@ class StoicWatcher(object):
     
     def temp_Hu_8TH_line_validation(self, LineIn):
         """
-        se_ChipCap2_Humid DataHex: 0000
-Apr  8 06:34:27 StoicWatcher weewx[1453]: StoicWS: sensor_parse_ChipCap2_Humid DataRaw: 0
-Apr  8 06:34:27 StoicWatcher weewx[1453]: StoicWS: sensor_parse_ChipCap2_Temp DataHex: 0000
-Apr  8 06:34:27 StoicWatcher weewx[1453]: StoicWS: sensor_parse_ChipCap2_Temp DataRaw: 0
+
 TH,00000000
+No I2C connection
         """
         
         pos = LineIn.find(",")
@@ -1701,7 +1701,7 @@ TH,00000000
                 # A computer readable alert
                 # TODO Deal with computer readable alerts
                 loginf('LineIn: %s' % LineIn)
-                alert_parse(LineIn)
+                self.alert_parse(LineIn)
             
             elif LineIn[0] == "#":
                 loginf('%s' % LineIn)
@@ -1733,10 +1733,12 @@ TH,00000000
         """
         Handle lines starting with !
         """
+        timeHolder = int(time.time())
+        loginf('Time of Special Log %d' % timeHolder)
         with open(LOCAL_LOG_FILE, "a") as SpecialLogFile: 
-            SpecialLogFile.write(strftime("%Y-%m-%d-%H:%M:%S,", gmtime()))
+            SpecialLogFile.write(time.strftime("%Y-%m-%d-%H:%M:%S,", time.gmtime()))
             #This is they key used for data records
-            SpecialLogFile.write("%d," %int(time.time()))
+            SpecialLogFile.write("%d," %timeHolder)
             SpecialLogFile.write(LineIn)
             SpecialLogFile.write("\n")
             
