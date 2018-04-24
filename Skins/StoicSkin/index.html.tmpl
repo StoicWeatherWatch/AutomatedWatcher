@@ -287,12 +287,12 @@ nav ul li a:hover, nav ul li.active a {
                 <td bgcolor="#222222" class="stats_data">$current.soilTempIR</td>
               </tr>
               <tr>
-                <td class="stats_label">placeholder</td>
-                <td class="stats_data">12345.6 unit</td>
+                <td class="stats_label">Soil at 10 cm</td>
+                <td class="stats_data">$current.soilTemp1</td>
               </tr>
               <tr>
-                <td bgcolor="#222222" class="stats_label">placeholder</td>
-                <td bgcolor="#222222" class="stats_data">12345.6 unit</td>
+                <td bgcolor="#222222" class="stats_label">Soil at 50 cm</td>
+                <td bgcolor="#222222" class="stats_data">$current.soilTemp5</td>
               </tr>
               <tr>
                 <td class="stats_label">placeholder</td>
@@ -459,7 +459,38 @@ nav ul li a:hover, nav ul li.active a {
                     From $day.wind.vecdir ($day.wind.vecdir.ordinal_compass)
                 </td>
               </tr>
-
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  High Soil IR Temperature
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $day.soilTempIR.max at $day.soilTempIR.maxtime
+                </td>
+              </tr>
+              <tr>
+                <td  class="stats_label">
+                
+                  Low Soil IR Temperature
+                </td>
+                <td class="stats_data">
+                  $day.soilTempIR.min at $day.soilTempIR.mintime</td>
+              </tr>
+              <tr>
+                <td bgcolor="#222222" class="stats_label">
+                  High Soil 10 cm Temperature
+                </td>
+                <td bgcolor="#222222" class="stats_data">
+                  $day.soilTemp1.max at $day.soilTemp1.maxtime
+                </td>
+              </tr>
+              <tr>
+                <td  class="stats_label">
+                
+                  Low Soil 10 cm Temperature
+                </td>
+                <td class="stats_data">
+                  $day.soilTemp1.min at $day.soilTemp1.mintime</td>
+              </tr>
               
             </tbody>
           </table>
@@ -743,7 +774,8 @@ nav ul li a:hover, nav ul li.active a {
           <a href="dayInTempLG.png"><img src="dayInTemp.png"></a><br />
           <p>&nbsp;</p>
           <a href="dayInHumidLG.png"><img src="dayInHumid.png" ></a><br />
-          
+          <p>&nbsp;</p>
+          <a href="daySoilTempIRLG.png"><img src="daySoilTempIR.png"></a>
           
     </div>
         <div class="section">
