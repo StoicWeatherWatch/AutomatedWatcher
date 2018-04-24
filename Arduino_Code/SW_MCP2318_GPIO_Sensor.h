@@ -22,6 +22,7 @@
 //#define REPORT_ALL_READINGS_TEST
 //#define SET_FULL_TESTS
 //#define REPORT_MEMORY_LEVEL
+#define SET_REPORT_BIT_READ
 
 // These assume BANK = 0
 #define MCP2318_IOCON_REG    0x0A

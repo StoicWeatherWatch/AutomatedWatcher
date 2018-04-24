@@ -21,6 +21,8 @@
 //This is defined in SW_Wind_Dir_Mean.h to avoid calloc
 #define NUMBER_OF_WIND_DIR_RECORDS 120 // Must be even!
 
+// TODO Number of wind speed records kept has moved to 25 does the above need to be changed?
+
 // This is NUMBER_OF_WIND_DIR_RECORDS * 3/2 (An even number is assumed. Otherwise all hell may break loose.)
 #define NUMBER_OF_BYTES_NEEDED_FOR_MEAN_DIRECTION_QUEUE  180
 

@@ -1,7 +1,7 @@
 /*
  * SW_DS24828_1W_Sensor.cpp
  *
- *  Created on: 2018-02-21
+ *  Created on: 2018-04-23
  *      Author: StoicWeather
  */
 
@@ -11,6 +11,26 @@ SW_DS24828_1W_Sensor::SW_DS24828_1W_Sensor(byte AddressIn, I2C I2CBussIn, byte S
 :SW_Sensor(AddressIn,I2CBussIn, SensorNumberIN)
 {
 	ActiveChannel = 0;
+
+	TempBlock[0] = 0;
+	TempBlock[1] = 0;
+		ROMBlock[0] = 0;
+		ROMBlock[1] = 0;
+		ROMBlock[2] = 0;
+		ROMBlock[3] = 0;
+		ROMBlock[4] = 0;
+		ROMBlock[5] = 0;
+		ROMBlock[6] = 0;
+		ROMBlock[7] = 0;
+		ScratchBlock[0] = 0;
+		ScratchBlock[1] = 0;
+		ScratchBlock[2] = 0;
+		ScratchBlock[3] = 0;
+		ScratchBlock[4] = 0;
+		ScratchBlock[5] = 0;
+		ScratchBlock[6] = 0;
+		ScratchBlock[7] = 0;
+		ScratchBlock[8] = 0;
 }
 
 bool SW_DS24828_1W_Sensor::InitializeSensor()
@@ -430,14 +450,14 @@ int SW_DS24828_1W_Sensor::ReadRawTempOnCurrentCHDS18B20_1W()
 	I2CBuss.write(SensorAddress, (byte)DS24828_1WWB_CMD, (byte)DS18B20_READ_SCRATCH_1WCMD);
 	WaitFor1WSDone();
 
-	byte* TempBlock = (byte*) calloc(2,sizeof(byte));
 
-	TempBlock = ReadBlockFrom_1W(TempBlock, 2);
+
+	ReadBlockFrom_1W(&TempBlock[0], 2);
 
 
 	int TempRaw = ( (int)TempBlock[0] + (((int)TempBlock[1]) << 8) );
 
-	free(TempBlock);
+
 
 	return TempRaw;
 
@@ -593,8 +613,7 @@ void SW_DS24828_1W_Sensor::Cmd1W_ReadROMCurrentCh()
 	Serial.print(F(" ROM  "));
 
 
-	byte* ROMBlock = (byte*) calloc(8,sizeof(byte));
-	ReadBlockFrom_1W(ROMBlock, 8);
+	ReadBlockFrom_1W(&ROMBlock[0], 8);
 
 	for(int i =0; i<8;i++)
 	{
@@ -603,7 +622,7 @@ void SW_DS24828_1W_Sensor::Cmd1W_ReadROMCurrentCh()
 
 
 	Serial.println(F(";"));
-	free(ROMBlock);
+
 }
 
 void SW_DS24828_1W_Sensor::Cmd1W_ResetAndReadScratchCurrentCh()
@@ -632,8 +651,8 @@ void SW_DS24828_1W_Sensor::Cmd1W_ReadScratchCurrentCh()
 	Serial.print(F(" Scratch  "));
 
 
-	byte* ScratchBlock = (byte*) calloc(9,sizeof(byte));
-	ReadBlockFrom_1W(ScratchBlock, 9);
+
+	ReadBlockFrom_1W(&ScratchBlock[0], 9);
 
 	for(int i =0; i<9;i++)
 	{
@@ -642,7 +661,6 @@ void SW_DS24828_1W_Sensor::Cmd1W_ReadScratchCurrentCh()
 
 
 	Serial.println(F(";"));
-	free(ScratchBlock);
 }
 
 #endif /*VERIFY_CHIPS*/

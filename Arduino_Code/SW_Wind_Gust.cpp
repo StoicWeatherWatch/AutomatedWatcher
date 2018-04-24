@@ -33,6 +33,17 @@ SW_Wind_Gust::SW_Wind_Gust(byte MCP23018AddressIn, I2C I2CBussIn, byte SpeedSens
 
 	LastGustReadout = 0;
 
+#ifdef RUN_GUST_TIME_TEST
+	SW_GUST_Current_Time = 0;
+	SW_GUST_Last_Time = 0;
+#endif /*RUN_GUST_TIME_TEST*/
+
+#ifdef RUN_GUST_LONG_TIME_TEST
+	SW_Gust_Time_LAST = 0;
+	SW_Gust_Time_CURRENT = 0;
+	SW_Gust_Time_COUNT = 0;
+#endif /*RUN_GUST_LONG_TIME_TEST*/
+
 
 }
 
@@ -100,28 +111,55 @@ extern int __heap_start, *__brkval;
 			Serial.print(DataIn, HEX);
 			Serial.println(F(";"));
 	 */
+	Serial.println(F("#SW_Wind_Gust AcquireDataAndReturn Calling;"));
 	int DataIn = AcquireDataAndReturn();
 
 	byte Difference;
 
+	//Test to see if the counter has rolled over
 	if(LastGustReadout > DataIn)
 	{
-		Difference = (byte)(DataIn + (int)MAX_WIND_CTS - LastGustReadout);
+		Difference = (byte)(DataIn + ((int)MAX_WIND_CTS) - LastGustReadout);
+
+#ifdef REPORT_GUST_COUNTER_ROLLOVER
+		Serial.println(F("#SW_Wind_Gust AcquireWindGustSpeed Counter roll over;"));
+		Serial.print(F("!GUSTOVER "));
+		Serial.print(DataIn);
+		Serial.print(F("  "));
+		Serial.print(Difference);
+		Serial.println(F(";"));
+#endif /*REPORT_GUST_COUNTER_ROLLOVER*/
+
 	}
 	else
 	{
 		Difference = (byte)(DataIn - LastGustReadout);
 	}
 
-#ifdef TEST_PRINTS
+#ifdef TEST_PRINT_EACH_READ
 
-	Serial.print(F("#Wind read  "));
+	Serial.print(F("#SW_Wind_Gust read  "));
 	Serial.print(DataIn,HEX);
 	Serial.print(F("  diff from last  "));
 	Serial.print(Difference,HEX);
 	Serial.println(F(";"));
 
-#endif /*TEST_PRINTS*/
+#endif /*TEST_PRINT_EACH_READ*/
+
+#ifdef REPORT_HIGH_GUST
+//7 m/s = 15 mph = 15 clicks in 2.25 seconds
+	if(Difference >= (15))
+	{
+	Serial.println(F("#SW_Wind_Gust AcquireWindGustSpeed High Speed Reported;"));
+	Serial.print(F("!GUSTHIGH "));
+	Serial.print((int)Difference);
+	Serial.print(F(",  "));
+	Serial.print(DataIn);
+	Serial.print(F(",  "));
+	Serial.print(LastGustReadout);
+	Serial.println(F(";"));
+	}
+#endif /*REPORT_HIGH_GUST*/
 
 	LastGustReadout = DataIn;
 
@@ -143,8 +181,47 @@ extern int __heap_start, *__brkval;
 
 	SetSentRecord(CurrentSpeedQueueLoc, false);
 
+#ifdef RUN_GUST_TIME_TEST
+	SW_GUST_Current_Time = millis();
+	Serial.print(F("#SW_Wind_Gust AcquireWindGustSpeed time between records "));
+	Serial.print(SW_GUST_Current_Time);
+	Serial.print(F(",  "));
+		Serial.print(SW_GUST_Last_Time);
+		Serial.print(F(",  "));
+		Serial.print(SW_GUST_Current_Time-SW_GUST_Last_Time);
+	Serial.println(F(";"));
+	SW_GUST_Last_Time = SW_GUST_Current_Time;
+#endif /*RUN_GUST_TIME_TEST*/
 
-}
+#ifdef RUN_GUST_LONG_TIME_TEST
+
+	SW_Gust_Time_CURRENT = millis();
+	SW_Gust_Time_COUNT++;
+
+	if(SW_Gust_Time_LAST == 0)
+	{
+		SW_Gust_Time_COUNT = 0;
+		SW_Gust_Time_LAST = SW_Gust_Time_CURRENT;
+	}
+
+	if((SW_Gust_Time_CURRENT - SW_Gust_Time_LAST) >= 600000)
+	{
+		Serial.print(F("!GUSTTIME, "));
+		Serial.print(SW_Gust_Time_CURRENT - SW_Gust_Time_LAST);
+		Serial.print(F(", "));
+				Serial.print(SW_Gust_Time_COUNT);
+		Serial.println(F(";"));
+		SW_Gust_Time_LAST = SW_Gust_Time_CURRENT;
+		SW_Gust_Time_COUNT = 0;
+	}
+
+
+
+
+#endif /*RUN_GUST_LONG_TIME_TEST*/
+
+
+} /*AcquireWindGustSpeed*/
 
 void SW_Wind_Gust::SendWindGustData()
 {
@@ -261,6 +338,8 @@ void SW_Wind_Gust::SendWindGustData()
 
 					Serial.println(F(" # Max has not been sent;"));
 					#endif /*TEST_PRINTS*/
+
+
 			// set sent to true
 			SetSentRecord(MaxPos, true);
 			// send data

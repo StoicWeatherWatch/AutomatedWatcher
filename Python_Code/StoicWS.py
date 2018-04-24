@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.2.2
-# 2018-04-07
+# Version 0.2.6
+# 2018-04-23
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -93,13 +93,15 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.2.2'
+DRIVER_VERSION = '0.2.6'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
 
 def confeditor_loader():
     return StoicWConfEditor()
+
+LOCAL_LOG_FILE = "/root/Stoic_LOG.txt"
 
 def logmsg(level, msg):
     syslog.syslog(level, 'StoicWS: %s' % msg)
@@ -365,13 +367,7 @@ class StoicWatcher(object):
     DEFAULT_PORT = "/dev/ttyACM0"
     DEFAULT_BAUDRATE = 9600
     
-    _ListOfDisabledSensors = ["20T",
-                              "21T",
-                              "22T",
-                              "23T",
-                              "24T",
-                              "25T",
-                              "26T",
+    _ListOfDisabledSensors = ["26T",
                               "27T",
                               "28T"]
     
@@ -1071,6 +1067,7 @@ class StoicWatcher(object):
         data["windGust"] = GustSpeed
         
         # TEST lines
+        loginf(LineIn)
         loginf("key_parse_6WGS_5WGD_wind_gust windGustDir %f" % data["windGustDir"])
         loginf("key_parse_6WGS_5WGD_wind_gust windGust %f" % data["windGust"])
         
@@ -1214,8 +1211,16 @@ class StoicWatcher(object):
         data["windSpeed"] = MeanSpeed
         
         # TEST lines
+        loginf(LineIn)
         loginf("key_parse_6WMS_5WMD_wind_mean windDir %f" % data["windDir"])
         loginf("key_parse_6WMS_5WMD_wind_mean windSpeed %f" % data["windSpeed"])
+        
+        # Gusts are defined such that there may not always be a gust. StoicWatcher does not send a WGS line when there is no gust.
+        #  This will cause Weewx to assum that gusts are not reported at all if it does not get one in an archive intervaul period. 
+        #  We don't care about a mean gust. The archive record will take the max of windgust to archive. 
+        #  So here we fake it so WeeWx knows it is getting gust data from the station.
+        data["windGust"] = float(0.0)
+        data["windGustDir"] = float(0.0)
         
         return data
     
@@ -1265,8 +1270,8 @@ class StoicWatcher(object):
             return False
         
         #  85 C is the reset value for DS18B20. This value should be ignored. 0x0550
-        if LineIn.find("0550") != "-1":
-            loginf("temp_1Wire_line_validation read is 85C, the reset value of the DS18B20 %S" %LineIn)
+        if LineIn.find("0550") != -1:
+            loginf("temp_1Wire_line_validation read is 85C, the reset value of the DS18B20 %s" %LineIn)
             return False
         
         return True
@@ -1280,7 +1285,7 @@ class StoicWatcher(object):
         """
         
         if not self.temp_1Wire_line_validation(LineIn):
-            return NONE
+            return None
         
         pos = LineIn.find(",")
         
@@ -1289,18 +1294,21 @@ class StoicWatcher(object):
         else:
             posEnd = LineIn.find("^")
         
-        Temp = sensor_parse_DS18B20_1Wire(LineIn[pos+1:posEnd])
+        Temp = self.sensor_parse_DS18B20_1Wire(LineIn[pos+1:posEnd])
 
-        if not result_check_temp(Temp):
-            return NONE
+        if not self.result_check_temp(Temp):
+            return None
         
         Temp = self.trim_Data_Reasonable_Places(Temp)
         
         
         data = dict()
-        data[stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]] ] = Temp
+        data[self.stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]] ] = Temp
              
-        loginf("key_parse_2xT_1WireTemp LineIn: %s key %s value %f " %(LineIn, stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]], data[stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]] ]))
+        loginf("key_parse_2xT_1WireTemp LineIn: %s key %s value %f " %(LineIn, self.stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]], data[self.stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]] ]))
+        
+        if self.stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]] == "NothingYet":
+            return None
         
         return data
     
@@ -1409,6 +1417,11 @@ class StoicWatcher(object):
     
     
     def temp_Hu_8TH_line_validation(self, LineIn):
+        """
+
+TH,00000000
+No I2C connection
+        """
         
         pos = LineIn.find(",")
         
@@ -1419,6 +1432,12 @@ class StoicWatcher(object):
         
         if (posEnd - pos) != 9:
             logdbg("temp_Hu_8TH_line_validation data not correct length")
+            logdbg("temp_Hu_8TH_line_validation LineIn: %s" %LineIn)
+            return False
+        
+        if(LineIn.find("TH,00000000") != -1):
+            logdbg("temp_Hu_8TH_line_validation data all zeros - likely no sensor conneciton")
+            logdbg("temp_Hu_8TH_line_validation LineIn: %s" %LineIn)
             return False
         
         return True
@@ -1432,8 +1451,9 @@ class StoicWatcher(object):
         """
         
         
+        
         if not self.temp_Hu_8TH_line_validation(LineIn):
-            return NONE
+            return None
         
         pos = LineIn.find(",")
         
@@ -1499,7 +1519,7 @@ class StoicWatcher(object):
         
         
         if not self.IR_soil_temp_line_validation(LineIn):
-            return NONE
+            return None
         
         pos = LineIn.find(",")
         
@@ -1678,7 +1698,7 @@ class StoicWatcher(object):
                 # A computer readable alert
                 # TODO Deal with computer readable alerts
                 loginf('LineIn: %s' % LineIn)
-                
+                self.alert_parse(LineIn)
             
             elif LineIn[0] == "#":
                 loginf('%s' % LineIn)
@@ -1706,7 +1726,18 @@ class StoicWatcher(object):
         # Varify data received
         # raise exception if unable to reset
             
-            
+    def alert_parse(self,LineIn):
+        """
+        Handle lines starting with !
+        """
+        timeHolder = int(time.time())
+        loginf('Time of Special Log %d' % timeHolder)
+        with open(LOCAL_LOG_FILE, "a") as SpecialLogFile: 
+            SpecialLogFile.write(time.strftime("%Y-%m-%d-%H:%M:%S,", time.gmtime()))
+            #This is they key used for data records
+            SpecialLogFile.write("%d," %timeHolder)
+            SpecialLogFile.write(LineIn)
+            SpecialLogFile.write("\n")
             
         
 
