@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.2.3
-# 2018-04-08
+# Version 0.2.6
+# 2018-04-23
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -93,7 +93,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.2.2'
+DRIVER_VERSION = '0.2.6'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -367,13 +367,7 @@ class StoicWatcher(object):
     DEFAULT_PORT = "/dev/ttyACM0"
     DEFAULT_BAUDRATE = 9600
     
-    _ListOfDisabledSensors = ["20T",
-                              "21T",
-                              "22T",
-                              "23T",
-                              "24T",
-                              "25T",
-                              "26T",
+    _ListOfDisabledSensors = ["26T",
                               "27T",
                               "28T"]
     
@@ -1276,8 +1270,8 @@ class StoicWatcher(object):
             return False
         
         #  85 C is the reset value for DS18B20. This value should be ignored. 0x0550
-        if LineIn.find("0550") != "-1":
-            loginf("temp_1Wire_line_validation read is 85C, the reset value of the DS18B20 %S" %LineIn)
+        if LineIn.find("0550") != -1:
+            loginf("temp_1Wire_line_validation read is 85C, the reset value of the DS18B20 %s" %LineIn)
             return False
         
         return True
@@ -1291,7 +1285,7 @@ class StoicWatcher(object):
         """
         
         if not self.temp_1Wire_line_validation(LineIn):
-            return NONE
+            return None
         
         pos = LineIn.find(",")
         
@@ -1300,18 +1294,21 @@ class StoicWatcher(object):
         else:
             posEnd = LineIn.find("^")
         
-        Temp = sensor_parse_DS18B20_1Wire(LineIn[pos+1:posEnd])
+        Temp = self.sensor_parse_DS18B20_1Wire(LineIn[pos+1:posEnd])
 
-        if not result_check_temp(Temp):
-            return NONE
+        if not self.result_check_temp(Temp):
+            return None
         
         Temp = self.trim_Data_Reasonable_Places(Temp)
         
         
         data = dict()
-        data[stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]] ] = Temp
+        data[self.stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]] ] = Temp
              
-        loginf("key_parse_2xT_1WireTemp LineIn: %s key %s value %f " %(LineIn, stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]], data[stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]] ]))
+        loginf("key_parse_2xT_1WireTemp LineIn: %s key %s value %f " %(LineIn, self.stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]], data[self.stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]] ]))
+        
+        if self.stoic_Cal_dict[ "Temp1W-schema-" + LineIn[2:3]] == "NothingYet":
+            return None
         
         return data
     
@@ -1456,7 +1453,7 @@ No I2C connection
         
         
         if not self.temp_Hu_8TH_line_validation(LineIn):
-            return NONE
+            return None
         
         pos = LineIn.find(",")
         
@@ -1522,7 +1519,7 @@ No I2C connection
         
         
         if not self.IR_soil_temp_line_validation(LineIn):
-            return NONE
+            return None
         
         pos = LineIn.find(",")
         

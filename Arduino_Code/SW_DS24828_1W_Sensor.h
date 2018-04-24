@@ -1,7 +1,7 @@
 /*
  * SW_DS24828_1W_Sensor.h
  *
- *  Created on: 2018-02-21
+ *  Created on: 2018-04-23
  *      Author: StoicWeather
  *
  *      The DS2482-800 is a 1 Wire master. Currently it is configured to talk only with DS18B20 temp sensor.
@@ -33,10 +33,10 @@
 #define DS24828_CH_3_ACTIVE
 #define DS24828_CH_4_ACTIVE
 #define DS24828_CH_5_ACTIVE
-#define DS24828_CH_6_ACTIVE
-#define DS24828_CH_7_ACTIVE
+//#define DS24828_CH_6_ACTIVE
+//#define DS24828_CH_7_ACTIVE
 
-#define DS24828_NUM_CH_ACTIVE 8
+#define DS24828_NUM_CH_ACTIVE 6
 
 #define DS24828_MAX_RETRY_1WCMDS  10
 
@@ -123,6 +123,11 @@ public:
 	//void ReadAndSendRawTempDA18B20_1W(int Channel);
 	int ReadRawTempOnCurrentCHDS18B20_1W();
 	void ReadAndSendRawTempDA18B20OnCurrentCH_1W();
+
+	//TODO Are these needed?
+	byte TempBlock[9];
+	byte ROMBlock[8];
+	byte ScratchBlock[9];
 
 
 #ifdef VERIFY_CHIPS
