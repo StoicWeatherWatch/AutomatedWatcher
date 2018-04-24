@@ -21,6 +21,7 @@
 
 // We have 13 bits. The counter may wrap (Actually max wind counts +1)
 //#define MAX_WIND_CTS     0b1111111111111
+// TODO IS this defined twice?
 #define MAX_WIND_CTS     8192
 
 // Every 5 seconds. For 120 seconds we need a record at each end so 120 /5 +1
