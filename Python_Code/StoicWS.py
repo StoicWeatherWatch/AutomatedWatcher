@@ -367,7 +367,8 @@ class StoicWatcher(object):
     DEFAULT_PORT = "/dev/ttyACM0"
     DEFAULT_BAUDRATE = 9600
     
-    _ListOfDisabledSensors = ["26T",
+    _ListOfDisabledSensors = ["24T",
+                              "26T",
                               "27T",
                               "28T"]
     
