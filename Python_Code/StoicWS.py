@@ -2,7 +2,7 @@
 #
 # Stoic WS
 # Version 0.2.6
-# 2018-04-23
+# 2018-05-12
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
