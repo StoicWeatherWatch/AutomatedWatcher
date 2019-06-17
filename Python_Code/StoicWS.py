@@ -2,7 +2,7 @@
 #
 # Stoic WS
 # Version 0.2.6
-# 2018-04-23
+# 2018-05-12
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -367,7 +367,8 @@ class StoicWatcher(object):
     DEFAULT_PORT = "/dev/ttyACM0"
     DEFAULT_BAUDRATE = 9600
     
-    _ListOfDisabledSensors = ["26T",
+    _ListOfDisabledSensors = ["24T",
+                              "26T",
                               "27T",
                               "28T"]
     
@@ -402,7 +403,7 @@ class StoicWatcher(object):
             try:
                 loginf("Attempting to Open com channel %s" % self.port)
                 self.serial_port = serial.Serial(self.port, self.baudrate,timeout=self.timeout)
-            except (serial.serialutil.SerialException), e:
+            except (serial.serialutil.SerialException) as e:
                 loginf("Failed to open serial port: %s" % e)
                 logdbg(traceback.format_exc())
                 
@@ -884,7 +885,7 @@ class StoicWatcher(object):
         try:
             CurrentRainRaw = int(DataHexCurrent,16)
             LastRainRaw = int(DataHexLast,16)
-        except (ValueError), e:
+        except (ValueError) as e:
             loginf("RAIN LOST Failed to parse or failed to get a proper hex number, DataHexCurrent, DataHexLast: %s %s" %(DataHexCurrent, DataHexLast))
             logerr("RAIN LOST Failed to parse or failed to get a proper hex number, DataHexCurrent, DataHexLast: %s %s" %(DataHexCurrent, DataHexLast))
             logmsg(syslog.LOG_EMERG, "RAIN LOST Failed to parse or failed to get a proper hex number, DataHexCurrent, DataHexLast: %s %s" %(DataHexCurrent, DataHexLast))
@@ -1572,32 +1573,32 @@ No I2C connection
             else:
                 try:
                     return getattr(self, 'key_parse_' + LineIn[1:pos])(LineIn)
-                except (AttributeError), e:
+                except (AttributeError) as e:
                     loginf("AttributeError - parse_raw_data - Cannot find function to handle, LineIn: %s" %LineIn)
                     logerr("AttributeError - parse_raw_data - Cannot find function to handle, LineIn: %s" %LineIn)
                     loginf(traceback.format_exc())
                     return None
-        except (ValueError), e:
+        except (ValueError) as e:
             loginf("ValueError - parse_raw_data - Failed to get a proper hex number?, LineIn: %s" %LineIn)
             logerr("ValueError - parse_raw_data - Failed to get a proper hex number?, LineIn: %s" %LineIn)
             loginf(traceback.format_exc())
             return None
-        except (LookupError), e:
+        except (LookupError) as e:
             loginf("LookupError - parse_raw_data - LineIn: %s" %LineIn)
             logerr("LookupError - parse_raw_data - LineIn: %s" %LineIn)
             loginf(traceback.format_exc())
             return None
-        except (IndexError, KeyError), e:
+        except (IndexError, KeyError) as e:
             loginf("IndexError, KeyError - parse_raw_data - GOK, LineIn: %s" %LineIn)
             logerr("IndexError, KeyError - parse_raw_data - GOK, LineIn: %s" %LineIn)
             loginf(traceback.format_exc())
             return None
-        except (ArithmeticError), e:
+        except (ArithmeticError) as e:
             loginf("ArithmeticError - parse_raw_data - GOK, LineIn: %s" %LineIn)
             logerr("ArithmeticError - parse_raw_data - GOK, LineIn: %s" %LineIn)
             loginf(traceback.format_exc())
             return None
-        except (TypeError), e:
+        except (TypeError) as e:
             loginf("TypeError - parse_raw_data - GOK, LineIn: %s" %LineIn)
             logerr("TypeError - parse_raw_data - GOK, LineIn: %s" %LineIn)
             loginf(traceback.format_exc())
@@ -1670,7 +1671,7 @@ No I2C connection
                 LineIn = self.get_raw_data()
                 self.validate_string(LineIn)
                 return LineIn
-            except (serial.serialutil.SerialException, weewx.WeeWxIOError), e:
+            except (serial.serialutil.SerialException, weewx.WeeWxIOError) as e:
                 loginf("Failed attempt %d of %d to get readings: %s" %
                        (ntries + 1, max_tries, e))
                 time.sleep(retry_wait)
