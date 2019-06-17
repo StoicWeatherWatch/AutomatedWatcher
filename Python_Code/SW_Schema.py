@@ -1,7 +1,7 @@
 
 """The stocic database schema
-    18-03-17
-    v1
+    2019-6-16
+    v2
     
     user.SW_Schema.schema
 
@@ -10,6 +10,7 @@ It is only used for initialization, afterwhich
 the schema is obtained dynamically from the database.  
 
 barometer is pressure adjusted to sea level pressure and for tempreture. 
+
 
 """
 
@@ -20,9 +21,12 @@ schema = [('dateTime',              'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
           ('interval',              'INTEGER NOT NULL'),
           ('barometerPRS',          'REAL'),
           ('barometerHouse',        'REAL'),
+          ('barometerSpecial',      'REAL'),
           ('pressurePRS',           'REAL'),
           ('pressureFARS',          'REAL'),
-          ('pressureHouse',         'REAL'),
+          ('pressureHouse1',        'REAL'),
+          ('pressureHouse2',        'REAL'),
+          ('pressureSpecial',       'REAL'),
           ('TempHouse1',            'REAL'),
           ('TempHouse2',            'REAL'),
           ('TempFARS',              'REAL'),
@@ -51,6 +55,7 @@ schema = [('dateTime',              'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
           ('extraTempBox',          'REAL'),
           ('extraTempFARS',         'REAL'),
           ('extraTempUV',           'REAL'),
+          ('extraTempCPU',          'REAL'),
           ('extraTemp1',            'REAL'),
           ('extraTemp2',            'REAL'),
           ('extraTemp3',            'REAL'),
