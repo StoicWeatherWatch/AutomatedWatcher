@@ -10,15 +10,12 @@ extensions.
 
 # TODO make lightning count actually count up in archive records
 
-# This caused all sorts of issues. 
+# These two lines are the only two lines in WeeWX default extensions.
 import locale
 # This will use the locale specified by the environment variable 'LANG'
 # Other options are possible. See:
 # http://docs.python.org/2/library/locale.html#locale.setlocale
-#locale.setlocale(locale.LC_ALL, '')
-
-# My code. Ugly but it works
-locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+locale.setlocale(locale.LC_ALL, '')
 
 # This is to get the measurments in the right group.
 
