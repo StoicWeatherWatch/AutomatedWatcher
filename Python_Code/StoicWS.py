@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.2.6
-# 2018-05-12
+# Version 0.3.0
+# 2019-06-18
 #
 # This is a driver for weeWX to connect with an Arduino based weather station.
 # see
@@ -10,7 +10,7 @@
 #Under Implement the driver
 
 """weeWX Driver for Stoic Weather Watch.
-An Arduino based weather station.
+An Arduino based weather station with WeeWX running on a Raspberry Pi. 
 
 Stoic Watcher sends data constantly via a USB serial port. 
 
@@ -42,7 +42,7 @@ All other line starts ignored, including #
 
 Units used are weewx.METRICWX
 
-CHIP from NEXTTHING sticks an arduino on a USB hub at ttyACM1
+Raspberry Pi sticks an arduino on a USB hub at ttyACM1
 DEFAULT_PORT = "/dev/ttyACM0"
 
 DEFAULT_BAUDRATE = 9600
@@ -69,7 +69,8 @@ STOIC Stoic Thing Observes Information on Climate
 
 # TODO crashes when Aruino dissconnected. Handle gracefully
 
-# TODO cat /sys/class/thermal/thermal_zone0/temp  / 1000 gives temp C of CPU CHIP
+
+# TODO vcgencmd measure_temp for R Pi
 # TODO add chip temp for Arduino
 
 # TODO crashes on disconnect of I2C sensor both the CHIP and probabily the arduino
@@ -1767,7 +1768,7 @@ class StoicWConfEditor(weewx.drivers.AbstractConfEditor):
 
     def prompt_for_settings(self):
         print "Specify the serial port on which the station is connected."
-        print "Typically /dev/ttyACM1 for Arduino connected to CHIP"
+        print "Typically /dev/ttyACM1 for Arduino connected to R Pi"
         port = self._prompt('port', Station.DEFAULT_PORT)
         return {'port': port}
     
