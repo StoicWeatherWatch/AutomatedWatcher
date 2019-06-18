@@ -126,7 +126,9 @@ fi
 
 
 # Sync WeeWx.conf file
-rsync --inplace --log-file=${LogFileRsync} ${WeeWXDir}weewx.conf ${BackupPath}${SourceBackupSubDir}
+# The log files are big
+# rsync --inplace --log-file=${LogFileRsync} ${WeeWXDir}weewx.conf ${BackupPath}${SourceBackupSubDir}
+rsync --inplace ${WeeWXDir}weewx.conf ${BackupPath}${SourceBackupSubDir}
 rsyncExitCode=$?
 if [ $rsyncExitCode -ne 0 ]
 then
@@ -137,7 +139,9 @@ fi
 # Sync the WeeWx source files
 for SourceDir in "${WeeWXSourceDirList[@]}"
 do
-rsync -r --inplace --log-file=${LogFileRsync} ${WeeWXDir}${SourceDir} ${BackupPath}${SourceBackupSubDir}${SourceDir}
+# The log files are big
+#rsync -r --inplace --log-file=${LogFileRsync} ${WeeWXDir}${SourceDir} ${BackupPath}${SourceBackupSubDir}${SourceDir}
+rsync -r --inplace ${WeeWXDir}${SourceDir} ${BackupPath}${SourceBackupSubDir}${SourceDir}
 rsyncExitCode=$?
 if [ $rsyncExitCode -ne 0 ]
 then
