@@ -5,7 +5,6 @@
 # 2019-6-17
 
 # This script will stop WeeWX, copy the database archive, sync the source files, and restart the Pi.
-### Restart does not currently work
 # It is designed to be run once per day.
 # The best time for this is between Midnight and 1 or between 3 and 4 to avoid daylight savings time issues.
 # Most likely needs to run as root
