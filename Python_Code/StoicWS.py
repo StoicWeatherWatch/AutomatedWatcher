@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.2.6
-# 2018-05-12
+# Version 0.3.0
+# 2019-06-18
 #
-# This is a driver for weeWX to connect with an Arduino based weather station.
+# This is a driver for weeWX to connect with an Arduino and R Pi based weather station.
 # see
 #http://www.weewx.com/docs/customizing.htm
 #Under Implement the driver
 
 """weeWX Driver for Stoic Weather Watch.
-An Arduino based weather station.
+An Arduino based weather station with WeeWX running on a Raspberry Pi. 
 
 Stoic Watcher sends data constantly via a USB serial port. 
 
@@ -42,7 +42,7 @@ All other line starts ignored, including #
 
 Units used are weewx.METRICWX
 
-CHIP from NEXTTHING sticks an arduino on a USB hub at ttyACM1
+Raspberry Pi sticks an arduino on a USB hub at ttyACM1
 DEFAULT_PORT = "/dev/ttyACM0"
 
 DEFAULT_BAUDRATE = 9600
@@ -69,7 +69,8 @@ STOIC Stoic Thing Observes Information on Climate
 
 # TODO crashes when Aruino dissconnected. Handle gracefully
 
-# TODO cat /sys/class/thermal/thermal_zone0/temp  / 1000 gives temp C of CPU CHIP
+
+# TODO vcgencmd measure_temp for R Pi
 # TODO add chip temp for Arduino
 
 # TODO crashes on disconnect of I2C sensor both the CHIP and probabily the arduino
@@ -93,7 +94,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.2.6'
+DRIVER_VERSION = '0.3.0'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -150,7 +151,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         stoic_Cal_dict = dict()
          
         
-        logdbg("StoicWSDriver.readCalibrationDict running")
+        loginf("StoicWSDriver.readCalibrationDict running")
          
         # TODO make this a try so it fails gracefully when not in the dictionary
         
@@ -278,6 +279,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
 #         for i in range(1,6+1):
 #              logdbg("stoic_Cal_dict['BME280_1_CAL_H" + str(i) +"  0x%X" % stoic_Cal_dict["BME280_1_CAL_H"+str(i)])
 
+	loginf("StoicWSDriver.readCalibrationDict  Done")
         
         return stoic_Cal_dict
     
@@ -307,6 +309,8 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
 
         self.StoicWatcher = StoicWatcher(self.port, self.baudrate, stoic_Cal_dict, debug_serial=debug_serial)
         #self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial)
+
+	loginf("StoicWSDriver __init__  Calling self.StoicWatcher.open()")
         self.StoicWatcher.open()
         
         #This is for receiving form remote sensors
@@ -373,6 +377,9 @@ class StoicWatcher(object):
                               "28T"]
     
     def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial=0):
+	
+	loginf("StoicWS StoicWatcher __init__  Starting")
+
     #def __init__(self, port, baudrate, debug_serial=0):
         self._debug_serial = debug_serial
         self.port = port
@@ -1767,7 +1774,7 @@ class StoicWConfEditor(weewx.drivers.AbstractConfEditor):
 
     def prompt_for_settings(self):
         print "Specify the serial port on which the station is connected."
-        print "Typically /dev/ttyACM1 for Arduino connected to CHIP"
+        print "Typically /dev/ttyACM1 for Arduino connected to R Pi"
         port = self._prompt('port', Station.DEFAULT_PORT)
         return {'port': port}
     
