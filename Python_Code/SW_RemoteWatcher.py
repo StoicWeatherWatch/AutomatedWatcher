@@ -167,7 +167,7 @@ class SW_RemoteWatcher(object):
         # TODO make this less hard coded
         DataOut["TempHouse1"] = data.get('TA')
         DataOut["HumidityHouse1"] = data.get('HA')
-        DataOut["pressureHouse"] = data.get('PA')
+        DataOut["pressureHouse1"] = data.get('PA')
         
         return DataOut
     
