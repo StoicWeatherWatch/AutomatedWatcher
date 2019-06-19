@@ -439,6 +439,8 @@ class StoicWatcher(object):
             
     def get_raw_data(self):
         LineIn = self.serial_port.readline()
+        
+        # _debug_serial is set in [StoicWS] of weewx.conf
         if self._debug_serial:
             logdbg("LineIn %s" % LineIn)
             
