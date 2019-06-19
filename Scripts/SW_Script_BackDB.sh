@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # SW_Script_BackDB.sh
-# Joseph Wellhouse
+# 
 # 2019-6-17
 
 # This script will stop WeeWX, copy the database archive, sync the source files, and restart the Pi.

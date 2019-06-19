@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # SW_Script_CheckRunning.sh
-# Joseph Wellhouse
+# 
 # 2019-6-17
 
 # This script will check to see if WeeWX is running and spit errors if it is not.
