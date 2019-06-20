@@ -319,16 +319,20 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         self.RemoteSouce = SW_RemoteWatcher(1216,dict())
         loginf("StoicWSDriver init done")
         self.RemoteSouce.StartMonitoringForRemotes()
-        
+       
+    # WeeWX calls this when it wants to terminate. 
     def closePort(self):
-        loginf("StoicWSDriver closePort") 
+        loginf("StoicWSDriver closePort called") 
         if self.StoicWatcher is not None:
             self.StoicWatcher.close()
             self.StoicWatcher = None
-            
+        
+	loginf("StoicWSDriver closePort closing RemoteSouce") 
         if self.RemoteSouce is not None:
             self.RemoteSouce.StopMonitoringForRemotes()
             self.RemoteSouce = None
+		
+	loginf("StoicWSDriver closePort done") 
         
     @property
     def hardware_name(self):
