@@ -116,19 +116,19 @@ class SW_RemoteWatcher(object):
             return False
         
     def StopMonitoringForRemotes(self):
-        loginf("SW_RemoteWatcher StopMonitoringForRemotes called but does nothing - might want to fix this someday")
+        loginf("SW_RemoteWatcher StopMonitoringForRemotes called but has issues - might want to fix this someday")
         #TODO Make this work
-#         try:
-#             loginf("SW_RemoteWatcher StopMonitoringForRemotes Running")
-#             reactor.callFromThread(reactor.stop)
-#             loginf("SW_RemoteWatcher StopMonitoringForRemotes Done")
-#             return True
-#         except:
-#             loginf("SW_RemoteWatcher StopMonitoringForRemotes some error")
-#             loginf(traceback.format_exc())
-#             #This kills the thread brutaly
-#             self.ThreadForTwisted.exit()
-#             return False
+         try:
+             loginf("SW_RemoteWatcher StopMonitoringForRemotes Running")
+             reactor.callFromThread(reactor.stop)
+             loginf("SW_RemoteWatcher StopMonitoringForRemotes Done")
+             return True
+         except:
+             loginf("SW_RemoteWatcher StopMonitoringForRemotes some error")
+             loginf(traceback.format_exc())
+             #This kills the thread brutaly
+             self.ThreadForTwisted.exit()
+             return False
     
     def ReportTheDataToWeeWX(self, data):
         """
