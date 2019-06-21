@@ -130,11 +130,16 @@ class SW_Calculate(WXCalculate):
                 logdbg("calc_barometerPRS %f" %data['barometerPRS'])
             
     def calc_barometerHouse(self, data, data_type):  # @UnusedVariable
+        # Set source pressureHouse1 or 2 in [SW_Std_Calculate] [[CopySources]]
+        self.SourceDest_dict['CopySources'].get('barometerHouse')
         data['barometerHouse'] = None
-        if 'pressureHouse' in data and 'TempHouse1' in data:
-            if (data.get('pressureHouse') is not None) and (data.get('TempHouse1') is not None):
+        # The first of these below gives pressureHouse1 or 2 the second TempHouse1 or 2
+        PressureSource = self.SourceDest_dict['CopySources'].get('barometerHouse')
+        TempForCal = self.SourceDest_dict['CopySources'].get('barometerHouseTempCal')
+        if PressureSource in data and TempForCal in data:
+            if (data.get(PressureSource) is not None) and (data.get(TempForCal) is not None):
                 data['barometerHouse'] = weewx.wxformulas.sealevel_pressure_US(
-                    data['pressureHouse'], self.altitude_ft, data['TempHouse1'])
+                    data[PressureSource], self.altitude_ft, data[TempForCal])
             
     def calc_dewpointFARS(self, data, data_type):
         #loginf(" calc_dewpointFARS Running")
