@@ -131,7 +131,6 @@ class SW_Calculate(WXCalculate):
             
     def calc_barometerHouse(self, data, data_type):  # @UnusedVariable
         # Set source pressureHouse1 or 2 in [SW_Std_Calculate] [[CopySources]]
-        self.SourceDest_dict['CopySources'].get('barometerHouse')
         data['barometerHouse'] = None
         # The first of these below gives pressureHouse1 or 2 the second TempHouse1 or 2
         PressureSource = self.SourceDest_dict['CopySources'].get('barometerHouse')
