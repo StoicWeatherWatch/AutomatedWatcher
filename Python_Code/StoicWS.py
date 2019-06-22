@@ -309,8 +309,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         self.maxTrysBeforeCloseAndOpenPort = int(stn_dict.get('max_tries_before_cycle_port', 25))
         self.retry_wait = int(stn_dict.get('retry_wait', 3))
         debug_serial = int(stn_dict.get('debug_serial', 0))
-	self.local_log_file = stn_dict.get('local_log_file', None)
-	self.save_bang_Ard = int(stn_dict.get('save_bang', 0))
+	
         
         #No need for this. The hardware resets the rain count when the serial port is reset.
         # Also the hardware reports its own last rain
@@ -408,6 +407,11 @@ class StoicWatcher(object):
         self.serial_port = None
         
         self.stoic_Cal_dict = stoic_Cal_dict
+	
+	self.local_log_file = self.stoic_Cal_dict.get('local_log_file', None)
+	self.save_bang_Ard = int(self.stoic_Cal_dict.get('save_bang', 0))
+	logdbg('StoicWatcher __init__ save_bang_Ard = %d' % self.save_bang_Ard)
+	
 
         
     def __enter__(self):
@@ -462,6 +466,7 @@ class StoicWatcher(object):
             logdbg("close serial port %s" % self.port)
             self.serial_port.close()
             self.serial_port = None
+	logdbg("StoicWatcher close Done" )
             
     def get_raw_data(self):
         LineIn = self.serial_port.readline()
