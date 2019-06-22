@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.3.1
+# Version 0.3.2
 # 2019-06-22
 #
 # This is a driver for weeWX to connect with an Arduino and R Pi based weather station.
@@ -94,7 +94,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.3.1'
+DRIVER_VERSION = '0.3.2'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -102,7 +102,7 @@ def loader(config_dict, _):
 def confeditor_loader():
     return StoicWConfEditor()
 
-LOCAL_LOG_FILE = "/home/pi/Stoic_LOG.txt"
+#LOCAL_LOG_FILE = "/home/pi/Stoic_LOG.txt"
 
 def logmsg(level, msg):
     try:
@@ -309,6 +309,8 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         self.maxTrysBeforeCloseAndOpenPort = int(stn_dict.get('max_tries_before_cycle_port', 25))
         self.retry_wait = int(stn_dict.get('retry_wait', 3))
         debug_serial = int(stn_dict.get('debug_serial', 0))
+	self.local_log_file = stn_dict.get('local_log_file', None)
+	self.save_bang_Ard = int(stn_dict.get('save_bang', 0))
         
         #No need for this. The hardware resets the rain count when the serial port is reset.
         # Also the hardware reports its own last rain
@@ -1757,15 +1759,19 @@ No I2C connection
     def alert_parse(self,LineIn):
         """
         Handle lines starting with !
+	self.local_log_file = stn_dict.get('local_log_file', None)
+	self.save_bang_Ard = int(stn_dict.get('save_bang', 0))
         """
-        timeHolder = int(time.time())
-        loginf('Time of Special Log %d' % timeHolder)
-        with open(LOCAL_LOG_FILE, "a") as SpecialLogFile: 
-            SpecialLogFile.write(time.strftime("%Y-%m-%d-%H:%M:%S,", time.gmtime()))
-            #This is they key used for data records
-            SpecialLogFile.write("%d," %timeHolder)
-            SpecialLogFile.write(LineIn)
-            SpecialLogFile.write("\n")
+	if self.save_bang_Ard:
+            timeHolder = int(time.time())
+            loginf('Time of Special Log %d' % timeHolder)
+            with open(self.local_log_file, "a") as SpecialLogFile: 
+                SpecialLogFile.write(time.strftime("%Y-%m-%d-%H:%M:%S,", time.gmtime()))
+                #This is they key used for data records
+                SpecialLogFile.write("%d," %timeHolder)
+                SpecialLogFile.write(LineIn)
+                SpecialLogFile.write("\n")
+	    
             
         
 
