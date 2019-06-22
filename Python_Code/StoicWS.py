@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.3.0
-# 2019-06-18
+# Version 0.3.1
+# 2019-06-22
 #
 # This is a driver for weeWX to connect with an Arduino and R Pi based weather station.
 # see
@@ -94,7 +94,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.3.0'
+DRIVER_VERSION = '0.3.1'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -105,7 +105,21 @@ def confeditor_loader():
 LOCAL_LOG_FILE = "/root/Stoic_LOG.txt"
 
 def logmsg(level, msg):
-    syslog.syslog(level, 'StoicWS: %s' % msg)
+    try:
+	syslog.syslog(level, 'StoicWS: %s' % msg)
+    except TypeError as detail:
+	# This happened onece on daemon stop. Well into a stop that seemed to be going well,
+	#  a line was read in from serial and sent to loginf. Syslog spit out a TypeError
+	#  and the program crashed and would not come back to life automatically.
+	syslog.syslog(syslog.LOG_ERR, "StoicWS: ERROR: syslog spit a TypeError exception")
+	syslog.syslog(syslog.LOG_ERR, "StoicWS: ERROR: Usually means string input has issues or is none")
+	syslog.syslog(syslog.LOG_ERR, "StoicWS: ERROR: TypeError: %s" % detail)
+	syslog.syslog(syslog.LOG_ERR,"StoicWS: Traceback: \n%s" % traceback.format_exc())
+	syslog.syslog(syslog.LOG_INFO, "StoicWS: Stoic will now try to put this behind it and continue with life")
+    except:
+	syslog.syslog(syslog.LOG_ERR, "StoicWS: ERROR: syslog spit an error other than TypeError exception. (Raised to next level)")
+	syslog.syslog(syslog.LOG_ERR,"StoicWS: Traceback: \n%s" % traceback.format_exc())
+	raise
 
 def logdbg(msg):
     logmsg(syslog.LOG_DEBUG, msg)
