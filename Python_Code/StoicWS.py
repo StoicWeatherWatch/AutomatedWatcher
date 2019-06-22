@@ -102,7 +102,7 @@ def loader(config_dict, _):
 def confeditor_loader():
     return StoicWConfEditor()
 
-LOCAL_LOG_FILE = "/root/Stoic_LOG.txt"
+LOCAL_LOG_FILE = "/home/pi/Stoic_LOG.txt"
 
 def logmsg(level, msg):
     try:
