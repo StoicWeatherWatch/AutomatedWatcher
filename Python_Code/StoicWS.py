@@ -423,8 +423,8 @@ class StoicWatcher(object):
         
         self.stoic_Cal_dict = stoic_Cal_dict
 	
-	self.local_log_file = self.stoic_Station_dict.get('local_log_file', None)
-	self.save_bang_Ard = int(self.stoic_Station_dict.get('save_bang', 0))
+	self.local_log_file = stoic_Station_dict.get('local_log_file', None)
+	self.save_bang_Ard = int(stoic_Station_dict.get('save_bang', 0))
 	logdbg('StoicWatcher __init__ save_bang_Ard = %d' % self.save_bang_Ard)
 	logdbg('StoicWatcher __init__ local_log_file = %s' % self.local_log_file)
 	
