@@ -1,6 +1,6 @@
 """
 SW_Services
-2018-03-20
+2019-06-22
 Used to subcalss and override certain services. 
 
 WXCalculate in wxservices.py is overridden to add support for derived values in SW_Schema
@@ -26,7 +26,21 @@ from weewx.wxservices import StdWXCalculate
 from weewx.wxservices import WXCalculate
 
 def logmsg(level, msg):
-    syslog.syslog(level, 'SW_Services: %s' % msg)
+    try:
+        syslog.syslog(level, 'SW_Services: %s' % msg)
+    except TypeError as detail:
+        # This happened onece on daemon stop. Well into a stop that seemed to be going well,
+        #  a line was read in from serial and sent to loginf. Syslog spit out a TypeError
+        #  and the program crashed and would not come back to life automatically.
+        syslog.syslog(syslog.LOG_ERR, "SW_Services: ERROR: syslog spit a TypeError exception")
+        syslog.syslog(syslog.LOG_ERR, "SW_Services: ERROR: Usually means string input has issues or is none")
+        syslog.syslog(syslog.LOG_ERR, "SW_Services: ERROR: TypeError: %s" % detail)
+        syslog.syslog(syslog.LOG_ERR,"SW_Services: Traceback: \n%s" % traceback.format_exc())
+        syslog.syslog(syslog.LOG_INFO, "SW_Services: Stoic will now try to put this behind it and continue with life")
+    except:
+        syslog.syslog(syslog.LOG_ERR, "SW_Services: ERROR: syslog spit an error other than TypeError exception. (Raised to next level)")
+        syslog.syslog(syslog.LOG_ERR,"SW_Services: Traceback: \n%s" % traceback.format_exc())
+        raise
 
 def logdbg(msg):
     logmsg(syslog.LOG_DEBUG, msg)
@@ -130,11 +144,15 @@ class SW_Calculate(WXCalculate):
                 logdbg("calc_barometerPRS %f" %data['barometerPRS'])
             
     def calc_barometerHouse(self, data, data_type):  # @UnusedVariable
+        # Set source pressureHouse1 or 2 in [SW_Std_Calculate] [[CopySources]]
         data['barometerHouse'] = None
-        if 'pressureHouse' in data and 'TempHouse1' in data:
-            if (data.get('pressureHouse') is not None) and (data.get('TempHouse1') is not None):
+        # The first of these below gives pressureHouse1 or 2 the second TempHouse1 or 2
+        PressureSource = self.SourceDest_dict['CopySources'].get('barometerHouse')
+        TempForCal = self.SourceDest_dict['CopySources'].get('barometerHouseTempCal')
+        if PressureSource in data and TempForCal in data:
+            if (data.get(PressureSource) is not None) and (data.get(TempForCal) is not None):
                 data['barometerHouse'] = weewx.wxformulas.sealevel_pressure_US(
-                    data['pressureHouse'], self.altitude_ft, data['TempHouse1'])
+                    data[PressureSource], self.altitude_ft, data[TempForCal])
             
     def calc_dewpointFARS(self, data, data_type):
         #loginf(" calc_dewpointFARS Running")

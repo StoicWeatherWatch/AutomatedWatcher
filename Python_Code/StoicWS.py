@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Stoic WS
-# Version 0.3.0
-# 2019-06-18
+# Version 0.3.2
+# 2019-06-22
 #
 # This is a driver for weeWX to connect with an Arduino and R Pi based weather station.
 # see
@@ -94,7 +94,7 @@ import binascii
 import weewx.drivers
 
 DRIVER_NAME = 'StoicWS'
-DRIVER_VERSION = '0.3.0'
+DRIVER_VERSION = '0.3.2'
 
 def loader(config_dict, _):
     return StoicWSDriver(**config_dict[DRIVER_NAME])
@@ -102,10 +102,24 @@ def loader(config_dict, _):
 def confeditor_loader():
     return StoicWConfEditor()
 
-LOCAL_LOG_FILE = "/root/Stoic_LOG.txt"
+#LOCAL_LOG_FILE = "/home/pi/Stoic_LOG.txt"
 
 def logmsg(level, msg):
-    syslog.syslog(level, 'StoicWS: %s' % msg)
+    try:
+	syslog.syslog(level, 'StoicWS: %s' % msg)
+    except TypeError as detail:
+	# This happened onece on daemon stop. Well into a stop that seemed to be going well,
+	#  a line was read in from serial and sent to loginf. Syslog spit out a TypeError
+	#  and the program crashed and would not come back to life automatically.
+	syslog.syslog(syslog.LOG_ERR, "StoicWS: ERROR: syslog spit a TypeError exception")
+	syslog.syslog(syslog.LOG_ERR, "StoicWS: ERROR: Usually means string input has issues or is none")
+	syslog.syslog(syslog.LOG_ERR, "StoicWS: ERROR: TypeError: %s" % detail)
+	syslog.syslog(syslog.LOG_ERR,"StoicWS: Traceback: \n%s" % traceback.format_exc())
+	syslog.syslog(syslog.LOG_INFO, "StoicWS: Stoic will now try to put this behind it and continue with life")
+    except:
+	syslog.syslog(syslog.LOG_ERR, "StoicWS: ERROR: syslog spit an error other than TypeError exception. (Raised to next level)")
+	syslog.syslog(syslog.LOG_ERR,"StoicWS: Traceback: \n%s" % traceback.format_exc())
+	raise
 
 def logdbg(msg):
     logmsg(syslog.LOG_DEBUG, msg)
@@ -283,7 +297,9 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         
         return stoic_Cal_dict
     
-
+    #**Variable inside a function signiture (as below), means take any aditional arguments and
+    # cram them into the dictionary as key value pairs. Thus here we get the dictionary from weewx.conf
+    # and anything else weewx cares to send.
     def __init__(self, **stn_dict):
         
         loginf("StoicWSDriver version %s init" %DRIVER_VERSION)
@@ -295,6 +311,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         self.maxTrysBeforeCloseAndOpenPort = int(stn_dict.get('max_tries_before_cycle_port', 25))
         self.retry_wait = int(stn_dict.get('retry_wait', 3))
         debug_serial = int(stn_dict.get('debug_serial', 0))
+	
         
         #No need for this. The hardware resets the rain count when the serial port is reset.
         # Also the hardware reports its own last rain
@@ -302,13 +319,23 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
 
         logdbg('driver version is %s' % DRIVER_VERSION)
         loginf('using serial port %s' % self.port)
+	logdbg('debug_serial is %d' % debug_serial)
         
         
         stoic_Cal_dict = self.readCalibrationDict(stn_dict)
 
-
-        self.StoicWatcher = StoicWatcher(self.port, self.baudrate, stoic_Cal_dict, debug_serial=debug_serial)
-        #self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial)
+	try:
+            self.StoicWatcher = StoicWatcher(self.port, self.baudrate, stoic_Cal_dict, debug_serial, stn_dict)
+            #self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial)
+	except TypeError as detail:
+	    logerr("StoicWSDriver create StoicWatcher failed with TypeError")
+	    logerr(detail)
+	    logerr("Traceback: \n%s" % traceback.format_exc())
+	    raise
+	except:
+	    logerr("StoicWSDriver create StoicWatcher failed with something other than TypeError")
+	    logerr("Traceback: \n%s" % traceback.format_exc())
+	    raise
 
 	loginf("StoicWSDriver __init__  Calling self.StoicWatcher.open()")
         self.StoicWatcher.open()
@@ -316,9 +343,9 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         #This is for receiving form remote sensors
         #TODO Set the port from conf file
         loginf("StoicWSDriver opening SW_RemoteWatcher")
-        self.RemoteSouce = SW_RemoteWatcher(1216,dict())
+        self.RemoteSource = SW_RemoteWatcher(1216,dict())
         loginf("StoicWSDriver init done")
-        self.RemoteSouce.StartMonitoringForRemotes()
+        self.RemoteSource.StartMonitoringForRemotes()
        
     # WeeWX calls this when it wants to terminate. 
     def closePort(self):
@@ -327,10 +354,10 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
             self.StoicWatcher.close()
             self.StoicWatcher = None
         
-	loginf("StoicWSDriver closePort closing RemoteSouce") 
-        if self.RemoteSouce is not None:
-            self.RemoteSouce.StopMonitoringForRemotes()
-            self.RemoteSouce = None
+	loginf("StoicWSDriver closePort closing RemoteSource") 
+        if self.RemoteSource is not None:
+            self.RemoteSource.StopMonitoringForRemotes()
+            self.RemoteSource = None
 		
 	loginf("StoicWSDriver closePort done") 
         
@@ -363,7 +390,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
             # This handles the remote sensors
             packet2 = {'dateTime': int(time.time() + 0.5),'usUnits': weewx.METRICWX}
             
-            data2 = self.RemoteSouce.GetData()
+            data2 = self.RemoteSource.GetData()
             
             
             if data2 != None:
@@ -380,7 +407,10 @@ class StoicWatcher(object):
                               "27T",
                               "28T"]
     
-    def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial=0):
+    #**Variable inside a function signiture (as below), means take any aditional arguments and
+    # cram them into the dictionary as key value pairs. Which is great except it cannot handle a 
+    # dictionary comming through. Oddly so **stoic_Sation_dict gives type exception too many args.
+    def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial, stoic_Station_dict):
 	
 	loginf("StoicWS StoicWatcher __init__  Starting")
 
@@ -392,6 +422,15 @@ class StoicWatcher(object):
         self.serial_port = None
         
         self.stoic_Cal_dict = stoic_Cal_dict
+	
+	self.local_log_file = stoic_Station_dict.get('local_log_file', None)
+	self.save_bang_Ard = int(stoic_Station_dict.get('save_bang', 0))
+	logdbg('StoicWatcher __init__ save_bang_Ard = %d' % self.save_bang_Ard)
+	logdbg('StoicWatcher __init__ local_log_file = %s' % self.local_log_file)
+	
+	# Not currently used anywhere. May be best to process it here anyway
+	#self.stoic_Sation_dict = stoic_Sation_dict
+	
 
         
     def __enter__(self):
@@ -446,6 +485,7 @@ class StoicWatcher(object):
             logdbg("close serial port %s" % self.port)
             self.serial_port.close()
             self.serial_port = None
+	logdbg("StoicWatcher close Done" )
             
     def get_raw_data(self):
         LineIn = self.serial_port.readline()
@@ -1743,15 +1783,19 @@ No I2C connection
     def alert_parse(self,LineIn):
         """
         Handle lines starting with !
+	self.local_log_file = stn_dict.get('local_log_file', None)
+	self.save_bang_Ard = int(stn_dict.get('save_bang', 0))
         """
-        timeHolder = int(time.time())
-        loginf('Time of Special Log %d' % timeHolder)
-        with open(LOCAL_LOG_FILE, "a") as SpecialLogFile: 
-            SpecialLogFile.write(time.strftime("%Y-%m-%d-%H:%M:%S,", time.gmtime()))
-            #This is they key used for data records
-            SpecialLogFile.write("%d," %timeHolder)
-            SpecialLogFile.write(LineIn)
-            SpecialLogFile.write("\n")
+	if self.save_bang_Ard:
+            timeHolder = int(time.time())
+            loginf('Time of Special Log %d' % timeHolder)
+            with open(self.local_log_file, "a") as SpecialLogFile: 
+                SpecialLogFile.write(time.strftime("%Y-%m-%d-%H:%M:%S,", time.gmtime()))
+                #This is they key used for data records
+                SpecialLogFile.write("%d," %timeHolder)
+                SpecialLogFile.write(LineIn)
+                SpecialLogFile.write("\n")
+	    
             
         
 
