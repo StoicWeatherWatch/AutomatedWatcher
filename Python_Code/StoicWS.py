@@ -333,9 +333,9 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         #This is for receiving form remote sensors
         #TODO Set the port from conf file
         loginf("StoicWSDriver opening SW_RemoteWatcher")
-        self.RemoteSouce = SW_RemoteWatcher(1216,dict())
+        self.RemoteSource = SW_RemoteWatcher(1216,dict())
         loginf("StoicWSDriver init done")
-        self.RemoteSouce.StartMonitoringForRemotes()
+        self.RemoteSource.StartMonitoringForRemotes()
        
     # WeeWX calls this when it wants to terminate. 
     def closePort(self):
@@ -344,10 +344,10 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
             self.StoicWatcher.close()
             self.StoicWatcher = None
         
-	loginf("StoicWSDriver closePort closing RemoteSouce") 
-        if self.RemoteSouce is not None:
-            self.RemoteSouce.StopMonitoringForRemotes()
-            self.RemoteSouce = None
+	loginf("StoicWSDriver closePort closing RemoteSource") 
+        if self.RemoteSource is not None:
+            self.RemoteSource.StopMonitoringForRemotes()
+            self.RemoteSource = None
 		
 	loginf("StoicWSDriver closePort done") 
         
@@ -380,7 +380,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
             # This handles the remote sensors
             packet2 = {'dateTime': int(time.time() + 0.5),'usUnits': weewx.METRICWX}
             
-            data2 = self.RemoteSouce.GetData()
+            data2 = self.RemoteSource.GetData()
             
             
             if data2 != None:
