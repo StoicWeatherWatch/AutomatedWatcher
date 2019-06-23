@@ -319,13 +319,23 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
 
         logdbg('driver version is %s' % DRIVER_VERSION)
         loginf('using serial port %s' % self.port)
+	logdbg('debug_serial is %d' % debug_serial)
         
         
         stoic_Cal_dict = self.readCalibrationDict(stn_dict)
 
-
-        self.StoicWatcher = StoicWatcher(self.port, self.baudrate, stoic_Cal_dict, debug_serial, stn_dict)
-        #self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial)
+	try:
+            self.StoicWatcher = StoicWatcher(self.port, self.baudrate, stoic_Cal_dict, debug_serial, stn_dict)
+            #self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial)
+	except TypeError as detail:
+	    logerr("StoicWSDriver create StoicWatcher failed with TypeError")
+	    logerr(detail)
+	    logerr("Traceback: \n%s" % traceback.format_exc())
+	    raise
+	except:
+	    logerr("StoicWSDriver create StoicWatcher failed with something other than TypeError")
+	    logerr("Traceback: \n%s" % traceback.format_exc())
+	    raise
 
 	loginf("StoicWSDriver __init__  Calling self.StoicWatcher.open()")
         self.StoicWatcher.open()
@@ -398,9 +408,9 @@ class StoicWatcher(object):
                               "28T"]
     
     #**Variable inside a function signiture (as below), means take any aditional arguments and
-    # cram them into the dictionary as key value pairs. Thus here we get the dictionary from weewx.conf
-    # and anything else weewx cares to send.
-    def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial=0, **stoic_Sation_dict):
+    # cram them into the dictionary as key value pairs. Which is great except it cannot handle a 
+    # dictionary comming through. Oddly so **stoic_Sation_dict gives type exception too many args.
+    def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial, stoic_Sation_dict):
 	
 	loginf("StoicWS StoicWatcher __init__  Starting")
 
