@@ -410,7 +410,7 @@ class StoicWatcher(object):
     #**Variable inside a function signiture (as below), means take any aditional arguments and
     # cram them into the dictionary as key value pairs. Which is great except it cannot handle a 
     # dictionary comming through. Oddly so **stoic_Sation_dict gives type exception too many args.
-    def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial, stoic_Sation_dict):
+    def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial, stoic_Station_dict):
 	
 	loginf("StoicWS StoicWatcher __init__  Starting")
 
@@ -423,8 +423,8 @@ class StoicWatcher(object):
         
         self.stoic_Cal_dict = stoic_Cal_dict
 	
-	self.local_log_file = self.stoic_Sation_dict.get('local_log_file', None)
-	self.save_bang_Ard = int(self.stoic_Sation_dict.get('save_bang', 0))
+	self.local_log_file = self.stoic_Station_dict.get('local_log_file', None)
+	self.save_bang_Ard = int(self.stoic_Station_dict.get('save_bang', 0))
 	logdbg('StoicWatcher __init__ save_bang_Ard = %d' % self.save_bang_Ard)
 	logdbg('StoicWatcher __init__ local_log_file = %s' % self.local_log_file)
 	
