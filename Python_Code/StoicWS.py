@@ -297,7 +297,9 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         
         return stoic_Cal_dict
     
-
+    #**Variable inside a function signiture (as below), means take any aditional arguments and
+    # cram them into the dictionary as key value pairs. Thus here we get the dictionary from weewx.conf
+    # and anything else weewx cares to send.
     def __init__(self, **stn_dict):
         
         loginf("StoicWSDriver version %s init" %DRIVER_VERSION)
@@ -322,7 +324,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         stoic_Cal_dict = self.readCalibrationDict(stn_dict)
 
 
-        self.StoicWatcher = StoicWatcher(self.port, self.baudrate, stoic_Cal_dict, debug_serial=debug_serial)
+        self.StoicWatcher = StoicWatcher(self.port, self.baudrate, stoic_Cal_dict, debug_serial=debug_serial, stn_dict)
         #self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial)
 
 	loginf("StoicWSDriver __init__  Calling self.StoicWatcher.open()")
@@ -395,7 +397,10 @@ class StoicWatcher(object):
                               "27T",
                               "28T"]
     
-    def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial=0):
+    #**Variable inside a function signiture (as below), means take any aditional arguments and
+    # cram them into the dictionary as key value pairs. Thus here we get the dictionary from weewx.conf
+    # and anything else weewx cares to send.
+    def __init__(self, port, baudrate, stoic_Cal_dict, debug_serial=0, **stoic_Sation_dict):
 	
 	loginf("StoicWS StoicWatcher __init__  Starting")
 
@@ -408,9 +413,13 @@ class StoicWatcher(object):
         
         self.stoic_Cal_dict = stoic_Cal_dict
 	
-	self.local_log_file = self.stoic_Cal_dict.get('local_log_file', None)
-	self.save_bang_Ard = int(self.stoic_Cal_dict.get('save_bang', 0))
+	self.local_log_file = self.stoic_Sation_dict.get('local_log_file', None)
+	self.save_bang_Ard = int(self.stoic_Sation_dict.get('save_bang', 0))
 	logdbg('StoicWatcher __init__ save_bang_Ard = %d' % self.save_bang_Ard)
+	logdbg('StoicWatcher __init__ local_log_file = %s' % self.local_log_file)
+	
+	# Not currently used anywhere. May be best to process it here anyway
+	#self.stoic_Sation_dict = stoic_Sation_dict
 	
 
         
