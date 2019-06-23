@@ -324,7 +324,7 @@ class StoicWSDriver(weewx.drivers.AbstractDevice):
         stoic_Cal_dict = self.readCalibrationDict(stn_dict)
 
 
-        self.StoicWatcher = StoicWatcher(self.port, self.baudrate, stoic_Cal_dict, debug_serial=debug_serial, stn_dict)
+        self.StoicWatcher = StoicWatcher(self.port, self.baudrate, stoic_Cal_dict, debug_serial, stn_dict)
         #self.StoicWatcher = StoicWatcher(self.port, self.baudrate, debug_serial=debug_serial)
 
 	loginf("StoicWSDriver __init__  Calling self.StoicWatcher.open()")
