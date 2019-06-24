@@ -14,4 +14,8 @@ Check __init__ in wxservices. We override it in SW_Services class SW_Std_Calcula
 \
 Make certain super is still called that. \
 \
-We mess with calc_rainRate in wxservices. Maybe double check.}
+We mess with calc_rainRate in wxservices. Maybe double check. \
+\
+In SW_Services.py we call \
+super(StdWXCalculate, self).__init__(engine, config_dict)\
+}
