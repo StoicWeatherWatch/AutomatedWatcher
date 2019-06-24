@@ -1,6 +1,6 @@
 """
 SW_Services
-2019-06-22
+2019-06-24
 Used to subcalss and override certain services. 
 
 WXCalculate in wxservices.py is overridden to add support for derived values in SW_Schema
@@ -135,13 +135,37 @@ class SW_Calculate(WXCalculate):
         
     # do_calculations is very nicely extendable. No need to override. Hopefully.
     
+    def is_Data_Entry_Not_None(self,data,NameOfEntry):
+        """
+        Is NameOfEntry in data and is it somethong other than None. If yes to both return True.
+        """
+        # This assumes python 2.7.6 or later
+        if type(NameOfEntry) != str:
+            logerr("SW_Calculate is_Data_Entry_Not_None received data entry name that is not string")
+            try:
+                logerr("  input was %s" %NameOfEntry)
+            except:
+                logerr(" Exception: unable to print string")
+                logerr("is_Data_Entry_Not_None: Traceback: \n%s" % traceback.format_exc())
+            return False
+        
+        if NameOfEntry in data:
+            if data.get(NameOfEntry) is not None:
+                return True
+            else:
+                return False
+        else:
+            return False
+        
+    def DatCheck(self,data,NameOfEntry):
+        return is_Data_Entry_Not_None(data,NameOfEntry)
+    
     def calc_barometerPRS(self, data, data_type):  # @UnusedVariable
         data['barometerPRS'] = None
-        if 'pressurePRS' in data and 'TempPRS' in data:
-            if (data.get('pressurePRS') is not None) and (data.get('TempPRS') is not None):
-                data['barometerPRS'] = weewx.wxformulas.sealevel_pressure_US(
-                    data['pressurePRS'], self.altitude_ft, data['TempPRS'])
-                logdbg("calc_barometerPRS %f" %data['barometerPRS'])
+        if DatCheck(data,'pressurePRS') and DatCheck(data,'pressurePRS'):
+            data['barometerPRS'] = weewx.wxformulas.sealevel_pressure_US(
+                data['pressurePRS'], self.altitude_ft, data['TempPRS'])
+            logdbg("calc_barometerPRS %f" %data['barometerPRS'])
             
     def calc_barometerHouse(self, data, data_type):  # @UnusedVariable
         # Set source pressureHouse1 or 2 in [SW_Std_Calculate] [[CopySources]]
@@ -149,30 +173,25 @@ class SW_Calculate(WXCalculate):
         # The first of these below gives pressureHouse1 or 2 the second TempHouse1 or 2
         PressureSource = self.SourceDest_dict['CopySources'].get('barometerHouse')
         TempForCal = self.SourceDest_dict['CopySources'].get('barometerHouseTempCal')
-        if "PressureSource" in data and "TempForCal" in data:
-            if (data.get("PressureSource") is not None) and (data.get("TempForCal") is not None):
-                data['barometerHouse'] = weewx.wxformulas.sealevel_pressure_US(
-                    data[PressureSource], self.altitude_ft, data[TempForCal])
+        if DatCheck(data,PressureSource) and DatCheck(data,TempForCal):
+            data['barometerHouse'] = weewx.wxformulas.sealevel_pressure_US(
+                data[PressureSource], self.altitude_ft, data[TempForCal])
             
     def calc_dewpointFARS(self, data, data_type):
         #loginf(" calc_dewpointFARS Running")
-        if 'TempFARS' in data and 'HumidityFARS' in data:
-            if (data.get("TempFARS") is not None) and (data.get("HumidityFARS") is not None):
-                data['dewpointFARS'] = weewx.wxformulas.dewpointF(data['TempFARS'], data['HumidityFARS'])
-                logdbg("calc_dewpointFARS %f" %data['dewpointFARS'])
-            else:
-                data['dewpointFARS'] = None
+        if DatCheck(data,'TempFARS') and DatCheck(data,'HumidityFARS'):
+            data['dewpointFARS'] = weewx.wxformulas.dewpointF(data['TempFARS'], data['HumidityFARS'])
+            logdbg("calc_dewpointFARS %f" %data['dewpointFARS'])
         else:
             data['dewpointFARS'] = None
+
             
     def calc_dewpointPRS(self, data, data_type):  # @UnusedVariable
-        if 'TempPRS' in data and 'HumidityPRS' in data:
-            if (data.get("TempPRS") is not None) and (data.get("HumidityPRS") is not None):
-                data['dewpointPRS'] = weewx.wxformulas.dewpointF(data['TempPRS'], data['HumidityPRS'])
-            else:
-                data['dewpointPRS'] = None
+        if DatCheck(data,'TempPRS') and DatCheck(data,'HumidityPRS'):
+            data['dewpointPRS'] = weewx.wxformulas.dewpointF(data['TempPRS'], data['HumidityPRS'])
         else:
             data['dewpointPRS'] = None
+            
             
     def calc_rainRate(self, data, data_type):  
         """
@@ -209,16 +228,14 @@ class SW_Calculate(WXCalculate):
                 
     
     def calc_outTemp(self, data, data_type):
-        if self.SourceDest_dict['CopySources'].get('outTemp') is not None:
-            if self.SourceDest_dict['CopySources'].get('outTemp') in data:
-                data['outTemp'] = data[self.SourceDest_dict['CopySources'].get('outTemp')]
+        if DatCheck(data,self.SourceDest_dict['CopySources'].get('outTemp')):
+            data['outTemp'] = data[self.SourceDest_dict['CopySources'].get('outTemp')]
                 
         
     
     def calc_inTemp(self, data, data_type):
-        if self.SourceDest_dict['CopySources'].get('inTemp') is not None:
-            if self.SourceDest_dict['CopySources'].get('inTemp') in data:
-                data['inTemp'] = data[self.SourceDest_dict['CopySources'].get('inTemp')]
+        if DatCheck(data,self.SourceDest_dict['CopySources'].get('inTemp')):
+            data['inTemp'] = data[self.SourceDest_dict['CopySources'].get('inTemp')]
                 
     def calc_outHumidity(self, data, data_type):
         if self.SourceDest_dict['CopySources'].get('outHumidity') is not None:
