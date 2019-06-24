@@ -149,24 +149,28 @@ class SW_Calculate(WXCalculate):
         # The first of these below gives pressureHouse1 or 2 the second TempHouse1 or 2
         PressureSource = self.SourceDest_dict['CopySources'].get('barometerHouse')
         TempForCal = self.SourceDest_dict['CopySources'].get('barometerHouseTempCal')
-        if PressureSource in data and TempForCal in data:
-            if (data.get(PressureSource) is not None) and (data.get(TempForCal) is not None):
+        if "PressureSource" in data and "TempForCal" in data:
+            if (data.get("PressureSource") is not None) and (data.get("TempForCal") is not None):
                 data['barometerHouse'] = weewx.wxformulas.sealevel_pressure_US(
                     data[PressureSource], self.altitude_ft, data[TempForCal])
             
     def calc_dewpointFARS(self, data, data_type):
         #loginf(" calc_dewpointFARS Running")
         if 'TempFARS' in data and 'HumidityFARS' in data:
-            data['dewpointFARS'] = weewx.wxformulas.dewpointF(
-                data['TempFARS'], data['HumidityFARS'])
-            logdbg("calc_dewpointFARS %f" %data['dewpointFARS'])
+            if (data.get("TempFARS") is not None) and (data.get("HumidityFARS") is not None):
+                data['dewpointFARS'] = weewx.wxformulas.dewpointF(data['TempFARS'], data['HumidityFARS'])
+                logdbg("calc_dewpointFARS %f" %data['dewpointFARS'])
+            else:
+                data['dewpointFARS'] = None
         else:
             data['dewpointFARS'] = None
             
     def calc_dewpointPRS(self, data, data_type):  # @UnusedVariable
         if 'TempPRS' in data and 'HumidityPRS' in data:
-            data['dewpointPRS'] = weewx.wxformulas.dewpointF(
-                data['TempPRS'], data['HumidityPRS'])
+            if (data.get("TempPRS") is not None) and (data.get("HumidityPRS") is not None):
+                data['dewpointPRS'] = weewx.wxformulas.dewpointF(data['TempPRS'], data['HumidityPRS'])
+            else:
+                data['dewpointPRS'] = None
         else:
             data['dewpointPRS'] = None
             
